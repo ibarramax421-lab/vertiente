@@ -264,7 +264,7 @@ return(<div style={{minHeight:"100vh",background:"#050f1a"}}>
 <Fld label="Email"><input style={S.inp} type="email" value={fC.email} onChange={e=>setFC(f=>({...f,email:e.target.value}))} placeholder="correo@ejemplo.com"/></Fld>
 <Fld label="Direccion"><input style={S.inp} value={fC.direccion} onChange={e=>setFC(f=>({...f,direccion:e.target.value}))} placeholder="Calle, numero, colonia"/></Fld>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-<Fld label="Ciudad"><select style={S.inp} value={fC.ciudad} onChange={e=>setFC(f=>({...f,ciudad:e.target.value}))}><option value="">Seleccionar</option><option value="Co</Fld>
+<Fld label="Ciudad"><select style={S.inp} value={fC.ciudad} onChange={e=>setFC(f=>({...f,ciudad:e.target.value}))}><option value="">Seleccionar</option><option value="Colon">Colon</option></select></Fld>
 <Fld label="Provincia"><input style={S.inp} value={fC.provincia} onChange={e=>setFC(f=>({...f,provincia:e.target.value}))} placeholder="Provincia"/></Fld>
 </div>
 <Fld label="Pais"><input style={S.inp} value={fC.pais} onChange={e=>setFC(f=>({...f,pais:e.target.value}))} placeholder="Pais"/></Fld>
