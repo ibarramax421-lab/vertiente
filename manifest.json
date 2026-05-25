@@ -1,0 +1,16 @@
+{
+  "name": "Vertiente Natural",
+  "short_name": "Vertiente",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#050f1a",
+  "theme_color": "#050f1a"
+}
