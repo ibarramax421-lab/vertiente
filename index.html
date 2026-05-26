@@ -25,7 +25,7 @@ const cobrado=entregados.filter(p=>p.pagado).reduce((a,p)=>a+p.total,0);
 if(cargando)return(<div style={{minHeight:"100vh",background:"#050f1a",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{color:"#38bdf8",fontSize:14}}>Cargando turno...</div></div>);
 return(<div style={{minHeight:"100vh",background:"#050f1a"}}>
 <div style={{background:"linear-gradient(90deg,#071828,#0a2038)",borderBottom:"1px solid #1e4a6e",padding:"14px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:"max(14px,env(safe-area-inset-top))"}}>
-<div><div style={{fontWeight:800,fontSize:16,color:"#4ade80"}}>🚚 Modo Repartidor</div><div style={{fontSize:10,color:"#4a7fa5"}}>GPS activo</div></div>
+<div><div style={{fontWeight:800,fontSize:16,color:"#4ade80"}}>🚚 {repartidores.find(r=>r.id===Number(repId))?.name||"Repartidor"}</S activo</div></div>
 <button onClick={onCambiarRol} style={{background:"#071828",border:"1px solid #1e4a6e",color:"#6aaddf",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12}}>Cambiar rol</button>
 </div>
 <div style={{padding:"16px 14px 40px",maxWidth:560,margin:"0 auto"}}>
