@@ -16,7 +16,7 @@ function PanelRepartidor({repartidores,productos,pedidos,clientes,onCambiarRol})
 const [turno,setTurno]=useState(null);const [cargando,setCargando]=useState(true);const [aceptando,setAceptando]=useState(false);const [repId,setRepId]=useState(repartidores[0]?.id||"");
 useEffect(()=>{if(repId)cargarTurno();},[repId]);
 useEffect(()=>{if(!repId||!navigator.geolocation)return;const id=navigator.geolocation.watchPosition(async p=>{try{await sb.from("ubicaciones_repartidor").insert({repartidorId:Number(repId),lat:p.coords.latitude,lng:p.coords.longitude,fecha:today()});}catch(e){}},()=>{},{enableHighAccuracy:true,timeout:30000,maximumAge:15000});return()=>navigator.geolocation.clearWatch(id);},[repId]);
-async function cargarTurno(){setCargando(true);console.log("repId:",repId,typeof repId);const{data}=await sb.from("turnos").select("*,turno_productos(*)").eq("fecha",today()).eq("repartidorId",Number(repId)).order("id",{ascending:false}).limit(1);setTurno(data?.[0]||null);setCargando(false);}
+async function cargarTurno(){setCargando(true);console.log("repId:",repId,typeof repId);const{data}=await sb.from("turnos").select("*").eq("fecha",today()).eq("repartidorId",Number(repId)).order("id",{ascending:false}).limit(1);setTurno(data?.[0]||null);setCargando(false);}
 async function aceptarTurno(){if(!turno)return;setAceptando(true);await sb.from("turnos").update({aceptado:true,estado:"activo"}).eq("id",turno.id);await cargarTurno();setAceptando(false);}
 const pedidosHoy=pedidos.filter(p=>p.fecha===today()&&p.repId===Number(repId));
 const entregados=pedidosHoy.filter(p=>p.estado==="entregado");
