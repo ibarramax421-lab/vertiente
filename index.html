@@ -259,7 +259,16 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 <div style={{fontWeight:700,color:C.grn3,fontSize:14,marginBottom:6}}>GPS</div>
 <button onClick={getGPS} style={S.btnG}>Guardar ubicacion GPS</button>
 {geoMsg&&<div style={{fontSize:12,textAlign:"center",marginTop:10,padding:"8px",borderRadius:8,background:geoMsg.startsWith("GPS")?C.bg3:"#1c0505",color:geoMsg.startsWith("GPS")?C.grn3:C.err}}>{geoMsg}</div>}
-</div>setFP(f=>({...f,cantidad:e.target.value}))}/></Fld>
+</div>
+{saveError&&<div style={{background:"#1c0505",border:"1px solid #991b1b",borderRadius:8,padding:"10px",marginBottom:8,color:C.err,fontSize:13}}>{saveError}</div>}
+<button style={S.btn} onClick={saveC} disabled={saving}>{saving?"...":editC?"Guardar":"Agregar"}</button>
+{editC&&<button style={{...S.btnR,marginTop:10}} onClick={()=>setDelC(editC)}>Eliminar</button>}
+</Modal>)}
+{delC&&(<Modal title="Eliminar?" onClose={()=>setDelC(null)}><div style={{color:C.text,marginBottom:16,fontSize:15,textAlign:"center"}}>Eliminar a <strong>{delC.nombre}</strong>?</div><div style={{display:"flex",gap:10}}><button style={{...S.btn,background:C.bg3,marginTop:0,flex:1}} onClick={()=>setDelC(null)}>Cancelar</button><button style={{...S.btnR,flex:1}} onClick={()=>delCliente(delC.id)}>Eliminar</button></div></Modal>)}
+{modal==="pedido"&&(<Modal title="Nuevo pedido" onClose={()=>setModal(null)}>
+<Fld label="Cliente"><select style={S.inp} value={fP.clienteId} onChange={e=>setFP(f=>({...f,clienteId:e.target.value}))}><option value="">Seleccionar</option>{clientes.map(c=><option key={c.id} value={c.id}>{c.nombre}</option>)}</select></Fld>
+<Fld label="Producto"><select style={S.inp} value={fP.productoId} onChange={e=>setFP(f=>({...f,productoId:e.target.value}))}><option value="">Seleccionar</option>{productos.map(p=><option key={p.id} value={p.id}>{p.name} - {fmt(p.price)}</option>)}</select></Fld>
+<Fld label="Cantidad"><input type="number" min={1} style={S.inp} value={fP.cantidad} onChange={e=>setFP(f=>({...f,cantidad:e.target.value}))}/></Fld>
 <Fld label="Repartidor"><select style={S.inp} value={fP.repId} onChange={e=>setFP(f=>({...f,repId:e.target.value}))}><option value="">Seleccionar</option>{repartidores.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></Fld>
 <Fld label="Fecha"><input type="date" style={S.inp} value={fP.fecha} onChange={e=>setFP(f=>({...f,fecha:e.target.value}))}/></Fld>
 <div style={{background:C.bg2,borderRadius:10,padding:"13px",marginBottom:8,color:C.acc3,fontWeight:700,fontSize:17,textAlign:"center"}}>Total: {fmt((()=>{const pr=productos.find(p=>p.id===Number(fP.productoId));if(!pr)return 0;const pEsp=getPrecioEsp(preciosEspeciales,fP.clienteId,fP.productoId);return(pEsp!==null?pEsp:pr.price)*Number(fP.cantidad||1);})())}</div>
@@ -274,12 +283,3 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 </div>);}
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
 </script></body></html>
-{saveError&&<div style={{background:"#1c0505",border:"1px solid #991b1b",borderRadius:8,padding:"10px",marginBottom:8,color:C.err,fontSize:13}}>{saveError}</div>}
-<button style={S.btn} onClick={saveC} disabled={saving}>{saving?"...":editC?"Guardar":"Agregar"}</button>
-{editC&&<button style={{...S.btnR,marginTop:10}} onClick={()=>setDelC(editC)}>Eliminar</button>}
-</Modal>)}
-{delC&&(<Modal title="Eliminar?" onClose={()=>setDelC(null)}><div style={{color:C.text,marginBottom:16,fontSize:15,textAlign:"center"}}>Eliminar a <strong>{delC.nombre}</strong>?</div><div style={{display:"flex",gap:10}}><button style={{...S.btn,background:C.bg3,marginTop:0,flex:1}} onClick={()=>setDelC(null)}>Cancelar</button><button style={{...S.btnR,flex:1}} onClick={()=>delCliente(delC.id)}>Eliminar</button></div></Modal>)}
-{modal==="pedido"&&(<Modal title="Nuevo pedido" onClose={()=>setModal(null)}>
-<Fld label="Cliente"><select style={S.inp} value={fP.clienteId} onChange={e=>setFP(f=>({...f,clienteId:e.target.value}))}><option value="">Seleccionar</option>{clientes.map(c=><option key={c.id} value={c.id}>{c.nombre}</option>)}</select></Fld>
-<Fld label="Producto"><select style={S.inp} value={fP.productoId} onChange={e=>setFP(f=>({...f,productoId:e.target.value}))}><option value="">Seleccionar</option>{productos.map(p=><option key={p.id} value={p.id}>{p.name} - {fmt(p.price)}</option>)}</select></Fld>
-<Fld label="Cantidad"><input type="number" min={1} style={S.inp} value={fP.cantidad} onChange={e=>
