@@ -122,7 +122,7 @@ return(<Modal title={c.nombre} onClose={onCerrar}>
 <div style={{textAlign:"right"}}><div style={{color:"#38bdf8",fontWeight:700}}>{fmt(p.total)}</div><Bdg color={p.pagado?"green":"red"}>{p.pagado?"Pagado":"Debe"}</Bdg></div>
 </div>);})}
 </div>
-<button style={S.btn} onClick={onEditar}>Editar</button><button onClick={async()=>{await sb.from("clientes").update({activo:c.a
+<button style={S.btn} onClick={onEditar}>Editar</button>
 </Modal>);}
 function App(){
 const [rol,setRol]=useState(()=>localStorage.getItem("vn_rol")||null);
