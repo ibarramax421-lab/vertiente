@@ -199,4 +199,4 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 {modal==="pago"&&(<Modal title="Pago" onClose={()=>setModal(null)}><Fld label="Pedido"><select style={S.inp} value={fPago.pedidoId} onChange={e=>setFPago(f=>({...f,pedidoId:e.target.value}))}><option value="">Seleccionar</option>{pedidos.filter(p=>!p.pagado&&p.estado==="entregado").map(p=>{const cl=clientes.find(c=>c.id===p.clienteId);return<option key={p.id} value={p.id}>{cl?.nombre} - {fmt(p.total)}</option>;})}</select></Fld><Fld label="Monto"><input type="number" style={S.inp} value={fPago.monto} onChange={e=>setFPago(f=>({...f,monto:e.target.value}))} placeholder="0"/></Fld><button style={S.btn} onClick={cobrar} disabled={saving}>{saving?"...":"Confirmar"}</button></Modal>)}
 </div>);}
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
-</script></body></html>
+</script></body></html> 
