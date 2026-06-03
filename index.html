@@ -338,7 +338,7 @@ const ch=sb.channel("c")
 .on("postgres_changes",{event:"*",schema:"public",table:"cobros"},()=>cargarDatos())
 .on("postgres_changes",{event:"*",schema:"public",table:"ubicaciones_repartidor"},()=>cargarUbicaciones())
 .subscribe();
-const intervalo=setInterval(cargarUbicaciones,20000);
+const intervalo=setInterval(cargarUbicaciones,60000);
 return()=>{sb.removeChannel(ch);clearInterval(intervalo);};
 },[]);
 useEffect(()=>{
