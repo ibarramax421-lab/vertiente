@@ -255,6 +255,32 @@ return()=>{if(map.current){map.current.remove();map.current=null;}};
 },[ubicaciones,recorrido]);
 return <div ref={ref} style={{width:"100%",height:320,borderRadius:12,overflow:"hidden",border:"1px solid "+C.border}}/>;}
 
+function MapaClientes({clientes,userLat,userLng}){
+const ref=useRef(null),map=useRef(null);
+const DEF_LAT=-33.8891,DEF_LNG=-61.1234;
+useEffect(()=>{
+if(!window.L||!ref.current||map.current)return;
+const L=window.L;
+const lat=userLat||(clientes.find(c=>c.lat)?.lat)||DEF_LAT;
+const lng=userLng||(clientes.find(c=>c.lng)?.lng)||DEF_LNG;
+map.current=L.map(ref.current,{zoomControl:true,attributionControl:false}).setView([lat,lng],14);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map.current);
+setTimeout(()=>map.current&&map.current.invalidateSize(),300);
+clientes.forEach(c=>{
+if(!c.lat||!c.lng)return;
+const col=c.saldo<0?"#f87171":c.saldo>0?"#4ade80":"#00d4ff";
+const ic=L.divIcon({className:"",html:"<div style='width:26px;height:26px;border-radius:50% 50% 50% 0;background:"+col+";border:2px solid #030d1a;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.5)'></div>",iconSize:[26,26],iconAnchor:[13,26]});
+L.marker([c.lat,c.lng],{icon:ic}).addTo(map.current).bindPopup("<b>"+c.nombre+"</b><br>"+c.direccion+"<br><span style='color:"+(c.saldo<0?"#f87171":c.saldo>0?"#4ade80":"#6aaddf")+"'>Saldo: "+(c.saldo<0?"-":c.saldo>0?"+":"$0")+(c.saldo!==0?"$"+Math.abs(c.saldo).toLocaleString("es-AR"):"")+"</span>");
+});
+if(userLat&&userLng){
+const ui=L.divIcon({className:"",html:"<div style='width:14px;height:14px;border-radius:50%;background:#00d4ff;border:3px solid #fff;box-shadow:0 0 10px #00d4ff'></div>",iconSize:[14,14],iconAnchor:[7,7]});
+L.marker([userLat,userLng],{icon:ui}).addTo(map.current);
+}
+return()=>{if(map.current){map.current.remove();map.current=null;}};
+},[]);
+return <div ref={ref} style={{width:"100%",height:"calc(100vh - 180px)",borderRadius:12,overflow:"hidden",border:"1px solid #1a5c3a"}}/>;
+}
+
 function App(){
 const [rol,setRol]=useState(()=>localStorage.getItem("vn_rol")||null);
 const [tab,setTab]=useState("dashboard");
@@ -371,6 +397,7 @@ const km=calcKm(recorrido);
 const pedidosHoy=pedidos.filter(p=>p.fecha===today());
 const entregadosHoy=pedidosHoy.filter(p=>p.estado==="entregado");
 const cobradoTotal=pedidosHoy.filter(p=>p.pagado).reduce((a,p)=>a+p.total,0);
+const clientesConGPS=clientes.filter(c=>c.lat&&c.lng);
 return(<div>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14}}>
 <div style={{background:C.card,borderRadius:12,padding:"12px",border:"1px solid "+C.grn2,textAlign:"center"}}><div style={{fontSize:9,color:C.text2,fontWeight:700,marginBottom:3}}>ENTREGAS</div><div style={{fontSize:22,fontWeight:800,color:C.grn3}}>{entregadosHoy.length}</div></div>
@@ -378,9 +405,9 @@ return(<div>
 <div style={{background:C.card,borderRadius:12,padding:"12px",border:"1px solid "+C.border2,textAlign:"center"}}><div style={{fontSize:9,color:C.text2,fontWeight:700,marginBottom:3}}>KM HOY</div><div style={{fontSize:22,fontWeight:800,color:C.acc3}}>{km}</div></div>
 </div>
 <div style={{background:C.card,borderRadius:13,padding:16,border:"1px solid "+C.border,marginBottom:14}}>
-<div style={{fontWeight:700,color:C.text,marginBottom:10,fontSize:14}}>Posicion en tiempo real</div>
-{ubicaciones.length===0?<div style={{color:C.text2,fontSize:13,marginBottom:10}}>Sin GPS activo</div>:ubicaciones.map(u=>{const rep=repartidores.find(r=>r.id===u.repartidorId);return(<div key={u.id} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",borderBottom:"1px solid "+C.border,marginBottom:6}}><div style={{fontSize:18}}>🚚</div><div><div style={{color:C.text,fontWeight:600,fontSize:13}}>{rep?.name}</div><div style={{color:C.text2,fontSize:11}}>Ultima ubicacion: {new Date(u.created_at).toLocaleTimeString()}</div></div></div>);})}
-<MapaSeguimiento repartidores={repartidores} ubicaciones={ubicaciones} recorrido={recorrido}/>
+<div style={{fontWeight:700,color:C.text,marginBottom:10,fontSize:14}}>Mapa de clientes ({clientesConGPS.length} con GPS)</div>
+<div style={{fontSize:11,color:C.text2,marginBottom:8}}>Rojo=debe · Verde=a favor · Azul=al dia · Tocar pin para ver datos</div>
+<MapaClientes clientes={clientes} userLat={userPos?.lat} userLng={userPos?.lng}/>
 </div>
 <div style={{background:C.card,borderRadius:13,padding:16,border:"1px solid "+C.border}}>
 <div style={{fontWeight:700,color:C.text,marginBottom:10,fontSize:14}}>Actividad del dia</div>
