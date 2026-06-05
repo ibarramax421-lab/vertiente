@@ -333,7 +333,7 @@ setLoading(false);setRefreshing(false);}
 useEffect(()=>{
 cargarDatos();
 const ch=sb.channel("c")
-.on("postgres_changes",{event:"*",schema:"public",table:"clientes"},()=>cargarDatos())
+.on("postgres_changes",{event:"*",schema:"public",table:"clientes"},()=>{if(!verC)cargarDatos();})
 .on("postgres_changes",{event:"*",schema:"public",table:"pedidos"},()=>cargarDatos())
 .on("postgres_changes",{event:"*",schema:"public",table:"cobros"},()=>cargarDatos())
 .on("postgres_changes",{event:"*",schema:"public",table:"ubicaciones_repartidor"},()=>cargarUbicaciones())
