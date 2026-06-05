@@ -463,7 +463,7 @@ function MapaClienteBtn({lat,lng,saldo}){
 const [mostrar,setMostrar]=useState(false);
 const ref=useRef(null),map=useRef(null);
 useEffect(()=>{
-if(!mostrar||!lat||!lng||!window.L||!ref.current||map.current)return;
+if(!mostrar||!lat||!lng||!window.L||!ref.current)return;if(map.current&&mostrarRef.current)return;mostrarRef.current=true;if(ma
 const L=window.L;
 map.current=L.map(ref.current,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false}).setView([lat,lng],17);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map.current);
