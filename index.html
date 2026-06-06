@@ -255,6 +255,41 @@ return()=>{if(map.current){map.current.remove();map.current=null;}};
 },[ubicaciones,recorrido]);
 return <div ref={ref} style={{width:"100%",height:320,borderRadius:12,overflow:"hidden",border:"1px solid "+C.border}}/>;}
 
+function MapaReparto({clientes,pedidos,ubicaciones,recorrido,repartidores}){
+const ref=useRef(null),map=useRef(null);
+const DEF_LAT=-33.8891,DEF_LNG=-61.1234;
+const entregadosHoy=pedidos.filter(p=>p.fecha===today()&&p.estado==="entregado");
+const clientesVisitados=clientes.filter(c=>entregadosHoy.some(p=>p.clienteId===c.id)&&c.lat&&c.lng);
+useEffect(()=>{
+if(!window.L||!ref.current||map.current)return;
+const L=window.L;
+const lat=ubicaciones[0]?.lat||(clientesVisitados[0]?.lat)||DEF_LAT;
+const lng=ubicaciones[0]?.lng||(clientesVisitados[0]?.lng)||DEF_LNG;
+map.current=L.map(ref.current,{zoomControl:true,attributionControl:false}).setView([lat,lng],14);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map.current);
+setTimeout(()=>map.current&&map.current.invalidateSize(),300);
+if(recorrido&&recorrido.length>1){
+const pts=recorrido.map(u=>[u.lat,u.lng]);
+L.polyline(pts,{color:"#00d4ff",weight:3,opacity:.7,dashArray:"6,4"}).addTo(map.current);
+}
+clientesVisitados.forEach(c=>{
+const ped=entregadosHoy.filter(p=>p.clienteId===c.id);
+const cobrado=ped.some(p=>p.pagado);
+const col=cobrado?"#4ade80":"#fbbf24";
+const ic=L.divIcon({className:"",html:"<div style='width:28px;height:28px;border-radius:50%;background:"+col+";border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:12px;'>"+(cobrado?"✓":"$")+"</div>",iconSize:[28,28],iconAnchor:[14,14]});
+L.marker([c.lat,c.lng],{icon:ic}).addTo(map.current).bindPopup("<b>"+c.nombre+"</b><br>"+c.direccion+"<br><span style='color:"+(cobrado?"#4ade80":"#fbbf24")+"'>"+(cobrado?"Cobrado":"Sin cobrar")+"</span>");
+});
+repartidores.forEach(rep=>{
+const ub=ubicaciones.find(u=>u.repartidorId===rep.id);
+if(!ub)return;
+const ri=L.divIcon({className:"",html:"<div style='background:#f59e0b;border:3px solid #fff;border-radius:50%;width:22px;height:22px;box-shadow:0 0 12px #f59e0b;display:flex;align-items:center;justify-content:center;font-size:12px;'>🚚</div>",iconSize:[22,22],iconAnchor:[11,11]});
+L.marker([ub.lat,ub.lng],{icon:ri}).addTo(map.current).bindPopup("<b>"+rep.name+"</b><br>Posicion actual");
+});
+return()=>{if(map.current){map.current.remove();map.current=null;}};
+},[]);
+if(clientesVisitados.length===0&&recorrido.length===0)return(<div style={{background:C.bg2,borderRadius:10,padding:20,textAlign:"center",color:C.text2,fontSize:13}}>Sin reparto activo hoy</div>);
+return(<div><div style={{display:"flex",gap:12,marginBottom:8,flexWrap:"wrap"}}><span style={{fontSize:11,color:"#4ade80"}}>● Cobrado</span><span style={{fontSize:11,color:"#fbbf24"}}>● Sin cobrar</span><span style={{fontSize:11,color:"#00d4ff"}}>— Recorrido</span><span style={{fontSize:11,color:C.warn}}>🚚 Repartidor</span></div><div ref={ref} style={{width:"100%",height:300,borderRadius:12,overflow:"hidden",border:"1px solid "+C.border}}/><div style={{marginTop:8,color:C.text2,fontSize:12}}>{clientesVisitados.length} clientes visitados hoy</div></div>);}
+
 function MapaClientes({clientes,userLat,userLng}){
 const ref=useRef(null),map=useRef(null);
 const DEF_LAT=-33.8891,DEF_LNG=-61.1234;
@@ -408,6 +443,11 @@ return(<div>
 <div style={{fontWeight:700,color:C.text,marginBottom:10,fontSize:14}}>Mapa de clientes ({clientesConGPS.length} con GPS)</div>
 <div style={{fontSize:11,color:C.text2,marginBottom:8}}>Rojo=debe · Verde=a favor · Azul=al dia · Tocar pin para ver datos</div>
 <MapaClientes clientes={clientes} userLat={userPos?.lat} userLng={userPos?.lng}/>
+</div>
+<div style={{background:C.card,borderRadius:13,padding:16,border:"1px solid "+C.border,marginBottom:14}}>
+<div style={{fontWeight:700,color:C.text,marginBottom:10,fontSize:14}}>Mapa de reparto del dia</div>
+<div style={{fontSize:11,color:C.text2,marginBottom:8}}>Clientes visitados hoy · Linea azul = recorrido del repartidor</div>
+<MapaReparto clientes={clientes} pedidos={pedidos} ubicaciones={ubicaciones} recorrido={recorrido} repartidores={repartidores}/>
 </div>
 <div style={{background:C.card,borderRadius:13,padding:16,border:"1px solid "+C.border}}>
 <div style={{fontWeight:700,color:C.text,marginBottom:10,fontSize:14}}>Actividad del dia</div>
