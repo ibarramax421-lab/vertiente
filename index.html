@@ -187,7 +187,7 @@ return(<div style={{position:"fixed",inset:0,background:C.bg,zIndex:3000,display
 function PanelRepartidor({repartidores,productos,pedidos,clientes,cobros,preciosEspeciales,gastos,onCambiarRol,onActualizar}){
 const [repId,setRepId]=useState(()=>localStorage.getItem("vn_repId")||repartidores[0]?.id||"");
 const [pantalla,setPantalla]=useState("inicio");
-const [zonaSeleccionada,setZonaSeleccionada]=useState("");
+const [zonaSeleccionada,setZonaSeleccionada]=useState(()=>localStorage.getItem("vn_zona")||"");
 const [gpsActivo,setGpsActivo]=useState(()=>localStorage.getItem("vn_gps")==="1");
 const [modalNC,setModalNC]=useState(false);
 const [fNC,setFNC]=useState({nombre:"",telefono:"",direccion:"",zona:"Z1"});
@@ -200,7 +200,7 @@ const [gastoGuardando,setGastoGuardando]=useState(false);
 const [insumoDesc,setInsumoDesc]=useState("");
 const [insumoMonto,setInsumoMonto]=useState("");
 const [insumoMsg,setInsumoMsg]=useState("");
-const [tabRep,setTabRep]=useState("inicio");
+const [tabRep,setTabRep]=useState(()=>localStorage.getItem("vn_gps")==="1"?"clientes":"inicio");
 const [cerrarDiaModal,setCerrarDiaModal]=useState(false);
 const [bidonesDevRep,setBidonesDevRep]=useState("");
 const [cierreMsg,setCierreMsg]=useState("");
@@ -215,7 +215,7 @@ useEffect(()=>{if(!gpsActivo||!repId||!navigator.geolocation)return;const id=nav
 async function guardarNuevoCliente(){if(!fNC.nombre.trim())return;setGuardandoNC(true);try{await sb.from("clientes").insert({nombre:fNC.nombre,telefono:fNC.telefono||"",direccion:fNC.direccion||"",zona:fNC.zona,ciudad:"Colon",provincia:"Buenos Aires",pais:"Argentina",saldo:0,bidones:0,activo:true});onActualizar&&onActualizar();setModalNC(false);setFNC({nombre:"",telefono:"",direccion:"",zona:"Z1"});}catch(e){}setGuardandoNC(false);}
 async function guardarGasto(){const m=Number(gastoMonto);if(!m||m<=0)return;setGastoGuardando(true);setGastoMsg("");try{await sb.from("gastos").insert({fecha:today(),categoria:gastoCategoria,descripcion:gastoDesc||"",monto:m,tipo:"diario"});onActualizar&&onActualizar();setGastoMonto("");setGastoDesc("");setGastoMsg("Guardado!");}catch(e){setGastoMsg("Error.");}setGastoGuardando(false);}
 async function guardarInsumo(){const m=Number(insumoMonto);if(!m||m<=0)return;setGastoGuardando(true);setInsumoMsg("");try{await sb.from("gastos").insert({fecha:today(),categoria:"Insumo",descripcion:insumoDesc||"",monto:m,tipo:"insumo"});onActualizar&&onActualizar();setInsumoMonto("");setInsumoDesc("");setInsumoMsg("Guardado!");}catch(e){setInsumoMsg("Error.");}setGastoGuardando(false);}
-async function cerrarDia(){setCerrandoDia(true);setCierreMsg("");try{const cobHoy=cobros.filter(c=>c.fecha===today());const ef=cobHoy.filter(c=>c.metodoPago==="Efectivo").reduce((a,c)=>a+c.monto,0);const tr=cobHoy.filter(c=>c.metodoPago==="Transferencia"||c.metodoPago==="QR").reduce((a,c)=>a+c.monto,0);const ta=cobHoy.filter(c=>c.metodoPago==="Tarjeta").reduce((a,c)=>a+c.monto,0);const ot=cobHoy.filter(c=>c.metodoPago==="Otros").reduce((a,c)=>a+c.monto,0);const sinCob=pedidos.filter(p=>p.fecha===today()&&p.estado==="entregado"&&!p.pagado).reduce((a,p)=>a+p.total,0);const tot=ef+tr+ta+ot;await sb.from("cierres_dia").upsert({fecha:today(),repartidorId:Number(repId),ventas_efectivo:ef,ventas_transferencia:tr,ventas_tarjeta:ta,ventas_otros:ot,ventas_credito:sinCob,total_ventas:tot+sinCob,bidones_devueltos:Number(bidonesDevRep)||0,cerrado_por_rep:true},{onConflict:"fecha,repartidorId"});setGpsActivo(false);localStorage.removeItem("vn_gps");setCierreMsg("Dia cerrado!");onActualizar&&onActualizar();}catch(e){setCierreMsg("Error: "+e.message);}setCerrandoDia(false);}
+async function cerrarDia(){setCerrandoDia(true);setCierreMsg("");try{const cobHoy=cobros.filter(c=>c.fecha===today());const ef=cobHoy.filter(c=>c.metodoPago==="Efectivo").reduce((a,c)=>a+c.monto,0);const tr=cobHoy.filter(c=>c.metodoPago==="Transferencia"||c.metodoPago==="QR").reduce((a,c)=>a+c.monto,0);const ta=cobHoy.filter(c=>c.metodoPago==="Tarjeta").reduce((a,c)=>a+c.monto,0);const ot=cobHoy.filter(c=>c.metodoPago==="Otros").reduce((a,c)=>a+c.monto,0);const sinCob=pedidos.filter(p=>p.fecha===today()&&p.estado==="entregado"&&!p.pagado).reduce((a,p)=>a+p.total,0);const tot=ef+tr+ta+ot;await sb.from("cierres_dia").upsert({fecha:today(),repartidorId:Number(repId),ventas_efectivo:ef,ventas_transferencia:tr,ventas_tarjeta:ta,ventas_otros:ot,ventas_credito:sinCob,total_ventas:tot+sinCob,bidones_devueltos:Number(bidonesDevRep)||0,cerrado_por_rep:true},{onConflict:"fecha,repartidorId"});setGpsActivo(false);localStorage.removeItem("vn_gps");localStorage.removeItem("vn_zona");setCierreMsg("Dia cerrado!");onActualizar&&onActualizar();}catch(e){setCierreMsg("Error: "+e.message);}setCerrandoDia(false);}
 const gastosHoy=gastos.filter(g=>g.fecha===today());
 const totalGastos=gastosHoy.filter(g=>g.tipo==="diario").reduce((a,g)=>a+Number(g.monto),0);
 const NAV_REP=[{id:"inicio",label:"Inicio",icon:IC.db},{id:"clientes",label:"Clientes",icon:IC.cl},{id:"gastos",label:"Gastos",icon:IC.dr}];
@@ -233,7 +233,7 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 {!gpsActivo?(<div style={{background:C.bg3,border:"2px solid "+C.grn2,borderRadius:16,padding:20,marginBottom:16}}>
 <div style={{fontSize:14,color:C.text2,marginBottom:12,textAlign:"center"}}>Selecciona zona e iniciá el reparto</div>
 <div style={{display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center",marginBottom:16}}>{ZONAS.map(z=>(<button key={z} onClick={()=>setZonaSeleccionada(z)} style={{padding:"10px 16px",borderRadius:10,border:"2px solid "+(zonaSeleccionada===z?C.grn2:C.border),background:zonaSeleccionada===z?C.bg3:C.bg2,color:zonaSeleccionada===z?C.grn3:C.text2,cursor:"pointer",fontSize:13,fontWeight:700}}>{z}</button>))}</div>
-<button onClick={()=>{if(!zonaSeleccionada)return;setGpsActivo(true);localStorage.setItem("vn_gps","1");setTabRep("clientes");}} disabled={!zonaSeleccionada} style={{...S.btnG,fontSize:17,padding:"16px",borderRadius:14,opacity:zonaSeleccionada?1:.5}}>🚚 INICIAR REPARTO</button>
+<button onClick={()=>{if(!zonaSeleccionada)return;setGpsActivo(true);localStorage.setItem("vn_gps","1");localStorage.setItem("vn_zona",zonaSeleccionada);setTabRep("clientes");}} disabled={!zonaSeleccionada} style={{...S.btnG,fontSize:17,padding:"16px",borderRadius:14,opacity:zonaSeleccionada?1:.5}}>🚚 INICIAR REPARTO</button>
 </div>):(<div style={{background:"#052e16",border:"1px solid "+C.grn2,borderRadius:12,padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:10}}><div style={{fontSize:24}}>✅</div><div><div style={{color:C.grn3,fontWeight:700}}>Reparto activo - Zona {zonaSeleccionada}</div><div style={{color:C.text2,fontSize:12}}>GPS enviando ubicacion</div></div></div>)}
 </div>)}
 {tabRep==="clientes"&&(<PantallaClientes clientes={gpsActivo&&zonaSeleccionada?clientes.filter(c=>c.zona===zonaSeleccionada&&c.activo!==false):clientes} productos={productos} pedidos={pedidos} cobros={cobros} preciosEspeciales={preciosEspeciales} repId={repId} onActualizar={onActualizar} puedeEditar={false} onNuevoCliente={()=>setModalNC(true)}/>)}
