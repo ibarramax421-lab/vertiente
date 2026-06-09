@@ -1,5 +1,5 @@
 
-<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><meta name="apple-mobile-web-app-title" content="Vertiente Natural"/><meta name="theme-color" content="#030d1a"/><link rel="apple-touch-icon" sizes="180x180" href="logo.png"/><link rel="icon" href="logo.png"/><link rel="manifest" href="manifest.json"/><title>Vertiente Natural</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://unpkg.com/react@18/umd/react.production.min.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script><style>*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}body{margin:0;padding:0;background:#030d1a;font-family:-apple-system,sans-serif;color:#e0f0ff;overscroll-behavior:none;touch-action:pan-y;}input,select,textarea{font-family:inherit;}select option{background:#031a0f;color:#e0f0ff;}.leaflet-container{font-family:-apple-system,sans-serif;}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}</style></head><body><div id="root"></div><script type="text/babel">
+﻿<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><meta name="apple-mobile-web-app-title" content="Vertiente Natural"/><meta name="theme-color" content="#030d1a"/><link rel="apple-touch-icon" sizes="180x180" href="logo.png"/><link rel="icon" href="logo.png"/><link rel="manifest" href="manifest.json"/><title>Vertiente Natural</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://unpkg.com/react@18/umd/react.production.min.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script><style>*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}body{margin:0;padding:0;background:#030d1a;font-family:-apple-system,sans-serif;color:#e0f0ff;overscroll-behavior:none;touch-action:pan-y;}input,select,textarea{font-family:inherit;}select option{background:#031a0f;color:#e0f0ff;}.leaflet-container{font-family:-apple-system,sans-serif;}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}</style></head><body><div id="root"></div><script type="text/babel">
 const {useState,useMemo,useEffect,useRef,useCallback}=React;
 const SUPA_URL="https://hscbupttqtoemdrlewcv.supabase.co";
 const SUPA_KEY="sb_publishable_Bc-ry-rPe7ev6PoEx7xhyA_TXSgqvIN";
@@ -154,46 +154,66 @@ return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 {cf.map(c=>{const d=c.saldo<0,f=c.saldo>0;const tienePreEsp=preciosEspeciales.some(x=>Number(x.clienteId||x.clienteid||0)===c.id);const inactivo=c.activo===false;const pedHoy=pedidos.filter(p=>p.clienteId===c.id&&p.fecha===today());const visitadoHoy=pedHoy.length>0;return(<div key={c.id} onClick={()=>setClienteVer(c)} style={{background:C.card,borderRadius:13,padding:"14px 15px",marginBottom:9,border:"1px solid "+(visitadoHoy?C.grn2:inactivo?"#991b1b":C.border),opacity:inactivo?0.6:1,cursor:"pointer"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>{c.foto_url&&<img src={c.foto_url} style={{width:48,height:48,borderRadius:8,objectFit:"cover",marginRight:10,flexShrink:0,border:"1px solid "+C.border}}/>}<div style={{flex:1,minWidth:0}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}><div style={{fontWeight:700,color:C.text,fontSize:15}}>{c.nombre}</div><span style={{background:C.bg3,color:C.acc3,border:"1px solid "+C.border2,borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:800}}>{c.zona}</span>{tienePreEsp&&<span style={{background:"#1c1003",color:C.warn,border:"1px solid #854d0e",borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:800}}>$ esp</span>}{visitadoHoy&&<span style={{background:"#052e16",color:C.grn3,border:"1px solid "+C.grn2,borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:800}}>✓ Visitado</span>}</div><div style={{color:C.text2,fontSize:12}}>{c.direccion}</div>{c.lat&&<div style={{color:C.acc3,fontSize:10,marginTop:2}}>GPS ok</div>}{(c.bidones||0)>0&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>Bidones: {c.bidones}</div>}</div><div style={{textAlign:"right",flexShrink:0,marginLeft:12}}><div style={{fontWeight:900,fontSize:22,lineHeight:1,color:d?C.err:f?C.grn3:C.text2}}>{d?"-":f?"+":""}{fmt(c.saldo)}</div><div style={{fontSize:10,color:C.text2}}>{d?"DEBE":f?"A FAVOR":"AL DIA"}</div></div></div></div>);})}
 </div>);}
 
-function CerrarDiaModal({cobros,pedidos,clientes,productos,bidonesDevRep,setBidonesDevRep,cierreMsg,cerrandoDia,onCerrar,onConfirmar}){
+function CerrarDiaModal({cobros,pedidos,clientes,productos,onCerrar,onConfirmar}){
+const [bidonesRec,setBidonesRec]=useState("");
+const [msg,setMsg]=useState("");
+const [guardando,setGuardando]=useState(false);
 const cobHoy=cobros.filter(c=>c.fecha===today());
 const ef=cobHoy.filter(c=>c.metodoPago==="Efectivo").reduce((a,c)=>a+c.monto,0);
 const tr=cobHoy.filter(c=>c.metodoPago==="Transferencia"||c.metodoPago==="QR").reduce((a,c)=>a+c.monto,0);
 const ta=cobHoy.filter(c=>c.metodoPago==="Tarjeta").reduce((a,c)=>a+c.monto,0);
 const ot=cobHoy.filter(c=>c.metodoPago==="Otros").reduce((a,c)=>a+c.monto,0);
-const sinCob=pedidos.filter(p=>p.fecha===today()&&p.estado==="entregado"&&!p.pagado).reduce((a,p)=>a+p.total,0);
+const entHoy=pedidos.filter(p=>p.fecha===today()&&p.estado==="entregado");
+const sinCob=entHoy.filter(p=>!p.pagado).reduce((a,p)=>a+p.total,0);
 const tot=ef+tr+ta+ot;
-const entregasHoy=pedidos.filter(p=>p.fecha===today()&&p.estado==="entregado");
+async function confirmar(){
+setGuardando(true);setMsg("");
+try{
+const bid=Number(bidonesRec)||0;
+const {error}=await sb.from("cierres_dia").insert({
+fecha:today(),repartidorid:2,
+ventas_efectivo:ef,ventas_transferencia:tr,ventas_tarjeta:ta,ventas_otros:ot,
+ventas_credito:sinCob,total_ventas:tot+sinCob,
+bidones_devueltos:bid,cerrado_por_rep:true
+});
+if(error){setMsg("Error: "+error.message);}
+else{setMsg("Dia cerrado!");localStorage.removeItem("vn_gps");localStorage.removeItem("vn_zona");onConfirmar&&onConfirmar();}
+}catch(e){setMsg("Error: "+e.message);}
+setGuardando(false);}
 return(<div style={{position:"fixed",inset:0,background:C.bg,zIndex:3000,display:"flex",flexDirection:"column"}}>
-<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 18px",borderBottom:"1px solid "+C.border,paddingTop:"max(16px,env(safe-area-inset-top))",background:C.bg}}><span style={{fontWeight:700,fontSize:17,color:C.warn}}>🔒 Cerrar dia</span><button onClick={onCerrar} style={{background:C.bg2,border:"1px solid "+C.border,color:C.text2,cursor:"pointer",borderRadius:8,padding:"6px 14px",fontSize:13,fontWeight:700}}>✕</button></div>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 18px",borderBottom:"1px solid "+C.border,paddingTop:"max(16px,env(safe-area-inset-top))",background:C.bg}}>
+<span style={{fontWeight:700,fontSize:17,color:C.warn}}>🔒 Cerrar dia</span>
+<button onClick={onCerrar} style={{background:C.bg2,border:"1px solid "+C.border,color:C.text2,cursor:"pointer",borderRadius:8,padding:"6px 14px",fontSize:13,fontWeight:700}}>✕</button>
+</div>
 <div style={{flex:1,overflowY:"scroll",WebkitOverflowScrolling:"touch",padding:"16px 16px 80px"}}>
 <div style={{background:C.card,border:"1px solid "+C.border2,borderRadius:13,padding:16,marginBottom:14}}>
 <div style={{fontWeight:700,color:C.acc3,fontSize:15,marginBottom:12}}>Resumen del dia</div>
-<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Total entregas</span><span style={{color:C.text,fontWeight:700}}>{entregasHoy.length}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Total entregas</span><span style={{color:C.text,fontWeight:700}}>{entHoy.length}</span></div>
 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Efectivo</span><span style={{color:C.grn3,fontWeight:800,fontSize:15}}>{fmt(ef)}</span></div>
 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Transfer/QR</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(tr)}</span></div>
 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Tarjeta</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(ta)}</span></div>
-<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.err}}>Sin cobrar</span><span style={{color:C.err,fontWeight:700}}>{fmt(sinCob)}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.err}}>Sin cobrar (credito)</span><span style={{color:C.err,fontWeight:700}}>{fmt(sinCob)}</span></div>
 <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderTop:"2px solid "+C.border2,marginTop:4}}><span style={{color:C.text,fontWeight:700,fontSize:15}}>TOTAL COBRADO</span><span style={{color:C.grn3,fontWeight:900,fontSize:22}}>{fmt(tot)}</span></div>
 </div>
 <div style={{background:C.card,borderRadius:13,padding:16,marginBottom:14,border:"1px solid "+C.border}}>
-<div style={{fontWeight:700,color:C.text,fontSize:14,marginBottom:10}}>Detalle entregas ({entregasHoy.length})</div>
-{entregasHoy.length===0?<div style={{color:C.text2,fontSize:13}}>Sin entregas</div>:entregasHoy.map(p=>{const cl=clientes.find(c=>c.id===p.clienteId);const pr=productos.find(x=>x.id===p.productoId);return(<div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:"1px solid "+C.border}}><div><div style={{color:C.text,fontWeight:600,fontSize:13}}>{cl?.nombre}</div><div style={{color:C.text2,fontSize:11}}>{p.cantidad}x {pr?.name} · {cl?.zona}</div></div><div style={{textAlign:"right"}}><div style={{color:p.pagado?C.grn3:C.err,fontWeight:700}}>{fmt(p.total)}</div><div style={{fontSize:10,color:p.pagado?C.grn3:C.err}}>{p.pagado?"Cobrado":"Sin cobrar"}</div></div></div>);})}
+<div style={{fontWeight:700,color:C.text,fontSize:14,marginBottom:10}}>Detalle entregas</div>
+{entHoy.length===0?<div style={{color:C.text2,fontSize:13}}>Sin entregas</div>:entHoy.map(p=>{const cl=clientes.find(c=>c.id===p.clienteId);const pr=productos.find(x=>x.id===p.productoId);return(<div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:"1px solid "+C.border}}><div><div style={{color:C.text,fontWeight:600,fontSize:13}}>{cl?.nombre}</div><div style={{color:C.text2,fontSize:11}}>{p.cantidad}x {pr?.name} · {cl?.zona}</div></div><div style={{textAlign:"right"}}><div style={{color:p.pagado?C.grn3:C.err,fontWeight:700}}>{fmt(p.total)}</div><div style={{fontSize:10,color:p.pagado?C.grn3:C.err}}>{p.pagado?"Cobrado":"Sin cobrar"}</div></div></div>);})}
 </div>
-<div style={{background:C.card,borderRadius:13,padding:16,marginBottom:14,border:"1px solid #854d0e"}}><div style={{fontWeight:700,color:C.warn,fontSize:14,marginBottom:10}}>Bidones que vuelven al deposito</div><input type="number" min={0} style={S.inp} value={bidonesDevRep} onChange={e=>setBidonesDevRep(e.target.value)} placeholder="Cantidad"/></div>
-{cierreMsg&&<div style={{background:cierreMsg.startsWith("Error")?"#1c0505":"#052e16",border:"1px solid "+(cierreMsg.startsWith("Error")?"#991b1b":C.grn2),borderRadius:10,padding:"12px",marginBottom:14,color:cierreMsg.startsWith("Error")?C.err:C.grn3,fontWeight:700,fontSize:13,textAlign:"center"}}>{cierreMsg}</div>}
-<button onClick={onConfirmar} disabled={cerrandoDia} style={{...S.btnG,fontSize:17,padding:"16px"}}>{cerrandoDia?"Cerrando...":"Confirmar cierre del dia"}</button>
+<div style={{background:C.card,borderRadius:13,padding:16,marginBottom:14,border:"1px solid #854d0e"}}>
+<div style={{fontWeight:700,color:C.warn,fontSize:14,marginBottom:10}}>Bidones vacios que recibis</div>
+<input type="number" min={0} style={S.inp} value={bidonesRec} onChange={e=>setBidonesRec(e.target.value)} placeholder="Cantidad total del dia"/>
+</div>
+{msg&&<div style={{background:msg.startsWith("Error")?"#1c0505":"#052e16",border:"1px solid "+(msg.startsWith("Error")?"#991b1b":C.grn2),borderRadius:10,padding:"12px",marginBottom:14,color:msg.startsWith("Error")?C.err:C.grn3,fontWeight:700,fontSize:13,textAlign:"center"}}>{msg}</div>}
+{!msg&&<button onClick={confirmar} disabled={guardando} style={{...S.btnG,fontSize:17,padding:"16px"}}>{guardando?"Cerrando...":"Confirmar cierre del dia"}</button>}
 </div>
 </div>);}
 
 function PanelRepartidor({repartidores,productos,pedidos,clientes,cobros,preciosEspeciales,gastos,onCambiarRol,onActualizar}){
-const [repId,setRepId]=useState(()=>localStorage.getItem("vn_repId")||repartidores[0]?.id||"");
+const [repId,setRepId]=useState(()=>localStorage.getItem("vn_repId")||String(repartidores[0]?.id||""));
 const [zonaActual,setZonaActual]=useState(()=>localStorage.getItem("vn_zona")||"");
 const [gpsActivo,setGpsActivo]=useState(()=>localStorage.getItem("vn_gps")==="1");
 const [tabRep,setTabRep]=useState(()=>localStorage.getItem("vn_gps")==="1"?"clientes":"inicio");
-const [cerrarDiaModal,setCerrarDiaModal]=useState(false);
-const [bidonesDevRep,setBidonesDevRep]=useState("");
-const [cierreMsg,setCierreMsg]=useState("");
-const [cerrandoDia,setCerrandoDia]=useState(false);
+const [cerrarModal,setCerrarModal]=useState(false);
 const [gastoCategoria,setGastoCategoria]=useState("Combustible");
 const [gastoDesc,setGastoDesc]=useState("");
 const [gastoMonto,setGastoMonto]=useState("");
@@ -206,14 +226,13 @@ const [modalNC,setModalNC]=useState(false);
 const [fNC,setFNC]=useState({nombre:"",telefono:"",direccion:"",zona:"Z1"});
 const [guardandoNC,setGuardandoNC]=useState(false);
 const repNombre=repartidores.find(r=>r.id===Number(repId))?.name||"Repartidor";
-const pedidosHoy=pedidos.filter(p=>p.fecha===today());
-const entregadosHoy=pedidosHoy.filter(p=>p.estado==="entregado");
+const entregadosHoy=pedidos.filter(p=>p.fecha===today()&&p.estado==="entregado");
 const cobrosHoy=cobros.filter(c=>c.fecha===today());
 const totalCobradoHoy=cobrosHoy.reduce((a,c)=>a+c.monto,0);
 useEffect(()=>{if(repId)localStorage.setItem("vn_repId",repId);},[repId]);
 useEffect(()=>{if(!gpsActivo||!repId||!navigator.geolocation)return;const id=navigator.geolocation.watchPosition(async p=>{try{await sb.from("ubicaciones_repartidor").insert({repartidorId:Number(repId),lat:p.coords.latitude,lng:p.coords.longitude,fecha:today()});}catch(e){}},()=>{},{enableHighAccuracy:true,timeout:30000,maximumAge:10000});return()=>navigator.geolocation.clearWatch(id);},[gpsActivo,repId]);
 function iniciarReparto(zona){setZonaActual(zona);setGpsActivo(true);localStorage.setItem("vn_gps","1");localStorage.setItem("vn_zona",zona);setTabRep("clientes");}
-async function cerrarDia(){setCerrandoDia(true);setCierreMsg("");try{const cobHoy=cobros.filter(c=>c.fecha===today());const ef=cobHoy.filter(c=>c.metodoPago==="Efectivo").reduce((a,c)=>a+c.monto,0);const tr=cobHoy.filter(c=>c.metodoPago==="Transferencia"||c.metodoPago==="QR").reduce((a,c)=>a+c.monto,0);const ta=cobHoy.filter(c=>c.metodoPago==="Tarjeta").reduce((a,c)=>a+c.monto,0);const ot=cobHoy.filter(c=>c.metodoPago==="Otros").reduce((a,c)=>a+c.monto,0);const sinCob=pedidos.filter(p=>p.fecha===today()&&p.estado==="entregado"&&!p.pagado).reduce((a,p)=>a+p.total,0);const tot=ef+tr+ta+ot;await sb.from("cierres_dia").delete().eq("fecha",today()).eq("repartidorid",Number(repId));await sb.from("cierres_dia").insert({fecha:today(),repartidorid:Number(repId),ventas_efectivo:ef,ventas_transferencia:tr,ventas_tarjeta:ta,ventas_otros:ot,ventas_credito:sinCob,total_ventas:tot+sinCob,bidones_devueltos:Number(bidonesDevRep)||0,cerrado_por_rep:true});setGpsActivo(false);localStorage.removeItem("vn_gps");localStorage.removeItem("vn_zona");setCierreMsg("Dia cerrado correctamente!");onActualizar&&onActualizar();}catch(e){setCierreMsg("Error: "+e.message);}setCerrandoDia(false);}
+function onCierreFinalizado(){setCerrarModal(false);setGpsActivo(false);setTabRep("inicio");onActualizar&&onActualizar();}
 async function guardarGasto(){const m=Number(gastoMonto);if(!m||m<=0)return;setGastoGuardando(true);setGastoMsg("");try{await sb.from("gastos").insert({fecha:today(),categoria:gastoCategoria,descripcion:gastoDesc||"",monto:m,tipo:"diario"});onActualizar&&onActualizar();setGastoMonto("");setGastoDesc("");setGastoMsg("Guardado!");}catch(e){setGastoMsg("Error.");}setGastoGuardando(false);}
 async function guardarInsumo(){const m=Number(insumoMonto);if(!m||m<=0)return;setGastoGuardando(true);setInsumoMsg("");try{await sb.from("gastos").insert({fecha:today(),categoria:"Insumo",descripcion:insumoDesc||"",monto:m,tipo:"insumo"});onActualizar&&onActualizar();setInsumoMonto("");setInsumoDesc("");setInsumoMsg("Guardado!");}catch(e){setInsumoMsg("Error.");}setGastoGuardando(false);}
 async function guardarNuevoCliente(){if(!fNC.nombre.trim())return;setGuardandoNC(true);try{await sb.from("clientes").insert({nombre:fNC.nombre,telefono:fNC.telefono||"",direccion:fNC.direccion||"",zona:fNC.zona,ciudad:"Colon",provincia:"Buenos Aires",pais:"Argentina",saldo:0,bidones:0,activo:true});onActualizar&&onActualizar();setModalNC(false);setFNC({nombre:"",telefono:"",direccion:"",zona:"Z1"});}catch(e){}setGuardandoNC(false);}
@@ -223,7 +242,7 @@ const NAV_REP=[{id:"inicio",label:"Inicio",icon:IC.db},{id:"clientes",label:"Cli
 return(<div style={{minHeight:"100vh",background:C.bg}}>
 <div style={{background:"linear-gradient(90deg,"+C.bg2+","+C.bg3+")",borderBottom:"1px solid "+C.border,padding:"12px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:"max(14px,env(safe-area-inset-top))"}}>
 <div style={{display:"flex",alignItems:"center",gap:10}}><img src={LOGO} style={{width:32,height:32,objectFit:"contain",borderRadius:8}}/><div><div style={{fontWeight:800,fontSize:15,color:C.grn3}}>{repNombre}</div><div style={{fontSize:10,color:C.text2,display:"flex",alignItems:"center",gap:4}}>{gpsActivo&&<div style={{width:6,height:6,borderRadius:"50%",background:C.grn3,animation:"pulse 2s infinite"}}/>}{gpsActivo?"GPS activo"+(zonaActual?" - "+zonaActual:""):"Repartidor"}</div></div></div>
-<div style={{display:"flex",gap:6,alignItems:"center"}}>{gpsActivo&&<button onClick={()=>setCerrarDiaModal(true)} style={{background:"#1c0503",color:C.warn,border:"1px solid #854d0e",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontWeight:700,fontSize:12}}>🔒 Cerrar</button>}<button onClick={onCambiarRol} style={{background:C.bg2,border:"1px solid "+C.border,color:C.text3,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12}}>Cambiar</button></div>
+<div style={{display:"flex",gap:6}}>{gpsActivo&&<button onClick={()=>setCerrarModal(true)} style={{background:"#1c0503",color:C.warn,border:"1px solid #854d0e",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontWeight:700,fontSize:12}}>🔒 Cerrar</button>}<button onClick={onCambiarRol} style={{background:C.bg2,border:"1px solid "+C.border,color:C.text3,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12}}>Cambiar</button></div>
 </div>
 {tabRep==="inicio"&&(<div style={{padding:"16px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 {repartidores.length>1&&<div style={{marginBottom:14}}><select style={S.inp} value={repId} onChange={e=>setRepId(e.target.value)}>{repartidores.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></div>}
@@ -244,7 +263,7 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 </div>
 <div style={{background:C.card,borderRadius:13,padding:14,border:"1px solid "+C.border}}>
 <div style={{fontWeight:700,color:C.text,marginBottom:10,fontSize:14}}>Entregas de hoy ({entregadosHoy.length})</div>
-{entregadosHoy.length===0?<div style={{color:C.text2,fontSize:13,padding:"8px 0"}}>Sin entregas aun. Anda a Clientes para registrar.</div>:entregadosHoy.map(p=>{const cl=clientes.find(c=>c.id===p.clienteId),pr=productos.find(x=>x.id===p.productoId);return(<div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid "+C.border}}><div><div style={{color:C.text,fontWeight:600,fontSize:13}}>{cl?.nombre}</div><div style={{color:C.text2,fontSize:11}}>{p.cantidad}x {pr?.name}</div></div><div style={{textAlign:"right"}}><div style={{color:p.pagado?C.grn3:C.err,fontWeight:700}}>{fmt(p.total)}</div><div style={{fontSize:10,color:p.pagado?C.grn3:C.err}}>{p.pagado?"Cobrado":"Sin cobrar"}</div></div></div>);})}
+{entregadosHoy.length===0?<div style={{color:C.text2,fontSize:13,padding:"8px 0"}}>Sin entregas aun. Ir a Clientes para registrar.</div>:entregadosHoy.map(p=>{const cl=clientes.find(c=>c.id===p.clienteId),pr=productos.find(x=>x.id===p.productoId);return(<div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid "+C.border}}><div><div style={{color:C.text,fontWeight:600,fontSize:13}}>{cl?.nombre}</div><div style={{color:C.text2,fontSize:11}}>{p.cantidad}x {pr?.name}</div></div><div style={{textAlign:"right"}}><div style={{color:p.pagado?C.grn3:C.err,fontWeight:700}}>{fmt(p.total)}</div><div style={{fontSize:10,color:p.pagado?C.grn3:C.err}}>{p.pagado?"Cobrado":"Sin cobrar"}</div></div></div>);})}
 </div>
 </div>)}
 </div>)}
@@ -259,8 +278,9 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 {NAV_REP.map(n=>(<button key={n.id} onClick={()=>setTabRep(n.id)} style={{background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2,color:tabRep===n.id?C.acc3:C.text2,padding:"4px 8px"}}><I d={n.icon} z={18}/><span style={{fontSize:8,fontWeight:tabRep===n.id?700:500}}>{n.label}</span></button>))}
 </div>
 {modalNC&&(<div style={{position:"fixed",inset:0,background:C.bg,zIndex:2000,display:"flex",flexDirection:"column"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 18px",borderBottom:"1px solid "+C.border,paddingTop:"max(16px,env(safe-area-inset-top))"}}><span style={{fontWeight:700,fontSize:17,color:C.text}}>Nuevo cliente</span><button onClick={()=>setModalNC(false)} style={{background:C.bg2,border:"1px solid "+C.border,color:C.text2,cursor:"pointer",borderRadius:8,padding:"6px 14px",fontSize:13,fontWeight:700}}>✕ Cerrar</button></div><div style={{flex:1,overflowY:"scroll",WebkitOverflowScrolling:"touch",padding:"18px"}}><Fld label="Nombre"><input style={S.inp} value={fNC.nombre} onChange={e=>setFNC(f=>({...f,nombre:e.target.value}))} placeholder="Nombre"/></Fld><Fld label="Telefono"><input style={S.inp} type="tel" value={fNC.telefono} onChange={e=>setFNC(f=>({...f,telefono:e.target.value}))} placeholder="Tel"/></Fld><Fld label="Direccion"><input style={S.inp} value={fNC.direccion} onChange={e=>setFNC(f=>({...f,direccion:e.target.value}))} placeholder="Direccion"/></Fld><Fld label="Zona"><select style={S.inp} value={fNC.zona} onChange={e=>setFNC(f=>({...f,zona:e.target.value}))}>{ZONAS.map(z=><option key={z} value={z}>{z}</option>)}</select></Fld><button onClick={guardarNuevoCliente} disabled={guardandoNC} style={S.btnG}>{guardandoNC?"...":"Guardar"}</button></div></div>)}
-{cerrarDiaModal&&<CerrarDiaModal cobros={cobros} pedidos={pedidos} clientes={clientes} productos={productos} bidonesDevRep={bidonesDevRep} setBidonesDevRep={setBidonesDevRep} cierreMsg={cierreMsg} cerrandoDia={cerrandoDia} onCerrar={()=>setCerrarDiaModal(false)} onConfirmar={cerrarDia}/>}
+{cerrarModal&&<CerrarDiaModal cobros={cobros} pedidos={pedidos} clientes={clientes} productos={productos} onCerrar={()=>setCerrarModal(false)} onConfirmar={onCierreFinalizado}/>}
 </div>);}
+
 
 
 function App(){
@@ -408,7 +428,7 @@ return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 <div style={{background:C.card,borderRadius:13,padding:16,border:"1px solid "+C.grn2}}><div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:14}}>Saldos</div>{clientes.filter(c=>c.saldo!==0).sort((a,b)=>a.saldo-b.saldo).map(c=>(<div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid "+C.border}}><div><div style={{color:C.text,fontWeight:600,fontSize:13}}>{c.nombre}</div><div style={{color:C.text2,fontSize:11}}>{c.zona}</div></div><span style={{fontWeight:700,color:c.saldo<0?C.err:C.grn3}}>{c.saldo<0?"-":"+"}${fmt(c.saldo)}</span></div>))}</div>
 </div>);}
 if(tab==="cierre"){
-const cierreHoy=cierres.find(c=>c.fecha?.slice(0,10)===today());
+const cierreHoy=cierres.find(c=>c.fecha===today());
 return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 {cierreHoy?(<div>
 <div style={{background:C.card,border:"1px solid "+C.grn2,borderRadius:13,padding:16,marginBottom:14}}>
