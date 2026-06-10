@@ -56,7 +56,7 @@ const{error:e1}=await sb.from("pedidos").insert({clienteId:c.id,productoId:Numbe
 if(e1)throw e1;
 let nuevoSaldo=c.saldo;
 let nuevosBidones=(c.bidones||0)+Number(cant);
-if(pagado){await sb.from("cobros").insert({clienteId:c.id,monto:total,metodoPago:metodo,fecha:today(),notas:""});}
+if(pagado){await sb.from("cobros").insert({clienteid:c.id,monto:total,metodopago:metodo,fecha:today(),notas:""});}
 else{nuevoSaldo=(c.saldo||0)-total;}
 if(Number(devBid)>0){nuevosBidones=Math.max(0,nuevosBidones-Number(devBid));}
 await sb.from("clientes").update({saldo:nuevoSaldo,bidones:nuevosBidones}).eq("id",c.id);
@@ -70,7 +70,7 @@ setGuardando(true);setMsg("");
 try{
 const nuevoSaldo=(c.saldo||0)+m;
 await sb.from("clientes").update({saldo:nuevoSaldo}).eq("id",c.id);
-await sb.from("cobros").insert({clienteId:c.id,monto:m,metodoPago:cobMetodo,fecha:today(),notas:cobNotas||""});
+await sb.from("cobros").insert({clienteid:c.id,monto:m,metodopago:cobMetodo,fecha:today(),notas:cobNotas||""});
 setMsg("Cobro: "+fmt(m));setCobMonto("");setCobNotas("");
 onActualizar&&onActualizar();
 }catch(e){setMsg("Error.");}
