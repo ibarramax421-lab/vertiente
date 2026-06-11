@@ -311,7 +311,7 @@ const [cobros,setCobros]=useState([]);
 const [preciosEspeciales,setPreciosEspeciales]=useState([]);
 const [ubicaciones,setUbicaciones]=useState([]);
 const [recorrido,setRecorrido]=useState([]);
-const [gastos,setGastos]=useState([]);const [cierres,setCierres]=useState([]);
+const [gastos,setGastos]=useState([]);const [cierres,setCierres]=useState([]);const [cierres,setCierres]=useState([]);
 const [loading,setLoading]=useState(true);
 const [refreshing,setRefreshing]=useState(false);
 const [error,setError]=useState("");
@@ -352,7 +352,7 @@ setError("");
 try{
 const [rc,rp,rprod,rrep,rcob,rpe,rg]=await Promise.all([sb.from("clientes").select("*").order("zona"),sb.from("pedidos").select("*").order("id",{ascending:false}),sb.from("productos").select("*").order("id"),sb.from("repartidores").select("*").order("id"),sb.from("cobros").select("*").order("id",{ascending:false}),sb.from("precios_especiales").select("*"),sb.from("gastos").select("*").order("id",{ascending:false}),sb.from("cierres_dia").select("*").order("fecha",{ascending:false}).limit(30)]);
 if(rc.error)throw rc.error;
-if(rc.data)setClientes(rc.data);if(rp.data)setPedidos(rp.data);if(rprod.data)setProductos(rprod.data);if(rrep.data)setRepartidores(rrep.data);if(rcob.data)setCobros(rcob.data);if(rpe.data)setPreciosEspeciales(rpe.data);if(rg.data)setGastos(rg.data);
+if(rc.data)setClientes(rc.data);if(rp.data)setPedidos(rp.data);if(rprod.data)setProductos(rprod.data);if(rrep.data)setRepartidores(rrep.data);if(rcob.data)setCobros(rcob.data);if(rpe.data)setPreciosEspeciales(rpe.data);if(rg.data)setGastos(rg.data);const rc2=await sb.from("cierres_dia").select("*").order("fecha",{ascending:false}).limit(30);if(
 await cargarUbicaciones();
 }catch(e){setError("Error de conexion.");}
 setLoading(false);setRefreshing(false);}
