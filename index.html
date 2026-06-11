@@ -1,5 +1,4 @@
-
-﻿﻿﻿<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><meta name="apple-mobile-web-app-title" content="Vertiente Natural"/><meta name="theme-color" content="#030d1a"/><link rel="apple-touch-icon" sizes="180x180" href="logo.png"/><link rel="icon" href="logo.png"/><link rel="manifest" href="manifest.json"/><title>Vertiente Natural</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://unpkg.com/react@18/umd/react.production.min.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script><style>*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}body{margin:0;padding:0;background:#030d1a;font-family:-apple-system,sans-serif;color:#e0f0ff;overscroll-behavior:none;touch-action:pan-y;}input,select,textarea{font-family:inherit;}select option{background:#031a0f;color:#e0f0ff;}.leaflet-container{font-family:-apple-system,sans-serif;}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}</style></head><body><div id="root"></div><script type="text/babel">
+﻿﻿﻿﻿<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><meta name="apple-mobile-web-app-title" content="Vertiente Natural"/><meta name="theme-color" content="#030d1a"/><link rel="apple-touch-icon" sizes="180x180" href="logo.png"/><link rel="icon" href="logo.png"/><link rel="manifest" href="manifest.json"/><title>Vertiente Natural</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://unpkg.com/react@18/umd/react.production.min.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script><style>*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}body{margin:0;padding:0;background:#030d1a;font-family:-apple-system,sans-serif;color:#e0f0ff;overscroll-behavior:none;touch-action:pan-y;}input,select,textarea{font-family:inherit;}select option{background:#031a0f;color:#e0f0ff;}.leaflet-container{font-family:-apple-system,sans-serif;}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}</style></head><body><div id="root"></div><script type="text/babel">
 const {useState,useMemo,useEffect,useRef,useCallback}=React;
 const SUPA_URL="https://hscbupttqtoemdrlewcv.supabase.co";
 const SUPA_KEY="sb_publishable_Bc-ry-rPe7ev6PoEx7xhyA_TXSgqvIN";
@@ -400,13 +399,57 @@ if(tab==="clientes")return(<PantallaClientes clientes={clientes} productos={prod
 if(tab==="reporte"){
 const cobrosReporte=cobros.filter(c=>c.fecha===fechaReporte);
 const totalEfectivo=cobrosReporte.filter(c=>(c.metodoPago||c.metodopago)==="Efectivo").reduce((a,c)=>a+c.monto,0);
-const totalTransf=cobrosReporte.filter(c=>c.metodoPago==="Transferencia").reduce((a,c)=>a+c.monto,0);
-const totalQR=cobrosReporte.filter(c=>c.metodoPago==="QR").reduce((a,c)=>a+c.monto,0);
+const totalTransf=cobrosReporte.filter(c=>(c.metodoPago||c.metodopago)==="Transferencia"||(c.metodoPago||c.metodopago)==="QR").reduce((a,c)=>a+c.monto,0);
 const totalTarjeta=cobrosReporte.filter(c=>(c.metodoPago||c.metodopago)==="Tarjeta").reduce((a,c)=>a+c.monto,0);
 const totalOtros=cobrosReporte.filter(c=>(c.metodoPago||c.metodopago)==="Otros").reduce((a,c)=>a+c.monto,0);
 const totalCobrado=cobrosReporte.reduce((a,c)=>a+c.monto,0);
-const sinCobrar=pedidos.filter(p=>p.fecha===fechaReporte&&p.estado==="entregado"&&!p.pagado).reduce((a,p)=>a+p.total,0);
-return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}><Fld label="Fecha"><input type="date" style={S.inp} value={fechaReporte} onChange={e=>setFechaReporte(e.target.value)}/></Fld><div style={{background:C.card,borderRadius:13,padding:16,marginBottom:14,border:"1px solid "+C.grn2}}><div style={{fontWeight:700,color:C.grn3,marginBottom:12,fontSize:14}}>Por metodo de pago</div><div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Efectivo</span><span style={{color:C.grn3,fontWeight:800,fontSize:16}}>{fmt(totalEfectivo)}</span></div><div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Transferencia</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(totalTransf)}</span></div><div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>QR</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(totalQR)}</span></div><div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Tarjeta</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(totalTarjeta)}</span></div><div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Otros</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(totalOtros)}</span></div><div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.err}}>Sin cobrar</span><span style={{color:C.err,fontWeight:700}}>{fmt(sinCobrar)}</span></div><div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",marginTop:4,borderTop:"2px solid "+C.grn2}}><span style={{color:C.text,fontWeight:700,fontSize:15}}>TOTAL COBRADO</span><span style={{color:C.grn3,fontWeight:900,fontSize:22}}>{fmt(totalCobrado)}</span></div></div><div style={{background:C.card,borderRadius:13,padding:16,border:"1px solid "+C.border}}><div style={{fontWeight:700,color:C.text,marginBottom:12,fontSize:14}}>Cobros por cliente</div>{cobrosReporte.length===0?<div style={{color:C.text2,fontSize:13}}>Sin cobros</div>:cobrosReporte.map((co,i)=>{const cl=clientes.find(c=>c.id===co.clienteId);return(<div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid "+C.border}}><div><div style={{color:C.text,fontWeight:600,fontSize:13}}>{cl?.nombre||"Cliente"}</div><div style={{color:C.text2,fontSize:11}}>{co.metodoPago}{co.notas?" - "+co.notas:""}</div></div><div style={{color:C.grn3,fontWeight:700}}>{fmt(co.monto)}</div></div>);})}</div></div>);}
+const pedidosReporte=pedidos.filter(p=>p.fecha===fechaReporte&&p.estado==="entregado");
+const sinCobrar=pedidosReporte.filter(p=>!p.pagado).reduce((a,p)=>a+p.total,0);
+const totalVentas=pedidosReporte.reduce((a,p)=>a+p.total,0);
+const totalBidonesEnt=pedidosReporte.reduce((a,p)=>a+p.cantidad,0);
+async function anularEntrega(p){
+if(!window.confirm("Anular entrega de "+clientes.find(c=>c.id===p.clienteId)?.nombre+"?"))return;
+try{
+await sb.from("pedidos").delete().eq("id",p.id);
+const cl=clientes.find(c=>c.id===p.clienteId);
+if(cl){
+const nuevoSaldo=p.pagado?(cl.saldo||0)-p.total:(cl.saldo||0)+p.total;
+const nuevosBidones=Math.max(0,(cl.bidones||0)-p.cantidad);
+await sb.from("clientes").update({saldo:nuevoSaldo,bidones:nuevosBidones}).eq("id",p.clienteId);
+}
+await cargarDatos(true);
+}catch(e){alert("Error al anular");}}
+return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
+<Fld label="Fecha"><input type="date" style={S.inp} value={fechaReporte} onChange={e=>setFechaReporte(e.target.value)}/></Fld>
+<div style={{background:C.card,borderRadius:13,padding:16,marginBottom:14,border:"1px solid "+C.grn2}}>
+<div style={{fontWeight:700,color:C.grn3,marginBottom:12,fontSize:14}}>Resumen - {fechaReporte}</div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Total entregas</span><span style={{color:C.text,fontWeight:700}}>{pedidosReporte.length}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Bidones entregados</span><span style={{color:C.warn,fontWeight:700}}>{totalBidonesEnt}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Efectivo</span><span style={{color:C.grn3,fontWeight:800,fontSize:15}}>{fmt(totalEfectivo)}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Transfer/QR</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(totalTransf)}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Tarjeta</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(totalTarjeta)}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.err}}>Sin cobrar (credito)</span><span style={{color:C.err,fontWeight:700}}>{fmt(sinCobrar)}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderTop:"2px solid "+C.grn2,marginTop:4}}><span style={{color:C.text,fontWeight:700,fontSize:15}}>TOTAL VENTAS</span><span style={{color:C.grn3,fontWeight:900,fontSize:20}}>{fmt(totalVentas)}</span></div>
+</div>
+<div style={{background:C.card,borderRadius:13,padding:16,marginBottom:14,border:"1px solid "+C.border}}>
+<div style={{fontWeight:700,color:C.text,marginBottom:12,fontSize:14}}>Detalle de entregas ({pedidosReporte.length})</div>
+{pedidosReporte.length===0?<div style={{color:C.text2,fontSize:13}}>Sin entregas este dia</div>:pedidosReporte.map(p=>{
+const cl=clientes.find(c=>c.id===p.clienteId);
+const pr=productos.find(x=>x.id===p.productoId);
+const cobHoy=cobros.find(c=>c.clienteid===p.clienteId&&c.fecha===fechaReporte);
+const metodo=cobHoy?(cobHoy.metodopago||cobHoy.metodoPago):"";
+return(<div key={p.id} style={{background:C.bg2,borderRadius:10,padding:"11px 13px",marginBottom:8,border:"1px solid "+(p.pagado?C.grn2:"#991b1b")}}>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+<div><div style={{color:C.text,fontWeight:700,fontSize:14}}>{cl?.nombre}</div><div style={{color:C.text2,fontSize:11}}>{cl?.zona} · {cl?.direccion}</div></div>
+<div style={{textAlign:"right"}}><div style={{color:p.pagado?C.grn3:C.err,fontWeight:900,fontSize:16}}>{fmt(p.total)}</div></div>
+</div>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+<div style={{fontSize:12,color:C.text3}}>{p.cantidad}x {pr?.name} · {p.pagado?(metodo||"Cobrado"):"Sin cobrar"}</div>
+<button onClick={()=>anularEntrega(p)} style={{background:"#1c0505",color:C.err,border:"1px solid #991b1b",borderRadius:6,padding:"5px 10px",cursor:"pointer",fontSize:11,fontWeight:700}}>Anular</button>
+</div>
+</div>);})}
+</div>
+</div>);}
 if(tab==="gastos"){
 const gastosHoy=gastos.filter(g=>g.fecha===today());
 const totalDiario=gastosHoy.filter(g=>g.tipo==="diario").reduce((a,g)=>a+Number(g.monto),0);
