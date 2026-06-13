@@ -442,7 +442,7 @@ try{
 const [rc,rp,rprod,rrep,rcob,rpe,rg,rci]=await Promise.all([sb.from("clientes").select("*").order("zona"),sb.from("pedidos").select("*").order("id",{ascending:false}),sb.from("productos").select("*").order("id"),sb.from("repartidores").select("*").order("id"),sb.from("cobros").select("*").order("id",{ascending:false}),sb.from("precios_especiales").select("*"),sb.from("gastos").select("*").order("id",{ascending:false}),sb.from("cierres_dia").select("*").order("fecha",{ascending:false}).limit(30)]);
 if(rc.error)throw rc.error;
 if(rc.data)setClientes(rc.data);if(rp.data)setPedidos(rp.data);if(rprod.data)setProductos(rprod.data);if(rrep.data)setRepartidores(rrep.data);if(rcob.data)setCobros(rcob.data);if(rpe.data)setPreciosEspeciales(rpe.data);if(rg.data)setGastos(rg.data);
-try{const rc2=await sb.from("cierres_dia").select("*").order("fecha",{ascending:false}).limit(30);if(rci.data)setCierres(rci.data);}catch(e){}
+if(rci&&rci.data)setCierres(rci.data);
 await cargarUbicaciones();
 }catch(e){setError("Error de conexion.");}
 setLoading(false);setRefreshing(false);}
@@ -505,7 +505,7 @@ const cl=clientes.find(c=>c.id===p.clienteId);
 if(cl){
 const nuevoSaldo=p.pagado?(cl.saldo||0)-p.total:(cl.saldo||0)+p.total;
 const nuevosBidones=Math.max(0,(cl.bidones||0)-p.cantidad);
-await sb.from("clientes").update({saldo:nuevoSaldo,bidones:nuevosBidones}).eq("id",c.id);
+await sb.from("clientes").update({saldo:nuevoSaldo,bidones:nuevosBidones}).eq("id",p.clienteId);
 }
 await cargarDatos(true);
 }catch(e){alert("Error al anular");}}
