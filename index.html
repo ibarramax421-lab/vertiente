@@ -505,7 +505,7 @@ const cl=clientes.find(c=>c.id===p.clienteId);
 if(cl){
 const nuevoSaldo=p.pagado?(cl.saldo||0)-p.total:(cl.saldo||0)+p.total;
 const nuevosBidones=Math.max(0,(cl.bidones||0)-p.cantidad);
-await sb.from("clientes").update({saldo:nuevoSaldo,bidones:nuevosBidones}).eq("id",p.clienteId);
+await sb.from("clientes").update({saldo:nuevoSaldo,bidones:nuevosBidones}).eq("id",c.id);
 }
 await cargarDatos(true);
 }catch(e){alert("Error al anular");}}
