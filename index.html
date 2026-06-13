@@ -448,6 +448,7 @@ await cargarUbicaciones();
 setLoading(false);setRefreshing(false);}
 useEffect(()=>{
 cargarDatos();
+sb.from("cierres_dia").select("*").order("fecha",{ascending:false}).limit(30).then(r=>{if(r.data)setCierres(r.data);});
 const ch=sb.channel("c").on("postgres_changes",{event:"*",schema:"public",table:"clientes"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"pedidos"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"cobros"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"ubicaciones_repartidor"},()=>cargarUbicaciones()).subscribe();
 const intervalo=setInterval(cargarUbicaciones,60000);
 return()=>{sb.removeChannel(ch);clearInterval(intervalo);};},[]);
