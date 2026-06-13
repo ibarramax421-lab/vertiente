@@ -1,5 +1,5 @@
 
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><meta name="apple-mobile-web-app-title" content="Vertiente Natural"/><meta name="theme-color" content="#030d1a"/><link rel="apple-touch-icon" sizes="180x180" href="logo.png"/><link rel="icon" href="logo.png"/><link rel="manifest" href="manifest.json"/><title>Vertiente Natural</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://unpkg.com/react@18/umd/react.production.min.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script><style>*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}body{margin:0;padding:0;background:#030d1a;font-family:-apple-system,sans-serif;color:#e0f0ff;overscroll-behavior:none;touch-action:pan-y;}input,select,textarea{font-family:inherit;}select option{background:#031a0f;color:#e0f0ff;}.leaflet-container{font-family:-apple-system,sans-serif;}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}</style></head><body><div id="root"></div><script type="text/babel">
+﻿﻿﻿﻿﻿<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><meta name="apple-mobile-web-app-title" content="Vertiente Natural"/><meta name="theme-color" content="#030d1a"/><link rel="apple-touch-icon" sizes="180x180" href="logo.png"/><link rel="icon" href="logo.png"/><link rel="manifest" href="manifest.json"/><title>Vertiente Natural</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://unpkg.com/react@18/umd/react.production.min.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script><style>*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}body{margin:0;padding:0;background:#030d1a;font-family:-apple-system,sans-serif;color:#e0f0ff;overscroll-behavior:none;touch-action:pan-y;}input,select,textarea{font-family:inherit;}select option{background:#031a0f;color:#e0f0ff;}.leaflet-container{font-family:-apple-system,sans-serif;}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}</style></head><body><div id="root"></div><script type="text/babel">
 const {useState,useMemo,useEffect,useRef,useCallback}=React;
 const SUPA_URL="https://hscbupttqtoemdrlewcv.supabase.co";
 const SUPA_KEY="sb_publishable_Bc-ry-rPe7ev6PoEx7xhyA_TXSgqvIN";
@@ -154,15 +154,168 @@ return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 {cf.map(c=>{const d=c.saldo<0,f=c.saldo>0;const tienePreEsp=preciosEspeciales.some(x=>Number(x.clienteId||x.clienteid||0)===c.id);const inactivo=c.activo===false;const pedHoy=pedidos.filter(p=>p.clienteId===c.id&&p.fecha===today());const visitadoHoy=pedHoy.length>0;return(<div key={c.id} onClick={()=>setClienteVer(c)} style={{background:C.card,borderRadius:13,padding:"14px 15px",marginBottom:9,border:"1px solid "+(visitadoHoy?C.grn2:inactivo?"#991b1b":C.border),opacity:inactivo?0.6:1,cursor:"pointer"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>{c.foto_url&&<img src={c.foto_url} style={{width:48,height:48,borderRadius:8,objectFit:"cover",marginRight:10,flexShrink:0,border:"1px solid "+C.border}}/>}<div style={{flex:1,minWidth:0}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}><div style={{fontWeight:700,color:C.text,fontSize:15}}>{c.nombre}</div><span style={{background:C.bg3,color:C.acc3,border:"1px solid "+C.border2,borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:800}}>{c.zona}</span>{tienePreEsp&&<span style={{background:"#1c1003",color:C.warn,border:"1px solid #854d0e",borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:800}}>$ esp</span>}{visitadoHoy&&<span style={{background:"#052e16",color:C.grn3,border:"1px solid "+C.grn2,borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:800}}>✓ Visitado</span>}</div><div style={{color:C.text2,fontSize:12}}>{c.direccion}</div>{c.lat&&<div style={{color:C.acc3,fontSize:10,marginTop:2}}>GPS ok</div>}{(c.bidones||0)>0&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>Bidones: {c.bidones}</div>}</div><div style={{textAlign:"right",flexShrink:0,marginLeft:12}}><div style={{fontWeight:900,fontSize:22,lineHeight:1,color:d?C.err:f?C.grn3:C.text2}}>{d?"-":f?"+":""}{fmt(c.saldo)}</div><div style={{fontSize:10,color:C.text2}}>{d?"DEBE":f?"A FAVOR":"AL DIA"}</div></div></div></div>);})}
 </div>);}
 
+function CerrarDiaModal({cobros,pedidos,clientes,productos,repId,onCerrar,onConfirmar}){
+const [bidonesRec,setBidonesRec]=useState("");
+const [msg,setMsg]=useState("");
+const [guardando,setGuardando]=useState(false);
+const hoy=today();
+const cobHoy=cobros.filter(c=>c.fecha===hoy);
+const ef=cobHoy.filter(c=>(c.metodoPago||c.metodopago)==="Efectivo").reduce((a,c)=>a+c.monto,0);
+const tr=cobHoy.filter(c=>(c.metodoPago||c.metodopago)==="Transferencia"||(c.metodoPago||c.metodopago)==="QR").reduce((a,c)=>a+c.monto,0);
+const ta=cobHoy.filter(c=>(c.metodoPago||c.metodopago)==="Tarjeta").reduce((a,c)=>a+c.monto,0);
+const ot=cobHoy.filter(c=>(c.metodoPago||c.metodopago)==="Otros").reduce((a,c)=>a+c.monto,0);
+const entHoy=pedidos.filter(p=>p.fecha===hoy&&p.estado==="entregado");
+const sinCob=entHoy.filter(p=>!p.pagado).reduce((a,p)=>a+p.total,0);
+const tot=ef+tr+ta+ot;
+async function confirmar(){
+setGuardando(true);setMsg("");
+try{
+await sb.from("cierres_dia").delete().eq("fecha",hoy).eq("repartidorid",Number(repId));
+const{error}=await sb.from("cierres_dia").insert({fecha:hoy,repartidorid:Number(repId),ventas_efectivo:ef,ventas_transferencia:tr,ventas_tarjeta:ta,ventas_otros:ot,ventas_credito:sinCob,total_ventas:tot+sinCob,bidones_devueltos:Number(bidonesRec)||0,cerrado_por_rep:true});
+if(error)throw error;
+localStorage.removeItem("vn_gps");
+setMsg("Dia cerrado!");
+setTimeout(()=>onConfirmar&&onConfirmar(),1500);
+}catch(e){setMsg("Error: "+e.message);}
+setGuardando(false);
+}
+return(
+<div style={{position:"fixed",inset:0,background:C.bg,zIndex:3000,display:"flex",flexDirection:"column"}}>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 18px",borderBottom:"1px solid "+C.border,paddingTop:"max(16px,env(safe-area-inset-top))",background:C.bg}}>
+<span style={{fontWeight:700,fontSize:17,color:C.warn}}>Cerrar dia - {hoy}</span>
+<button onClick={onCerrar} style={{background:C.bg2,border:"1px solid "+C.border,color:C.text2,cursor:"pointer",borderRadius:8,padding:"6px 14px",fontSize:13,fontWeight:700}}>X</button>
+</div>
+<div style={{flex:1,overflowY:"scroll",WebkitOverflowScrolling:"touch",padding:"16px 16px 80px"}}>
+<div style={{background:C.card,border:"1px solid "+C.border2,borderRadius:13,padding:16,marginBottom:14}}>
+<div style={{fontWeight:700,color:C.acc3,fontSize:15,marginBottom:12}}>Resumen - {hoy}</div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Entregas</span><span style={{color:C.text,fontWeight:700}}>{entHoy.length}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Efectivo</span><span style={{color:C.grn3,fontWeight:800}}>{fmt(ef)}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Transfer/QR</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(tr)}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.err}}>Sin cobrar</span><span style={{color:C.err,fontWeight:700}}>{fmt(sinCob)}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderTop:"2px solid "+C.border2,marginTop:4}}><span style={{color:C.text,fontWeight:700,fontSize:15}}>TOTAL COBRADO</span><span style={{color:C.grn3,fontWeight:900,fontSize:22}}>{fmt(tot)}</span></div>
+</div>
+<div style={{background:C.card,borderRadius:13,padding:16,marginBottom:14,border:"1px solid "+C.border}}>
+<div style={{fontWeight:700,color:C.text,fontSize:14,marginBottom:10}}>Detalle</div>
+{entHoy.map(function(p){
+var cl=clientes.find(function(c){return c.id===p.clienteId;});
+var pr=productos.find(function(x){return x.id===p.productoId;});
+return(
+<div key={p.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}>
+<div><div style={{color:C.text,fontWeight:600,fontSize:13}}>{cl?cl.nombre:""}</div><div style={{color:C.text2,fontSize:11}}>{p.cantidad}x {pr?pr.name:""}</div></div>
+<div style={{textAlign:"right"}}><div style={{color:p.pagado?C.grn3:C.err,fontWeight:700}}>{fmt(p.total)}</div></div>
+</div>
+);
+})}
+</div>
+<div style={{background:C.card,borderRadius:13,padding:16,marginBottom:14,border:"1px solid #854d0e"}}>
+<div style={{fontWeight:700,color:C.warn,fontSize:14,marginBottom:10}}>Bidones vacios recibidos</div>
+<input type="number" min={0} style={S.inp} value={bidonesRec} onChange={function(e){setBidonesRec(e.target.value);}} placeholder="Cantidad"/>
+</div>
+{msg?(
+<div style={{background:msg.startsWith("Error")?"#1c0505":"#052e16",border:"1px solid "+(msg.startsWith("Error")?"#991b1b":C.grn2),borderRadius:10,padding:"14px",color:msg.startsWith("Error")?C.err:C.grn3,fontWeight:700,fontSize:15,textAlign:"center"}}>{msg}</div>
+):(
+<button onClick={confirmar} disabled={guardando} style={{...S.btnG,fontSize:17,padding:"16px"}}>{guardando?"Cerrando...":"Confirmar cierre del dia"}</button>
+)}
+</div>
+</div>
+);
+}
 
-function ListaClientes({busqueda,clientesFiltrados,cercanos,pedidos,hoy,clientes,entregadosHoy,totalCobradoHoy,onSeleccionar}){
-if(busqueda){
-return(<div>
+function PanelRepartidor({repartidores,productos,pedidos,clientes,cobros,preciosEspeciales,gastos,onCambiarRol,onActualizar}){
+var defaultRepId=localStorage.getItem("vn_repId")||(repartidores[0]?String(repartidores[0].id):"1");
+const [repId,setRepId]=useState(defaultRepId);
+const [enRuta,setEnRuta]=useState(function(){return localStorage.getItem("vn_gps")==="1";});
+const [cerrarModal,setCerrarModal]=useState(false);
+const [clienteAbierto,setClienteAbierto]=useState(null);
+const [busqueda,setBusqueda]=useState("");
+const [modalNC,setModalNC]=useState(false);
+const [fNC,setFNC]=useState({nombre:"",telefono:"",direccion:"",zona:"Z1"});
+const [guardandoNC,setGuardandoNC]=useState(false);
+const [userPos,setUserPos]=useState(null);
+const hoy=today();
+const repNombre=(repartidores.find(function(r){return r.id===Number(repId);})||{name:"Repartidor"}).name;
+const entregadosHoy=pedidos.filter(function(p){return p.fecha===hoy&&p.estado==="entregado";});
+const cobrosHoy=cobros.filter(function(c){return c.fecha===hoy;});
+const totalCobradoHoy=cobrosHoy.reduce(function(a,c){return a+c.monto;},0);
+useEffect(function(){if(repId)localStorage.setItem("vn_repId",repId);},[repId]);
+useEffect(function(){
+if(!navigator.geolocation)return;
+var id=navigator.geolocation.watchPosition(function(p){
+setUserPos({lat:p.coords.latitude,lng:p.coords.longitude});
+if(enRuta&&repId){sb.from("ubicaciones_repartidor").insert({repartidorId:Number(repId),lat:p.coords.latitude,lng:p.coords.longitude,fecha:hoy}).catch(function(){});}
+},function(){},{enableHighAccuracy:true,timeout:15000,maximumAge:5000});
+return function(){navigator.geolocation.clearWatch(id);};
+},[enRuta,repId]);
+const cercanos=useMemo(function(){
+if(!userPos)return[];
+return clientes.filter(function(c){return c.lat&&c.lng&&c.activo!==false;}).map(function(c){return Object.assign({},c,{dist:Math.round(distM(userPos.lat,userPos.lng,c.lat,c.lng))});}).sort(function(a,b){return a.dist-b.dist;}).slice(0,3);
+},[userPos,clientes]);
+const clientesFiltrados=useMemo(function(){
+if(!busqueda)return[];
+return clientes.filter(function(c){return c.activo!==false&&c.nombre.toLowerCase().includes(busqueda.toLowerCase());}).sort(function(a,b){return a.nombre.localeCompare(b.nombre);}).slice(0,20);
+},[busqueda,clientes]);
+function iniciarRuta(){setEnRuta(true);localStorage.setItem("vn_gps","1");}
+function onCierreFinalizado(){setCerrarModal(false);setEnRuta(false);localStorage.removeItem("vn_gps");onActualizar&&onActualizar();}
+async function guardarNuevoCliente(){
+if(!fNC.nombre.trim())return;
+setGuardandoNC(true);
+try{
+await sb.from("clientes").insert({nombre:fNC.nombre,telefono:fNC.telefono||"",direccion:fNC.direccion||"",zona:fNC.zona,ciudad:"Colon",provincia:"Buenos Aires",pais:"Argentina",saldo:0,bidones:0,activo:true});
+onActualizar&&onActualizar();
+setModalNC(false);
+setFNC({nombre:"",telefono:"",direccion:"",zona:"Z1"});
+}catch(e){}
+setGuardandoNC(false);
+}
+if(clienteAbierto){
+var clActual=clientes.find(function(c){return c.id===clienteAbierto.id;})||clienteAbierto;
+return <DetalleCliente c={clActual} productos={productos} cobros={cobros} pedidos={pedidos} preciosEspeciales={preciosEspeciales} repId={repId} onActualizar={function(){onActualizar&&onActualizar();}} puedeEditar={false} onEditar={null} onCerrar={function(){setClienteAbierto(null);}}/>;
+}
+return(
+<div style={{minHeight:"100vh",background:C.bg}}>
+{cerrarModal&&<CerrarDiaModal cobros={cobros} pedidos={pedidos} clientes={clientes} productos={productos} repId={repId} onCerrar={function(){setCerrarModal(false);}} onConfirmar={onCierreFinalizado}/>}
+{modalNC&&<div style={{position:"fixed",inset:0,background:C.bg,zIndex:2000,display:"flex",flexDirection:"column"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 18px",borderBottom:"1px solid "+C.border,paddingTop:"max(16px,env(safe-area-inset-top))"}}><span style={{fontWeight:700,fontSize:17,color:C.text}}>Nuevo cliente</span><button onClick={function(){setModalNC(false);}} style={{background:C.bg2,border:"1px solid "+C.border,color:C.text2,cursor:"pointer",borderRadius:8,padding:"6px 14px",fontSize:13,fontWeight:700}}>Cerrar</button></div><div style={{flex:1,overflowY:"scroll",WebkitOverflowScrolling:"touch",padding:"18px"}}><Fld label="Nombre"><input style={S.inp} value={fNC.nombre} onChange={function(e){setFNC(function(f){return Object.assign({},f,{nombre:e.target.value});});}} placeholder="Nombre"/></Fld><Fld label="Telefono"><input style={S.inp} type="tel" value={fNC.telefono} onChange={function(e){setFNC(function(f){return Object.assign({},f,{telefono:e.target.value});});}} placeholder="Tel"/></Fld><Fld label="Direccion"><input style={S.inp} value={fNC.direccion} onChange={function(e){setFNC(function(f){return Object.assign({},f,{direccion:e.target.value});});}} placeholder="Direccion"/></Fld><Fld label="Zona"><select style={S.inp} value={fNC.zona} onChange={function(e){setFNC(function(f){return Object.assign({},f,{zona:e.target.value});});}}>{ZONAS.map(function(z){return <option key={z} value={z}>{z}</option>;})}</select></Fld><button onClick={guardarNuevoCliente} disabled={guardandoNC} style={S.btnG}>{guardandoNC?"...":"Guardar"}</button></div></div>}
+<div style={{background:"linear-gradient(90deg,"+C.bg2+","+C.bg3+")",borderBottom:"1px solid "+C.border,padding:"12px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:"max(14px,env(safe-area-inset-top))"}}>
+<div style={{display:"flex",alignItems:"center",gap:10}}>
+<img src={LOGO} style={{width:32,height:32,objectFit:"contain",borderRadius:8}}/>
+<div>
+<div style={{fontWeight:800,fontSize:15,color:C.grn3}}>{repNombre}</div>
+<div style={{fontSize:10,color:C.text2}}>{hoy}</div>
+</div>
+</div>
+<div style={{display:"flex",gap:8,alignItems:"center"}}>
+<span style={{fontSize:12,color:C.grn3,fontWeight:700}}>{entregadosHoy.length} entregas</span>
+<button onClick={onCambiarRol} style={{background:C.bg2,border:"1px solid "+C.border,color:C.text3,borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:11}}>Cambiar</button>
+</div>
+</div>
+<div style={{padding:"14px 14px 40px",maxWidth:560,margin:"0 auto"}}>
+{repartidores.length>1&&(
+<div style={{marginBottom:12}}>
+<select style={{...S.inp,marginBottom:0}} value={repId} onChange={function(e){setRepId(e.target.value);}}>
+{repartidores.map(function(r){return <option key={r.id} value={r.id}>{r.name}</option>;})}
+</select>
+</div>
+)}
+<div style={{position:"relative",marginBottom:14}}>
+<span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:C.text2,fontSize:16}}>🔍</span>
+<input style={{...S.inp,paddingLeft:36,paddingRight:36}} placeholder="Buscar cliente..." value={busqueda} onChange={function(e){setBusqueda(e.target.value);}}/>
+{busqueda&&(
+<button onClick={function(){setBusqueda("");}} style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:C.text2,cursor:"pointer",fontSize:18,padding:4}}>x</button>
+)}
+</div>
+<div onClick={function(){if(!enRuta)iniciarRuta();else setCerrarModal(true);}} style={{marginBottom:16,borderRadius:12,overflow:"hidden",border:"1px solid "+C.border,cursor:"pointer",position:"relative",height:52}}>
+<div style={{position:"absolute",inset:0,background:enRuta?"#991b1b":"#16a34a",transition:"background .6s"}}/>
+<div style={{position:"absolute",top:"50%",transform:"translateY(-50%)",left:enRuta?"calc(100% - 46px)":"6px",fontSize:26,transition:"left .6s",zIndex:2}}>🚚</div>
+<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:800,fontSize:15,letterSpacing:1,zIndex:1}}>{enRuta?"TERMINAR RUTA":"INICIAR RUTA"}</div>
+</div>
+{busqueda?(
+<div>
 <div style={{color:C.text2,fontSize:12,marginBottom:8}}>{clientesFiltrados.length} resultados</div>
-{clientesFiltrados.map(c=>{
-const d=c.saldo<0,f=c.saldo>0;
-const visitado=pedidos.some(p=>p.clienteId===c.id&&p.fecha===hoy);
-return(<div key={c.id} onClick={()=>onSeleccionar(c)} style={{background:C.card,borderRadius:12,padding:"13px 14px",marginBottom:8,border:"1px solid "+(visitado?C.grn2:C.border),cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+{clientesFiltrados.map(function(c){
+var d=c.saldo<0,f=c.saldo>0;
+var visitado=pedidos.some(function(p){return p.clienteId===c.id&&p.fecha===hoy;});
+return(
+<div key={c.id} onClick={function(){setClienteAbierto(c);}} style={{background:C.card,borderRadius:12,padding:"13px 14px",marginBottom:8,border:"1px solid "+(visitado?C.grn2:C.border),cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
 <div>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
 <span style={{fontWeight:700,color:C.text,fontSize:14}}>{c.nombre}</span>
@@ -174,14 +327,20 @@ return(<div key={c.id} onClick={()=>onSeleccionar(c)} style={{background:C.card,
 <div style={{textAlign:"right"}}>
 <div style={{fontWeight:900,fontSize:18,color:d?C.err:f?C.grn3:C.text2}}>{d?"-":f?"+":""}{fmt(c.saldo)}</div>
 </div>
-</div>);})}
-</div>);}
-return(<div>
-{cercanos.length>0&&<div style={{marginBottom:6,color:C.text2,fontSize:11,fontWeight:700,letterSpacing:.5}}>CERCA DE VOS</div>}
-{cercanos.map(c=>{
-const d=c.saldo<0,f=c.saldo>0;
-const visitado=pedidos.some(p=>p.clienteId===c.id&&p.fecha===hoy);
-return(<div key={c.id} onClick={()=>onSeleccionar(c)} style={{background:C.card,borderRadius:13,padding:"14px 15px",marginBottom:10,border:"2px solid "+(visitado?C.grn2:C.border2),cursor:"pointer"}}>
+</div>
+);
+})}
+</div>
+):(
+<div>
+{cercanos.length>0&&(
+<div style={{marginBottom:6,color:C.text2,fontSize:11,fontWeight:700,letterSpacing:.5}}>CERCA DE VOS</div>
+)}
+{cercanos.map(function(c){
+var d=c.saldo<0,f=c.saldo>0;
+var visitado=pedidos.some(function(p){return p.clienteId===c.id&&p.fecha===hoy;});
+return(
+<div key={c.id} onClick={function(){setClienteAbierto(c);}} style={{background:C.card,borderRadius:13,padding:"14px 15px",marginBottom:10,border:"2px solid "+(visitado?C.grn2:C.border2),cursor:"pointer"}}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
 {c.foto_url&&<img src={c.foto_url} style={{width:52,height:52,borderRadius:8,objectFit:"cover",marginRight:10,flexShrink:0,border:"1px solid "+C.border}}/>}
 <div style={{flex:1,minWidth:0}}>
@@ -199,89 +358,35 @@ return(<div key={c.id} onClick={()=>onSeleccionar(c)} style={{background:C.card,
 <div style={{fontSize:10,color:C.text2}}>{d?"DEBE":f?"A FAVOR":"AL DIA"}</div>
 </div>
 </div>
-</div>);})}
-{entregadosHoy.length>0&&<div style={{marginTop:16,background:C.card,borderRadius:13,padding:14,border:"1px solid "+C.grn2}}>
+</div>
+);
+})}
+{entregadosHoy.length>0&&(
+<div style={{marginTop:16,background:C.card,borderRadius:13,padding:14,border:"1px solid "+C.grn2}}>
 <div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:13}}>Entregas de hoy ({entregadosHoy.length}) - {fmt(totalCobradoHoy)}</div>
-{entregadosHoy.map(p=>{const cl=clientes.find(c=>c.id===p.clienteId),pr=clientes.find(x=>x.id===p.productoId);return(<div key={p.id} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid "+C.border}}><div><div style={{color:C.text,fontWeight:600,fontSize:13}}>{cl?.nombre}</div></div><div style={{color:p.pagado?C.grn3:C.err,fontWeight:700}}>{fmt(p.total)}</div></div>);})}
-</div>}
-</div>);}
+{entregadosHoy.map(function(p){
+var cl=clientes.find(function(c){return c.id===p.clienteId;});
+var pr=productos.find(function(x){return x.id===p.productoId;});
+return(
+<div key={p.id} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid "+C.border}}>
+<div>
+<div style={{color:C.text,fontWeight:600,fontSize:13}}>{cl?cl.nombre:""}</div>
+<div style={{color:C.text2,fontSize:11}}>{p.cantidad}x {pr?pr.name:""}</div>
+</div>
+<div style={{color:p.pagado?C.grn3:C.err,fontWeight:700}}>{fmt(p.total)}</div>
+</div>
+);
+})}
+</div>
+)}
+</div>
+)}
+<button onClick={function(){setModalNC(true);}} style={{...S.btn,marginTop:12,background:C.bg3,border:"1px solid "+C.border,color:C.acc3,boxShadow:"none",fontSize:13}}>+ Nuevo cliente</button>
+</div>
+</div>
+);
+}
 
-function CerrarDiaModal({cobros,pedidos,clientes,productos,repId,onCerrar,onConfirmar}){
-const [bidonesRec,setBidonesRec]=useState("");
-const [msg,setMsg]=useState("");
-const [guardando,setGuardando]=useState(false);
-const hoy=today();
-const cobHoy=cobros.filter(c=>c.fecha===hoy);
-const ef=cobHoy.filter(c=>(c.metodoPago||c.metodopago)==="Efectivo").reduce((a,c)=>a+c.monto,0);
-const tr=cobHoy.filter(c=>(c.metodoPago||c.metodopago)==="Transferencia"||(c.metodoPago||c.metodopago)==="QR").reduce((a,c)=>a+c.monto,0);
-const ta=cobHoy.filter(c=>(c.metodoPago||c.metodopago)==="Tarjeta").reduce((a,c)=>a+c.monto,0);
-const ot=cobHoy.filter(c=>(c.metodoPago||c.metodopago)==="Otros").reduce((a,c)=>a+c.monto,0);
-const entHoy=pedidos.filter(p=>p.fecha===hoy&&p.estado==="entregado");
-const sinCob=entHoy.filter(p=>!p.pagado).reduce((a,p)=>a+p.total,0);
-const tot=ef+tr+ta+ot;
-async function confirmar(){setGuardando(true);setMsg("");try{await sb.from("cierres_dia").delete().eq("fecha",hoy).eq("repartidorid",Number(repId));const{error}=await sb.from("cierres_dia").insert({fecha:hoy,repartidorid:Number(repId),ventas_efectivo:ef,ventas_transferencia:tr,ventas_tarjeta:ta,ventas_otros:ot,ventas_credito:sinCob,total_ventas:tot+sinCob,bidones_devueltos:Number(bidonesRec)||0,cerrado_por_rep:true});if(error)throw error;localStorage.removeItem("vn_gps");setMsg("Dia cerrado!");setTimeout(()=>onConfirmar&&onConfirmar(),1500);}catch(e){setMsg("Error: "+e.message);}setGuardando(false);}
-return(<div style={{position:"fixed",inset:0,background:C.bg,zIndex:3000,display:"flex",flexDirection:"column"}}>
-<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 18px",borderBottom:"1px solid "+C.border,paddingTop:"max(16px,env(safe-area-inset-top))",background:C.bg}}><span style={{fontWeight:700,fontSize:17,color:C.warn}}>Cerrar dia - {hoy}</span><button onClick={onCerrar} style={{background:C.bg2,border:"1px solid "+C.border,color:C.text2,cursor:"pointer",borderRadius:8,padding:"6px 14px",fontSize:13,fontWeight:700}}>X</button></div>
-<div style={{flex:1,overflowY:"scroll",WebkitOverflowScrolling:"touch",padding:"16px 16px 80px"}}>
-<div style={{background:C.card,border:"1px solid "+C.border2,borderRadius:13,padding:16,marginBottom:14}}>
-<div style={{fontWeight:700,color:C.acc3,fontSize:15,marginBottom:12}}>Resumen - {hoy}</div>
-<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Entregas</span><span style={{color:C.text,fontWeight:700}}>{entHoy.length}</span></div>
-<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Efectivo</span><span style={{color:C.grn3,fontWeight:800,fontSize:15}}>{fmt(ef)}</span></div>
-<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Transfer/QR</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(tr)}</span></div>
-<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.err}}>Sin cobrar</span><span style={{color:C.err,fontWeight:700}}>{fmt(sinCob)}</span></div>
-<div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderTop:"2px solid "+C.border2,marginTop:4}}><span style={{color:C.text,fontWeight:700,fontSize:15}}>TOTAL COBRADO</span><span style={{color:C.grn3,fontWeight:900,fontSize:22}}>{fmt(tot)}</span></div>
-</div>
-<div style={{background:C.card,borderRadius:13,padding:16,marginBottom:14,border:"1px solid "+C.border}}>
-<div style={{fontWeight:700,color:C.text,fontSize:14,marginBottom:10}}>Detalle</div>
-{entHoy.map(p=>{const cl=clientes.find(c=>c.id===p.clienteId);const pr=productos.find(x=>x.id===p.productoId);return(<div key={p.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><div><div style={{color:C.text,fontWeight:600,fontSize:13}}>{cl?.nombre}</div><div style={{color:C.text2,fontSize:11}}>{p.cantidad}x {pr?.name}</div></div><div style={{textAlign:"right"}}><div style={{color:p.pagado?C.grn3:C.err,fontWeight:700}}>{fmt(p.total)}</div></div></div>);})}
-</div>
-<div style={{background:C.card,borderRadius:13,padding:16,marginBottom:14,border:"1px solid #854d0e"}}><div style={{fontWeight:700,color:C.warn,fontSize:14,marginBottom:10}}>Bidones vacios recibidos</div><input type="number" min={0} style={S.inp} value={bidonesRec} onChange={e=>setBidonesRec(e.target.value)} placeholder="Cantidad"/></div>
-{msg?<div style={{background:msg.startsWith("Error")?"#1c0505":"#052e16",border:"1px solid "+(msg.startsWith("Error")?"#991b1b":C.grn2),borderRadius:10,padding:"14px",color:msg.startsWith("Error")?C.err:C.grn3,fontWeight:700,fontSize:15,textAlign:"center"}}>{msg}</div>:<button onClick={confirmar} disabled={guardando} style={{...S.btnG,fontSize:17,padding:"16px"}}>{guardando?"Cerrando...":"Confirmar cierre del dia"}</button>}
-</div>
-</div>);}
-function PanelRepartidor({repartidores,productos,pedidos,clientes,cobros,preciosEspeciales,gastos,onCambiarRol,onActualizar}){
-const [repId,setRepId]=useState(()=>localStorage.getItem("vn_repId")||String(repartidores[0]?.id||"1"));
-const [enRuta,setEnRuta]=useState(()=>localStorage.getItem("vn_gps")==="1");
-const [cerrarModal,setCerrarModal]=useState(false);
-const [clienteAbierto,setClienteAbierto]=useState(null);
-const [busqueda,setBusqueda]=useState("");
-const [modalNC,setModalNC]=useState(false);
-const [fNC,setFNC]=useState({nombre:"",telefono:"",direccion:"",zona:"Z1"});
-const [guardandoNC,setGuardandoNC]=useState(false);
-const [userPos,setUserPos]=useState(null);
-const hoy=today();
-const repNombre=repartidores.find(r=>r.id===Number(repId))?.name||"Repartidor";
-const entregadosHoy=pedidos.filter(p=>p.fecha===hoy&&p.estado==="entregado");
-const cobrosHoy=cobros.filter(c=>c.fecha===hoy);
-const totalCobradoHoy=cobrosHoy.reduce((a,c)=>a+c.monto,0);
-useEffect(()=>{if(repId)localStorage.setItem("vn_repId",repId);},[repId]);
-useEffect(()=>{if(!navigator.geolocation)return;const id=navigator.geolocation.watchPosition(p=>{setUserPos({lat:p.coords.latitude,lng:p.coords.longitude});if(enRuta&&repId){sb.from("ubicaciones_repartidor").insert({repartidorId:Number(repId),lat:p.coords.latitude,lng:p.coords.longitude,fecha:hoy}).catch(()=>{});}},()=>{},{enableHighAccuracy:true,timeout:15000,maximumAge:5000});return()=>navigator.geolocation.clearWatch(id);},[enRuta,repId]);
-const cercanos=useMemo(()=>{if(!userPos)return[];return clientes.filter(c=>c.lat&&c.lng&&c.activo!==false).map(c=>({...c,dist:Math.round(distM(userPos.lat,userPos.lng,c.lat,c.lng))})).sort((a,b)=>a.dist-b.dist).slice(0,3);},[userPos,clientes]);
-const clientesFiltrados=useMemo(()=>{if(!busqueda)return[];return clientes.filter(c=>c.activo!==false&&c.nombre.toLowerCase().includes(busqueda.toLowerCase())).sort((a,b)=>a.nombre.localeCompare(b.nombre)).slice(0,20);},[busqueda,clientes]);
-function iniciarRuta(){setEnRuta(true);localStorage.setItem("vn_gps","1");}
-function onCierreFinalizado(){setCerrarModal(false);setEnRuta(false);localStorage.removeItem("vn_gps");onActualizar&&onActualizar();}
-async function guardarNuevoCliente(){if(!fNC.nombre.trim())return;setGuardandoNC(true);try{await sb.from("clientes").insert({nombre:fNC.nombre,telefono:fNC.telefono||"",direccion:fNC.direccion||"",zona:fNC.zona,ciudad:"Colon",provincia:"Buenos Aires",pais:"Argentina",saldo:0,bidones:0,activo:true});onActualizar&&onActualizar();setModalNC(false);setFNC({nombre:"",telefono:"",direccion:"",zona:"Z1"});}catch(e){}setGuardandoNC(false);}
-if(clienteAbierto){const cl=clientes.find(c=>c.id===clienteAbierto.id)||clienteAbierto;return <DetalleCliente c={cl} productos={productos} cobros={cobros} pedidos={pedidos} preciosEspeciales={preciosEspeciales} repId={repId} onActualizar={()=>{onActualizar&&onActualizar();}} puedeEditar={false} onEditar={null} onCerrar={()=>setClienteAbierto(null)}/>;}
-if(cerrarModal)return <CerrarDiaModal cobros={cobros} pedidos={pedidos} clientes={clientes} productos={productos} repId={repId} onCerrar={()=>setCerrarModal(false)} onConfirmar={onCierreFinalizado}/>;
-if(modalNC)return(<div style={{position:"fixed",inset:0,background:C.bg,zIndex:2000,display:"flex",flexDirection:"column"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 18px",borderBottom:"1px solid "+C.border,paddingTop:"max(16px,env(safe-area-inset-top))"}}><span style={{fontWeight:700,fontSize:17,color:C.text}}>Nuevo cliente</span><button onClick={()=>setModalNC(false)} style={{background:C.bg2,border:"1px solid "+C.border,color:C.text2,cursor:"pointer",borderRadius:8,padding:"6px 14px",fontSize:13,fontWeight:700}}>X Cerrar</button></div><div style={{flex:1,overflowY:"scroll",WebkitOverflowScrolling:"touch",padding:"18px"}}><Fld label="Nombre"><input style={S.inp} value={fNC.nombre} onChange={e=>setFNC(f=>({...f,nombre:e.target.value}))} placeholder="Nombre"/></Fld><Fld label="Telefono"><input style={S.inp} type="tel" value={fNC.telefono} onChange={e=>setFNC(f=>({...f,telefono:e.target.value}))} placeholder="Tel"/></Fld><Fld label="Direccion"><input style={S.inp} value={fNC.direccion} onChange={e=>setFNC(f=>({...f,direccion:e.target.value}))} placeholder="Direccion"/></Fld><Fld label="Zona"><select style={S.inp} value={fNC.zona} onChange={e=>setFNC(f=>({...f,zona:e.target.value}))}>{ZONAS.map(z=><option key={z} value={z}>{z}</option>)}</select></Fld><button onClick={guardarNuevoCliente} disabled={guardandoNC} style={S.btnG}>{guardandoNC?"...":"Guardar"}</button></div></div>);
-return(<div style={{minHeight:"100vh",background:C.bg}}>
-<div style={{background:"linear-gradient(90deg,"+C.bg2+","+C.bg3+")",borderBottom:"1px solid "+C.border,padding:"12px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:"max(14px,env(safe-area-inset-top))"}}>
-<div style={{display:"flex",alignItems:"center",gap:10}}><img src={LOGO} style={{width:32,height:32,objectFit:"contain",borderRadius:8}}/><div><div style={{fontWeight:800,fontSize:15,color:C.grn3}}>{repNombre}</div><div style={{fontSize:10,color:C.text2}}>{hoy}</div></div></div>
-<div style={{display:"flex",gap:8,alignItems:"center"}}><span style={{fontSize:12,color:C.grn3,fontWeight:700}}>{entregadosHoy.length} entregas</span><button onClick={onCambiarRol} style={{background:C.bg2,border:"1px solid "+C.border,color:C.text3,borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:11}}>Cambiar</button></div>
-</div>
-<div style={{padding:"14px 14px 40px",maxWidth:560,margin:"0 auto"}}>
-{repartidores.length>1&&<div style={{marginBottom:12}}><select style={{...S.inp,marginBottom:0}} value={repId} onChange={e=>setRepId(e.target.value)}>{repartidores.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></div>}
-<div style={{position:"relative",marginBottom:14}}><span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:C.text2,fontSize:16}}>🔍</span><input style={{...S.inp,paddingLeft:36,paddingRight:36}} placeholder="Buscar cliente..." value={busqueda} onChange={e=>setBusqueda(e.target.value)}/>{busqueda&&<button onClick={()=>setBusqueda("")} style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:C.text2,cursor:"pointer",fontSize:18,padding:4}}>x</button>}</div>
-<div onClick={()=>{if(!enRuta)iniciarRuta();else setCerrarModal(true);}} style={{marginBottom:16,borderRadius:12,overflow:"hidden",border:"1px solid "+C.border,cursor:"pointer",position:"relative",height:52}}>
-<div style={{position:"absolute",inset:0,background:enRuta?"#991b1b":"#16a34a",transition:"background .6s"}}/>
-<div style={{position:"absolute",top:"50%",transform:"translateY(-50%)",left:enRuta?"calc(100% - 46px)":"6px",fontSize:26,transition:"left .6s",zIndex:2}}>🚚</div>
-<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:800,fontSize:15,letterSpacing:1,zIndex:1}}>{enRuta?"TERMINAR RUTA":"INICIAR RUTA"}</div>
-</div>
-</div>
-<ListaClientes busqueda={busqueda} clientesFiltrados={clientesFiltrados} cercanos={cercanos} pedidos={pedidos} hoy={hoy} clientes={clientes} entregadosHoy={entregadosHoy} totalCobradoHoy={totalCobradoHoy} onSeleccionar={setClienteAbierto}/>
-<button onClick={()=>setModalNC(true)} style={{...S.btn,marginTop:12,background:C.bg3,border:"1px solid "+C.border,color:C.acc3,boxShadow:"none",fontSize:13}}>+ Nuevo cliente</button>
-</div>
-</div>);}
 
 
 function App(){
