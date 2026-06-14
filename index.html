@@ -122,6 +122,10 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 </div>)}
 {tabActual==="historial"&&(<div>
 <div style={{fontWeight:700,color:C.text,marginBottom:10}}>Historial ({historial.length} pedidos)</div>
+<div style={{background:C.card,borderRadius:10,padding:"12px 14px",marginBottom:12,border:"1px solid "+C.border2,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+<span style={{color:C.text3,fontSize:13}}>Total comprado historico</span>
+<span style={{color:C.grn3,fontWeight:900,fontSize:18}}>{fmt(historial.reduce((a,p)=>a+p.total,0))}</span>
+</div>
 {historial.length===0?<div style={{color:C.text2,fontSize:13}}>Sin pedidos</div>:historial.slice(0,30).map(p=>{const prr=productos.find(x=>x.id===p.productoId);return(<div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:C.bg2,borderRadius:8,padding:"9px 11px",marginBottom:6,border:"1px solid "+(p.pagado?C.grn2:"#991b1b")}}><div><div style={{color:C.text,fontSize:13,fontWeight:600}}>{p.cantidad}x {prr?.name}</div><div style={{color:C.text2,fontSize:11}}>{p.fecha}</div></div><div style={{textAlign:"right"}}><div style={{color:C.acc3,fontWeight:700}}>{fmt(p.total)}</div><Bdg color={p.pagado?"green":"red"}>{p.pagado?"Pagado":"Debe"}</Bdg></div></div>);})}
 <button onClick={compartirWhatsApp} style={{...S.btn,marginTop:14,background:C.bg3,border:"1px solid "+C.grn2,color:C.grn3,boxShadow:"none"}}>Compartir por WhatsApp</button>
 </div>)}
