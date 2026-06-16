@@ -401,6 +401,69 @@ return(
 
 
 
+function EditProductoModal({producto,onCerrar,onGuardado}){
+const esNuevo=!producto.id;
+const [name,setName]=useState(producto.name||"");
+const [price,setPrice]=useState(producto.price||"");
+const [existencia,setExistencia]=useState(producto.existencia||0);
+const [tipoEnvase,setTipoEnvase]=useState(producto.tipo_envase||"retornable");
+const [fotoUrl,setFotoUrl]=useState(producto.foto_url||"");
+const [subiendo,setSubiendo]=useState(false);
+const [guardando,setGuardando]=useState(false);
+const [msg,setMsg]=useState("");
+async function subirFoto(e){
+const file=e.target.files[0];
+if(!file)return;
+setSubiendo(true);
+try{
+const ext=file.name.split(".").pop();
+const path="productos/"+Date.now()+"."+ext;
+const{error}=await sb.storage.from("fotos").upload(path,file);
+if(error)throw error;
+const{data}=sb.storage.from("fotos").getPublicUrl(path);
+setFotoUrl(data.publicUrl);
+}catch(e){setMsg("Error al subir foto: "+e.message);}
+setSubiendo(false);}
+async function guardar(){
+if(!name.trim()||!price)return;
+setGuardando(true);setMsg("");
+try{
+const datos={name,price:Number(price),existencia:Number(existencia)||0,tipo_envase:tipoEnvase,foto_url:fotoUrl||null};
+if(esNuevo){await sb.from("productos").insert(datos);}
+else{await sb.from("productos").update(datos).eq("id",producto.id);}
+onGuardado&&onGuardado();
+onCerrar();
+}catch(e){setMsg("Error: "+e.message);}
+setGuardando(false);}
+return(
+<div style={{position:"fixed",inset:0,background:C.bg,zIndex:3000,display:"flex",flexDirection:"column"}}>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 18px",borderBottom:"1px solid "+C.border,paddingTop:"max(16px,env(safe-area-inset-top))"}}>
+<span style={{fontWeight:700,fontSize:17,color:C.text}}>{esNuevo?"Nuevo producto":"Editar producto"}</span>
+<button onClick={onCerrar} style={{background:C.bg2,border:"1px solid "+C.border,color:C.text2,cursor:"pointer",borderRadius:8,padding:"6px 14px",fontSize:13,fontWeight:700}}>Cerrar</button>
+</div>
+<div style={{flex:1,overflowY:"scroll",WebkitOverflowScrolling:"touch",padding:"18px"}}>
+<div style={{display:"flex",justifyContent:"center",marginBottom:16}}>
+{fotoUrl?<img src={fotoUrl} style={{width:100,height:100,borderRadius:14,objectFit:"cover",border:"1px solid "+C.border}}/>:<div style={{width:100,height:100,borderRadius:14,background:C.bg2,display:"flex",alignItems:"center",justifyContent:"center",fontSize:36}}>💧</div>}
+</div>
+<label style={{display:"block",textAlign:"center",marginBottom:18}}>
+<span style={{background:C.bg3,color:C.acc3,border:"1px solid "+C.border2,borderRadius:8,padding:"8px 16px",cursor:"pointer",fontSize:13,fontWeight:700,display:"inline-block"}}>{subiendo?"Subiendo...":"📷 Cambiar foto"}</span>
+<input type="file" accept="image/*" onChange={subirFoto} style={{display:"none"}} disabled={subiendo}/>
+</label>
+<Fld label="Nombre"><input style={S.inp} value={name} onChange={e=>setName(e.target.value)} placeholder="Ej: Bidon 20L"/></Fld>
+<Fld label="Precio"><input type="number" style={S.inp} value={price} onChange={e=>setPrice(e.target.value)} placeholder="0"/></Fld>
+<Fld label="Existencia (stock)"><input type="number" style={S.inp} value={existencia} onChange={e=>setExistencia(e.target.value)} placeholder="0"/></Fld>
+<Fld label="Tipo de envase">
+<div style={{display:"flex",gap:8}}>
+<button onClick={()=>setTipoEnvase("retornable")} style={{flex:1,padding:"10px",borderRadius:10,border:"1px solid "+(tipoEnvase==="retornable"?C.grn2:C.border),background:tipoEnvase==="retornable"?"#052e16":C.bg2,color:tipoEnvase==="retornable"?C.grn3:C.text2,cursor:"pointer",fontWeight:700,fontSize:13}}>Retornable</button>
+<button onClick={()=>setTipoEnvase("descartable")} style={{flex:1,padding:"10px",borderRadius:10,border:"1px solid "+(tipoEnvase==="descartable"?C.border2:C.border),background:tipoEnvase==="descartable"?C.bg3:C.bg2,color:tipoEnvase==="descartable"?C.acc3:C.text2,cursor:"pointer",fontWeight:700,fontSize:13}}>Descartable</button>
+</div>
+</Fld>
+{msg&&<div style={{color:C.err,fontSize:12,marginBottom:10}}>{msg}</div>}
+<button onClick={guardar} disabled={guardando} style={S.btnG}>{guardando?"Guardando...":"Guardar"}</button>
+</div>
+</div>
+);}
+
 function App(){
 const [rol,setRol]=useState(()=>localStorage.getItem("vn_rol")||null);
 const [tab,setTab]=useState("dashboard");
@@ -427,6 +490,7 @@ const [saving,setSaving]=useState(false);
 const [saveError,setSaveError]=useState("");
 const [fechaReporte,setFechaReporte]=useState(today());
 const [clienteHistorial,setClienteHistorial]=useState(null);
+const [editProd,setEditProd]=useState(null);
 const [gastoCategoria,setGastoCategoria]=useState("Combustible");
 const [gastoDesc,setGastoDesc]=useState("");
 const [gastoMonto,setGastoMonto]=useState("");
@@ -478,7 +542,8 @@ async function ajustarSaldo(){const m=Number(ajusteMonto);if(!m||!ajusteC)return
 async function guardarGasto(){const m=Number(gastoMonto);if(!m||m<=0)return;setGastoGuardando(true);setGastoMsg("");try{await sb.from("gastos").insert({fecha:today(),categoria:gastoCategoria,descripcion:gastoDesc||"",monto:m,tipo:"diario"});await cargarDatos();setGastoMonto("");setGastoDesc("");setGastoMsg("Guardado!");}catch(e){setGastoMsg("Error.");}setGastoGuardando(false);}
 async function guardarInsumo(){const m=Number(insumoMonto);if(!m||m<=0)return;setGastoGuardando(true);setInsumoMsg("");try{await sb.from("gastos").insert({fecha:today(),categoria:"Insumo",descripcion:insumoDesc||"",monto:m,tipo:"insumo"});await cargarDatos();setInsumoMonto("");setInsumoDesc("");setInsumoMsg("Guardado!");}catch(e){setInsumoMsg("Error.");}setGastoGuardando(false);}
 const stats=useMemo(()=>({cobrado:pedidos.filter(p=>p.pagado).reduce((a,p)=>a+p.total,0),porCobrar:pedidos.filter(p=>!p.pagado&&p.estado==="entregado").reduce((a,p)=>a+p.total,0),entregados:pedidos.filter(p=>p.estado==="entregado").length,pendientes:pedidos.filter(p=>p.estado==="pendiente").length,totalCobrosManual:cobros.reduce((a,c)=>a+c.monto,0)}),[pedidos,cobros]);
-const NAV=[{id:"dashboard",label:"Inicio",icon:IC.db},{id:"mapa",label:"Mapa",icon:IC.mp},{id:"clientes",label:"Clientes",icon:IC.cl},{id:"cobranzas",label:"Cobros",icon:IC.bi},{id:"reporte",label:"Reporte",icon:IC.rp},{id:"gastos",label:"Gastos",icon:IC.dr},{id:"stats",label:"Stats",icon:IC.st},{id:"cierre",label:"Cierre",icon:IC.ch}];
+const NAV=[{id:"dashboard",label:"Inicio",icon:IC.db},{id:"mapa",label:"Mapa",icon:IC.mp},{id:"clientes",label:"Clientes",icon:IC.cl},{id:"cobranzas",label:"Cobros",icon:IC.bi},{id:"reporte",label:"Reporte",icon:IC.rp},{id:"gastos",label:"Gastos",icon:IC.dr},{id:"stats",label:"Stats",icon:IC.st},{id:"cierre",label:"Cierre",icon:IC.ch},{id:"productos",label:"Productos",icon:IC.or}];
+if(editProd)return <EditProductoModal producto={editProd} onCerrar={()=>setEditProd(null)} onGuardado={()=>cargarDatos(true)}/>;
 if(!rol)return <RolSelector onSelect={seleccionarRol}/>;
 if(loading)return(<div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16}}><img src={LOGO} style={{width:90,height:90,objectFit:"contain",borderRadius:14}}/><div style={{color:C.acc3,fontWeight:700,fontSize:18}}>Vertiente Natural</div><div style={{color:C.text2,fontSize:14}}>Conectando...</div></div>);
 if(rol==="repartidor")return <PanelRepartidor repartidores={repartidores} productos={productos} pedidos={pedidos} clientes={clientes} cobros={cobros} preciosEspeciales={preciosEspeciales} gastos={gastos} onCambiarRol={cambiarRol} onActualizar={()=>cargarDatos(true)}/>;
@@ -621,6 +686,25 @@ return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 </div>):(<div style={{background:C.card,borderRadius:13,padding:24,textAlign:"center",border:"1px solid "+C.border}}><div style={{fontSize:40,marginBottom:12}}>⏳</div><div style={{color:C.text,fontWeight:700,fontSize:16,marginBottom:8}}>Sin cierre hoy</div><div style={{color:C.text2,fontSize:13}}>El repartidor todavia no cerro el dia.</div></div>)}
 {cierres.filter(c=>c.fecha!==today()).slice(0,10).length>0&&(<div style={{marginTop:16}}><div style={{fontWeight:700,color:C.text2,fontSize:13,marginBottom:10}}>Cierres anteriores</div>{cierres.filter(c=>c.fecha!==today()).slice(0,10).map(c=>(<div key={c.id} style={{background:C.card,borderRadius:10,padding:"12px 14px",marginBottom:8,border:"1px solid "+C.border}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}><span style={{color:C.text,fontWeight:700}}>{c.fecha}</span><span style={{color:C.grn3,fontWeight:900}}>{fmt(c.total_ventas||0)}</span></div><div style={{display:"flex",gap:16}}><span style={{color:C.text2,fontSize:11}}>Efec: {fmt(c.ventas_efectivo||0)}</span><span style={{color:C.text2,fontSize:11}}>Cred: {fmt(c.ventas_credito||0)}</span><span style={{color:C.warn,fontSize:11}}>Bid: {c.bidones_devueltos||0}</span></div></div>))}</div>)}
 </div>);}
+if(tab==="productos"){
+return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
+<button onClick={()=>setEditProd({})} style={{...S.btnG,marginBottom:14}}>+ Nuevo producto</button>
+{productos.map(pr=>(
+<div key={pr.id} style={{background:C.card,borderRadius:13,padding:14,marginBottom:12,border:"1px solid "+C.border,display:"flex",gap:12}}>
+{pr.foto_url?<img src={pr.foto_url} style={{width:64,height:64,borderRadius:10,objectFit:"cover",flexShrink:0,border:"1px solid "+C.border}}/>:<div style={{width:64,height:64,borderRadius:10,background:C.bg2,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:24}}>💧</div>}
+<div style={{flex:1,minWidth:0}}>
+<div style={{fontWeight:800,color:C.text,fontSize:15,marginBottom:4}}>{pr.name}</div>
+<div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:4}}>
+<span style={{color:C.grn3,fontWeight:700,fontSize:14}}>{fmt(pr.price)}</span>
+<span style={{background:C.bg3,color:C.acc3,border:"1px solid "+C.border2,borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:700}}>{pr.tipo_envase==="descartable"?"Descartable":"Retornable"}</span>
+</div>
+<div style={{color:C.text2,fontSize:12}}>Existencia: <span style={{color:(pr.existencia||0)>0?C.text:C.err,fontWeight:700}}>{pr.existencia||0}</span></div>
+</div>
+<button onClick={()=>setEditProd(pr)} style={{background:C.bg2,border:"1px solid "+C.border,color:C.acc3,borderRadius:8,padding:"8px 14px",cursor:"pointer",fontSize:12,fontWeight:700,alignSelf:"center"}}>Editar</button>
+</div>
+))}
+</div>);}
+
 if(tab==="stats"){
 const tot=pedidos.reduce((a,p)=>a+p.total,0);
 const byPr=productos.map(pr=>({...pr,uds:pedidos.filter(p=>p.productoId===pr.id).reduce((a,p)=>a+p.cantidad,0),ing:pedidos.filter(p=>p.productoId===pr.id&&p.pagado).reduce((a,p)=>a+p.total,0)})).sort((a,b)=>b.uds-a.uds);
