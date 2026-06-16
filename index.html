@@ -154,7 +154,7 @@ function PantallaClientes({clientes,productos,pedidos,cobros,preciosEspeciales,r
 const [busqueda,setBusqueda]=useState("");
 const [filtroZona,setFiltroZona]=useState("todas");
 const [clienteVer,setClienteVer]=useState(null);
-const cf=useMemo(()=>[...clientes].filter(c=>(filtroZona==="todas"||c.zona===filtroZona)&&(!busqueda||c.nombre.toLowerCase().includes(busqueda.toLowerCase()))).sort((a,b)=>(a.zona||"").localeCompare(b.zona||"")||a.nombre.localeCompare(b.nombre)),[clientes,filtroZona,busqueda]);
+const cf=useMemo(()=>[...clientes].filter(c=>(filtroZona==="todas"||c.zona===filtroZona)&&(!busqueda||c.nombre.toLowerCase().includes(busqueda.toLowerCase()))).sort((a,b)=>a.nombre.localeCompare(b.nombre)),[clientes,filtroZona,busqueda]);
 if(clienteVer){
 const clienteActual=clientes.find(x=>x.id===clienteVer.id)||clienteVer;
 return <DetalleCliente c={clienteActual} productos={productos} cobros={cobros} pedidos={pedidos} preciosEspeciales={preciosEspeciales} repId={repId} onActualizar={onActualizar} puedeEditar={puedeEditar} onEditar={()=>onEditar&&onEditar(clienteActual)} onCerrar={()=>setClienteVer(null)}/>;}
@@ -497,6 +497,10 @@ return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 </div>);}
 
 function renderTab(){
+if(clienteHistorial){
+const clienteAct=clientes.find(x=>x.id===clienteHistorial.id)||clienteHistorial;
+return <DetalleCliente c={clienteAct} productos={productos} cobros={cobros} pedidos={pedidos} preciosEspeciales={preciosEspeciales} repId={repartidores[0]?.id} onActualizar={()=>cargarDatos(true)} puedeEditar={true} onEditar={()=>{setEditC(clienteAct);setClienteHistorial(null);}} onCerrar={()=>setClienteHistorial(null)}/>;
+}
 if(tab==="mapa")return renderMapa();
 if(tab==="clientes")return(<PantallaClientes clientes={clientes} productos={productos} pedidos={pedidos} cobros={cobros} preciosEspeciales={preciosEspeciales} repId={null} onActualizar={cargarDatos} puedeEditar={true} onEditar={(c)=>{openEditar(c);setTab("clientes");}} onNuevoCliente={openNuevo}/>);
 if(tab==="reporte"){
@@ -543,7 +547,7 @@ const cobHoy=cobros.find(c=>c.clienteid===p.clienteId&&c.fecha===fechaReporte);
 const metodo=cobHoy?(cobHoy.metodopago||cobHoy.metodoPago):"";
 return(<div key={p.id} style={{background:C.bg2,borderRadius:10,padding:"11px 13px",marginBottom:8,border:"1px solid "+(p.pagado?C.grn2:"#991b1b")}}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
-<div><div style={{color:C.text,fontWeight:700,fontSize:14}}>{cl?.nombre}</div><div style={{color:C.text2,fontSize:11}}>{cl?.zona} · {cl?.direccion}</div></div>
+<div onClick={()=>setClienteHistorial(cl)} style={{cursor:"pointer"}}><div style={{color:C.acc3,fontWeight:700,fontSize:14,textDecoration:"underline"}}>{cl?.nombre}</div><div style={{color:C.text2,fontSize:11}}>{cl?.zona} · {cl?.direccion}</div></div>
 <div style={{textAlign:"right"}}><div style={{color:p.pagado?C.grn3:C.err,fontWeight:900,fontSize:16}}>{fmt(p.total)}</div></div>
 </div>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
