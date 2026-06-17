@@ -41,7 +41,7 @@ const [guardando,setGuardando]=useState(false);
 const [editPrecio,setEditPrecio]=useState(null);const [ajusteMontoLocal,setAjusteMontoLocal]=useState("");const [ajusteTipoLocal,setAjusteTipoLocal]=useState("debe");
 const [editPrecioVal,setEditPrecioVal]=useState("");
 const [fotoFile,setFotoFile]=useState(null);
-const pr=productos.find(p=>p.id===Number(prodId));
+const pr=productos.find(p=>p.id===Number(prodId)); 
 const precioEsp=pr?getPrecioEsp(preciosEspeciales,c.id,pr.id):null;
 const precio=precioEsp!==null?precioEsp:(pr?.price||0);
 const total=precio*Number(cant||1);
