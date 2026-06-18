@@ -29,7 +29,7 @@ const cobrosCliente=[...cobros].filter(x=>x.clienteId===c.id).sort((a,b)=>b.id-a
 const preciosesp=preciosEspeciales.filter(x=>Number(x.clienteId||x.clienteid||0)===c.id);
 const [tabActual,setTabActual]=useState("venta");
 const [prodId,setProdId]=useState(productos[0]?.id||"");
-const [cant,setCant]=useState("1");
+const [cant,setCant]=useState("");
 const [metodo,setMetodo]=useState("Efectivo");
 const [pagado,setPagado]=useState(true);
 const [devBid,setDevBid]=useState("");
@@ -48,7 +48,7 @@ const total=precio*Number(cant||1);
 const d=c.saldo<0,f=c.saldo>0;
 const inactivo=c.activo===false;
 async function registrarVenta(){
-if(!prodId||!cant)return;
+if(!prodId||!cant||Number(cant)<=0)return;
 setGuardando(true);setMsg("");
 try{
 const repIdFinal=repId||1;
@@ -60,7 +60,7 @@ if(pagado){await sb.from("cobros").insert({clienteid:c.id,monto:total,metodopago
 else{nuevoSaldo=(c.saldo||0)-total;}
 if(Number(devBid)>0){nuevosBidones=Math.max(0,nuevosBidones-Number(devBid));}
 await sb.from("clientes").update({saldo:nuevoSaldo,bidones:nuevosBidones}).eq("id",c.id);
-setMsg("Venta registrada!");setCant("1");setDevBid("");
+setMsg("Venta registrada!");setCant("");setDevBid("");
 onActualizar&&onActualizar();
 }catch(e){setMsg("Error: "+e.message);}
 setGuardando(false);}
@@ -71,6 +71,11 @@ try{
 const nuevoSaldo=(c.saldo||0)+m;
 await sb.from("clientes").update({saldo:nuevoSaldo}).eq("id",c.id);
 await sb.from("cobros").insert({clienteid:c.id,monto:m,metodopago:cobMetodo,fecha:today(),notas:cobNotas||""});
+const pendientes=pedidos.filter(p=>p.clienteId===c.id&&!p.pagado).sort((a,b)=>b.id-a.id);
+if(pendientes.length>0){
+let restante=m;
+for(const p of pendientes){if(restante<=0)break;if(Math.abs(p.total-restante)<1||restante>=p.total){await sb.from("pedidos").update({pagado:true,metodopago:cobMetodo}).eq("id",p.id);restante-=p.total;}}
+}
 setMsg("Cobro: "+fmt(m));setCobMonto("");setCobNotas("");
 onActualizar&&onActualizar();
 }catch(e){setMsg("Error.");}
@@ -136,7 +141,7 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 <span style={{color:C.warn,fontWeight:800,fontSize:13}}>En poder: {c.bidones||0}</span>
 </div>
 </div>
-{historial.length===0?<div style={{color:C.text2,fontSize:13}}>Sin pedidos</div>:historial.slice(0,30).map(p=>{const prr=productos.find(x=>x.id===p.productoId);return(<div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:C.bg2,borderRadius:8,padding:"9px 11px",marginBottom:6,border:"1px solid "+(p.pagado?C.grn2:"#991b1b")}}><div><div style={{color:C.text,fontSize:13,fontWeight:600}}>{p.cantidad}x {prr?.name}</div><div style={{color:C.text2,fontSize:11}}>{p.fecha}</div>{(p.bidones_dev||0)>0&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>↩ Devolvio {p.bidones_dev} vacios</div>}</div><div style={{textAlign:"right"}}><div style={{color:C.acc3,fontWeight:700}}>{fmt(p.total)}</div><Bdg color={p.pagado?"green":"red"}>{p.pagado?"Pagado":"Debe"}</Bdg>{puedeEditar&&<div><button onClick={()=>borrarPedido(p)} style={{marginTop:4,background:"#1c0505",color:C.err,border:"1px solid #991b1b",borderRadius:6,padding:"3px 8px",cursor:"pointer",fontSize:10,fontWeight:700}}>Borrar</button></div>}</div></div>);})}
+{historial.length===0?<div style={{color:C.text2,fontSize:13}}>Sin pedidos</div>:historial.slice(0,30).map(p=>{const prr=productos.find(x=>x.id===p.productoId);return(<div key={p.id} style={{background:C.bg2,borderRadius:8,padding:"9px 11px",marginBottom:6,border:"1px solid "+(p.pagado?C.grn2:"#991b1b")}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div style={{color:C.text,fontSize:13,fontWeight:600}}>{p.cantidad}x {prr?.name}</div><div style={{color:C.text2,fontSize:11}}>{p.fecha} · <span style={{color:p.pagado?C.grn3:C.err}}>{p.pagado?"Pagado":"Sin cobrar"}</span></div>{(p.bidones_dev||0)>0&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>↩ Devolvio {p.bidones_dev} vacios</div>}</div><div style={{textAlign:"right"}}><div style={{color:C.acc3,fontWeight:700}}>{fmt(p.total)}</div></div></div>{puedeEditar&&<button onClick={()=>borrarPedido(p)} style={{marginTop:6,background:"none",color:C.text2,border:"none",padding:0,cursor:"pointer",fontSize:10,textDecoration:"underline"}}>borrar este pedido</button>}</div>);})}
 <button onClick={compartirWhatsApp} style={{...S.btn,marginTop:14,background:C.bg3,border:"1px solid "+C.grn2,color:C.grn3,boxShadow:"none"}}>Compartir por WhatsApp</button>
 </div>)}
 {tabActual==="datos"&&(<div><div style={{background:"#1c1003",border:"1px solid #854d0e",borderRadius:12,padding:"14px",marginBottom:14}}><div style={{fontWeight:700,color:C.warn,fontSize:13,marginBottom:10}}>Ajustar saldo</div><div style={{display:"flex",gap:8,marginBottom:10}}><button onClick={()=>setAjusteTipoLocal("debe")} style={{flex:1,padding:"11px",borderRadius:8,border:"1px solid "+(ajusteTipoLocal==="debe"?"#991b1b":C.border),background:ajusteTipoLocal==="debe"?"#1c0505":C.bg2,color:ajusteTipoLocal==="debe"?C.err:C.text2,cursor:"pointer",fontWeight:700}}>Debe</button><button onClick={()=>setAjusteTipoLocal("favor")} style={{flex:1,padding:"11px",borderRadius:8,border:"1px solid "+(ajusteTipoLocal==="favor"?C.grn2:C.border),background:ajusteTipoLocal==="favor"?C.bg3:C.bg2,color:ajusteTipoLocal==="favor"?C.grn3:C.text2,cursor:"pointer",fontWeight:700}}>A favor</button></div><input type="number" style={{...S.inp,marginBottom:8}} value={ajusteMontoLocal} onChange={e=>setAjusteMontoLocal(e.target.value)} placeholder="Monto"/><button onClick={async()=>{const m=Number(ajusteMontoLocal);if(!m||m<=0)return;const nuevoSaldo=ajusteTipoLocal==="debe"?-m:m;await sb.from("clientes").update({saldo:nuevoSaldo}).eq("id",c.id);setAjusteMontoLocal("");onActualizar&&onActualizar();}} style={{...S.btnG,marginTop:0}}>Confirmar</button></div>
