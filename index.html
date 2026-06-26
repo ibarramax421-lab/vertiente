@@ -241,6 +241,39 @@ return(
 );
 }
 
+function EditClienteRep({cliente,onGuardado,onCerrar}){
+const [nombre,setNombre]=useState(cliente.nombre||"");
+const [telefono,setTelefono]=useState(cliente.telefono||"");
+const [direccion,setDireccion]=useState(cliente.direccion||"");
+const [zona,setZona]=useState(cliente.zona||"Z1");
+const [guardando,setGuardando]=useState(false);
+const [msg,setMsg]=useState("");
+async function guardar(){
+if(!nombre.trim())return;
+setGuardando(true);setMsg("");
+try{
+await sb.from("clientes").update({nombre,telefono,direccion,zona}).eq("id",cliente.id);
+setMsg("Guardado!");
+setTimeout(()=>onGuardado(),800);
+}catch(e){setMsg("Error al guardar.");}
+setGuardando(false);}
+return(
+<div style={{position:"fixed",inset:0,background:C.bg,zIndex:2000,display:"flex",flexDirection:"column"}}>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 18px",borderBottom:"1px solid "+C.border,paddingTop:"max(16px,env(safe-area-inset-top))"}}>
+<span style={{fontWeight:700,fontSize:17,color:C.text}}>Editar - {cliente.nombre}</span>
+<button onClick={onCerrar} style={{background:C.bg2,border:"1px solid "+C.border,color:C.text2,cursor:"pointer",borderRadius:8,padding:"6px 14px",fontSize:13,fontWeight:700}}>Cerrar</button>
+</div>
+<div style={{flex:1,overflowY:"scroll",WebkitOverflowScrolling:"touch",padding:"18px"}}>
+<Fld label="Nombre"><input style={S.inp} value={nombre} onChange={e=>setNombre(e.target.value)}/></Fld>
+<Fld label="Telefono"><input style={S.inp} type="tel" value={telefono} onChange={e=>setTelefono(e.target.value)}/></Fld>
+<Fld label="Direccion"><input style={S.inp} value={direccion} onChange={e=>setDireccion(e.target.value)}/></Fld>
+<Fld label="Zona"><select style={S.inp} value={zona} onChange={e=>setZona(e.target.value)}>{ZONAS.map(z=><option key={z} value={z}>{z}</option>)}</select></Fld>
+{msg&&<div style={{color:msg.startsWith("Error")?C.err:C.grn3,fontSize:13,marginBottom:10,fontWeight:700}}>{msg}</div>}
+<button onClick={guardar} disabled={guardando} style={S.btnG}>{guardando?"Guardando...":"Guardar cambios"}</button>
+</div>
+</div>
+);}
+
 function PanelRepartidor({repartidores,productos,pedidos,clientes,cobros,preciosEspeciales,gastos,onCambiarRol,onActualizar}){
 var defaultRepId=localStorage.getItem("vn_repId")||(repartidores[0]?String(repartidores[0].id):"1");
 const [repId,setRepId]=useState(defaultRepId);
@@ -252,6 +285,7 @@ const [modalNC,setModalNC]=useState(false);
 const [fNC,setFNC]=useState({nombre:"",telefono:"",direccion:"",zona:"Z1"});
 const [guardandoNC,setGuardandoNC]=useState(false);
 const [userPos,setUserPos]=useState(null);
+const [editarClienteRep,setEditarClienteRep]=useState(null);
 const hoy=today();
 const repNombre=(repartidores.find(function(r){return r.id===Number(repId);})||{name:"Repartidor"}).name;
 const entregadosHoy=pedidos.filter(function(p){return p.fecha===hoy&&p.estado==="entregado";});
@@ -289,7 +323,10 @@ setGuardandoNC(false);
 }
 if(clienteAbierto){
 var clActual=clientes.find(function(c){return c.id===clienteAbierto.id;})||clienteAbierto;
-return <DetalleCliente c={clActual} productos={productos} cobros={cobros} pedidos={pedidos} preciosEspeciales={preciosEspeciales} repId={repId} onActualizar={function(){onActualizar&&onActualizar();}} puedeEditar={false} onEditar={null} onCerrar={function(){setClienteAbierto(null);}}/>;
+return <DetalleCliente c={clActual} productos={productos} cobros={cobros} pedidos={pedidos} preciosEspeciales={preciosEspeciales} repId={repId} onActualizar={function(){onActualizar&&onActualizar();}} puedeEditar={true} onEditar={function(){setEditarClienteRep(clActual);setClienteAbierto(null);}} onCerrar={function(){setClienteAbierto(null);}}/>;
+}
+if(editarClienteRep){
+return <EditClienteRep cliente={editarClienteRep} onGuardado={function(){onActualizar&&onActualizar();setEditarClienteRep(null);}} onCerrar={function(){setEditarClienteRep(null);setClienteAbierto(editarClienteRep);}}/>;
 }
 return(
 <div style={{minHeight:"100vh",background:C.bg}}>
