@@ -642,7 +642,7 @@ const pedidosReporte=pedidos.filter(p=>p.fecha===fechaReporte&&p.estado==="entre
 const sinCobrar=pedidosReporte.filter(p=>!p.pagado).reduce((a,p)=>a+p.total,0);
 const totalVentas=pedidosReporte.reduce((a,p)=>a+p.total,0);
 const totalBidonesEnt=pedidosReporte.reduce((a,p)=>a+p.cantidad,0);
-const entPorProd=productos.map(pr=>({id:pr.id,name:pr.name,tipo:pr.tipo_envase,cant:pedidosReporte.filter(p=>p.productoId===pr.id).reduce((a,p)=>a+p.cantidad,0)})).filter(x=>x.cant>0);
+const entPorProd=productos.map(pr=>({id:pr.id,name:pr.name,tipo:pr.tipo_envase,cant:pedidosReporte.filter(p=>p.productoId===pr.id).reduce((a,p)=>a+p.cantidad,0),total:pedidosReporte.filter(p=>p.productoId===pr.id).reduce((a,p)=>a+p.total,0)})).filter(x=>x.cant>0);
 async function anularEntrega(p){
 if(!window.confirm("Anular entrega de "+clientes.find(c=>c.id===p.clienteId)?.nombre+"?"))return;
 try{
@@ -661,7 +661,7 @@ return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 <div style={{fontWeight:700,color:C.grn3,marginBottom:12,fontSize:14}}>Resumen - {fechaReporte}</div>
 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Total entregas</span><span style={{color:C.text,fontWeight:700}}>{pedidosReporte.length}</span></div>
 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Total entregas</span><span style={{color:C.warn,fontWeight:700}}>{totalBidonesEnt} unid</span></div>
-{entPorProd.map(x=>(<div key={x.id} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text2,fontSize:12}}>· {x.name}</span><span style={{color:x.tipo==="retornable"?C.warn:C.text2,fontWeight:700,fontSize:12}}>{x.cant}</span></div>))}
+{entPorProd.map(x=>(<div key={x.id} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text2,fontSize:12}}>· {x.name}</span><span style={{color:x.tipo==="retornable"?C.warn:C.text2,fontSize:12}}>{x.cant} · <span style={{color:C.grn3,fontWeight:700}}>{fmt(x.total)}</span></span></div>))}
 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Efectivo</span><span style={{color:C.grn3,fontWeight:800,fontSize:15}}>{fmt(totalEfectivo)}</span></div>
 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Transfer/QR</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(totalTransf)}</span></div>
 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Tarjeta</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(totalTarjeta)}</span></div>
