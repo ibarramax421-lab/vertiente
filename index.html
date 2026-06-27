@@ -12,6 +12,10 @@ function today(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+
 function addDays(dateStr,n){var d=new Date(dateStr);d.setDate(d.getDate()+n);return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);}
 function getLimite7(){var d=new Date();d.setDate(d.getDate()-7);return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);}
 function getPrecioEsp(pe,cid,pid){var c=Number(cid),p=Number(pid);for(var i=0;i<pe.length;i++){var x=pe[i];if(Number(x.clienteId||x.clienteid||0)===c&&Number(x.productoId||x.productoid||0)===p)return Number(x.precio);}return null;}
+function getBidField(productoId){
+var m={1:"bidones20",2:"bidones12",3:"sifones",4:"bidones12up"};
+return m[Number(productoId)]||null;}
+
 function distM(a,b,c,d){const R=6371000,dL=(c-a)*Math.PI/180,dG=(d-b)*Math.PI/180,x=Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dG/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
 function calcKm(puntos){let km=0;for(let i=1;i<puntos.length;i++){km+=distM(puntos[i-1].lat,puntos[i-1].lng,puntos[i].lat,puntos[i].lng);}return(km/1000).toFixed(1);}
 const C={bg:"#030d1a",bg2:"#031a0f",bg3:"#042d1a",card:"#063d22",border:"#1a5c3a",border2:"#00d4ff",acc:"#00d4ff",acc2:"#00b8e6",acc3:"#7eeeff",grn:"#22c55e",grn2:"#16a34a",grn3:"#4ade80",text:"#e0f0ff",text2:"#6aaddf",text3:"#a8d4f0",warn:"#fbbf24",err:"#f87171",info:"#34d399"};
@@ -55,11 +59,17 @@ const repIdFinal=repId||1;
 const{error:e1}=await sb.from("pedidos").insert({clienteId:c.id,productoId:Number(prodId),repId:Number(repIdFinal),cantidad:Number(cant),fecha:today(),estado:"entregado",pagado,total,bidones_dev:Number(devBid)||0});
 if(e1)throw e1;
 let nuevoSaldo=c.saldo;
-let nuevosBidones=(c.bidones||0)+Number(cant);
+const bidField=getBidField(prodId);
+let updateCliente={};
+if(bidField){
+const actual=c[bidField]||0;
+const devueltos=Number(devBid)||0;
+updateCliente[bidField]=Math.max(0,actual+Number(cant)-devueltos);
+}
 if(pagado){await sb.from("cobros").insert({clienteid:c.id,monto:total,metodopago:metodo,fecha:today(),notas:""});}
 else{nuevoSaldo=(c.saldo||0)-total;}
-if(Number(devBid)>0){nuevosBidones=Math.max(0,nuevosBidones-Number(devBid));}
-await sb.from("clientes").update({saldo:nuevoSaldo,bidones:nuevosBidones}).eq("id",c.id);
+updateCliente.saldo=nuevoSaldo;
+await sb.from("clientes").update(updateCliente).eq("id",c.id);
 setMsg("Venta registrada!");setCant("");setDevBid("");
 onActualizar&&onActualizar();
 }catch(e){setMsg("Error: "+e.message);}
@@ -96,7 +106,12 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 {c.foto_url&&<img src={c.foto_url} style={{width:"100%",maxHeight:160,objectFit:"cover",borderRadius:12,marginBottom:12,border:"1px solid "+C.border}}/>}
 <div style={{background:C.bg2,borderRadius:12,padding:"12px 16px",marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
 <div><div style={{fontSize:11,color:C.text2,fontWeight:700}}>SALDO</div><div style={{fontSize:26,fontWeight:900,color:d?C.err:f?C.grn3:C.text2}}>{d?"-":f?"+":""}{fmt(c.saldo)}</div><div style={{fontSize:11,color:C.text2}}>{d?"DEBE":f?"A FAVOR":"AL DIA"}</div></div>
-<div style={{textAlign:"right"}}><div style={{color:C.warn,fontSize:13,fontWeight:700}}>Bidones: {c.bidones||0}</div><div style={{color:C.text2,fontSize:12,marginTop:4}}>{c.direccion}</div>{c.lat&&c.lng&&<a href={"https://www.google.com/maps?q="+c.lat+","+c.lng+"&label="+encodeURIComponent(c.nombre)} target="_blank" style={{color:C.acc3,fontSize:11,textDecoration:"none"}}>📍 Ver en mapa</a>}</div>
+<div style={{textAlign:"right"}}><div style={{color:C.text2,fontSize:12,marginTop:4}}>{c.direccion}</div>{c.lat&&c.lng&&<a href={"https://www.google.com/maps?q="+c.lat+","+c.lng+"&label="+encodeURIComponent(c.nombre)} target="_blank" style={{color:C.acc3,fontSize:11,textDecoration:"none"}}>📍 Ver en mapa</a>}
+{(c.bidones20||0)>0&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>B20: {c.bidones20}</div>}
+{(c.bidones12||0)>0&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>B12: {c.bidones12}</div>}
+{(c.bidones12up||0)>0&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>B12UP: {c.bidones12up}</div>}
+{(c.sifones||0)>0&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>Sif: {c.sifones}</div>}
+</div>
 </div>
 {inactivo&&<div style={{background:"#1c0505",border:"1px solid #991b1b",borderRadius:10,padding:"10px 14px",marginBottom:14,color:C.err,fontWeight:700,fontSize:13,textAlign:"center"}}>CLIENTE INACTIVO</div>}
 <div style={{display:"flex",gap:6,marginBottom:16,overflowX:"auto",paddingBottom:4}}>
@@ -134,11 +149,13 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 <span style={{color:C.grn3,fontWeight:900,fontSize:18}}>{fmt(historial.reduce((a,p)=>a+p.total,0))}</span>
 </div>
 <div style={{background:C.card,borderRadius:10,padding:"12px 14px",marginBottom:12,border:"1px solid #854d0e"}}>
-<div style={{color:C.text3,fontSize:13,marginBottom:6}}>Movimiento de bidones</div>
-<div style={{display:"flex",justifyContent:"space-between"}}>
-<span style={{color:C.text2,fontSize:12}}>Entregados: {historial.reduce((a,p)=>a+p.cantidad,0)}</span>
-<span style={{color:C.text2,fontSize:12}}>Devueltos: {historial.reduce((a,p)=>a+(p.bidones_dev||0),0)}</span>
-<span style={{color:C.warn,fontWeight:800,fontSize:13}}>En poder: {c.bidones||0}</span>
+<div style={{color:C.text3,fontSize:13,marginBottom:6}}>Envases en poder del cliente</div>
+<div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+{(c.bidones20||0)>0&&<span style={{color:C.warn,fontSize:12,fontWeight:700}}>B20: {c.bidones20}</span>}
+{(c.bidones12||0)>0&&<span style={{color:C.warn,fontSize:12,fontWeight:700}}>B12: {c.bidones12}</span>}
+{(c.bidones12up||0)>0&&<span style={{color:C.warn,fontSize:12,fontWeight:700}}>B12UP: {c.bidones12up}</span>}
+{(c.sifones||0)>0&&<span style={{color:C.warn,fontSize:12,fontWeight:700}}>Sifones: {c.sifones}</span>}
+{!(c.bidones20||c.bidones12||c.bidones12up||c.sifones)&&<span style={{color:C.text2,fontSize:12}}>Sin envases</span>}
 </div>
 </div>
 {historial.length===0?<div style={{color:C.text2,fontSize:13}}>Sin pedidos</div>:historial.slice(0,30).map(p=>{const prr=productos.find(x=>x.id===p.productoId);return(<div key={p.id} style={{background:C.bg2,borderRadius:8,padding:"9px 11px",marginBottom:6,border:"1px solid "+(p.pagado?C.grn2:"#991b1b")}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div style={{color:C.text,fontSize:13,fontWeight:600}}>{p.cantidad}x {prr?.name}</div><div style={{color:C.text2,fontSize:11}}>{p.fecha} · <span style={{color:p.pagado?C.grn3:C.err}}>{p.pagado?"Pagado":"Sin cobrar"}</span></div>{(p.bidones_dev||0)>0&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>↩ Devolvio {p.bidones_dev} vacios</div>}</div><div style={{textAlign:"right"}}><div style={{color:C.acc3,fontWeight:700}}>{fmt(p.total)}</div></div></div>{puedeEditar&&<button onClick={()=>borrarPedido(p)} style={{marginTop:6,background:"none",color:C.text2,border:"none",padding:0,cursor:"pointer",fontSize:10,textDecoration:"underline"}}>borrar este pedido</button>}</div>);})}
@@ -171,7 +188,7 @@ return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 <div style={{position:"relative",marginBottom:12}}><span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:C.text2,fontSize:16}}>🔍</span><input style={{...S.inp,paddingLeft:36,paddingRight:36}} placeholder="Buscar cliente..." value={busqueda} onChange={e=>setBusqueda(e.target.value)}/>{busqueda&&<button onClick={()=>setBusqueda("")} style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:C.text2,cursor:"pointer",fontSize:18,padding:4}}>✕</button>}</div>
 <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:"wrap"}}>{["todas",...ZONAS].map(z=>(<button key={z} onClick={()=>setFiltroZona(z)} style={{background:filtroZona===z?C.acc2:C.bg2,color:filtroZona===z?"#fff":C.text2,border:"1px solid "+(filtroZona===z?C.acc2:C.border),borderRadius:20,padding:"5px 14px",cursor:"pointer",fontSize:12,fontWeight:700}}>{z==="todas"?"Todas":z}</button>))}</div>
 <div style={{color:C.text2,fontSize:12,marginBottom:12}}>{cf.length} clientes</div>
-{cf.map(c=>{const d=c.saldo<0,f=c.saldo>0;const tienePreEsp=preciosEspeciales.some(x=>Number(x.clienteId||x.clienteid||0)===c.id);const inactivo=c.activo===false;const pedHoy=pedidos.filter(p=>p.clienteId===c.id&&p.fecha===today());const visitadoHoy=pedHoy.length>0;return(<div key={c.id} onClick={()=>setClienteVer(c)} style={{background:C.card,borderRadius:13,padding:"14px 15px",marginBottom:9,border:"1px solid "+(visitadoHoy?C.grn2:inactivo?"#991b1b":C.border),opacity:inactivo?0.6:1,cursor:"pointer"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>{c.foto_url&&<img src={c.foto_url} style={{width:48,height:48,borderRadius:8,objectFit:"cover",marginRight:10,flexShrink:0,border:"1px solid "+C.border}}/>}<div style={{flex:1,minWidth:0}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}><div style={{fontWeight:700,color:C.text,fontSize:15}}>{c.nombre}</div><span style={{background:C.bg3,color:C.acc3,border:"1px solid "+C.border2,borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:800}}>{c.zona}</span>{tienePreEsp&&<span style={{background:"#1c1003",color:C.warn,border:"1px solid #854d0e",borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:800}}>$ esp</span>}{visitadoHoy&&<span style={{background:"#052e16",color:C.grn3,border:"1px solid "+C.grn2,borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:800}}>✓ Visitado</span>}</div><div style={{color:C.text2,fontSize:12}}>{c.direccion}</div>{c.lat&&<div style={{color:C.acc3,fontSize:10,marginTop:2}}>GPS ok</div>}{(c.bidones||0)>0&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>Bidones: {c.bidones}</div>}</div><div style={{textAlign:"right",flexShrink:0,marginLeft:12}}><div style={{fontWeight:900,fontSize:22,lineHeight:1,color:d?C.err:f?C.grn3:C.text2}}>{d?"-":f?"+":""}{fmt(c.saldo)}</div><div style={{fontSize:10,color:C.text2}}>{d?"DEBE":f?"A FAVOR":"AL DIA"}</div></div></div></div>);})}
+{cf.map(c=>{const d=c.saldo<0,f=c.saldo>0;const tienePreEsp=preciosEspeciales.some(x=>Number(x.clienteId||x.clienteid||0)===c.id);const inactivo=c.activo===false;const pedHoy=pedidos.filter(p=>p.clienteId===c.id&&p.fecha===today());const visitadoHoy=pedHoy.length>0;return(<div key={c.id} onClick={()=>setClienteVer(c)} style={{background:C.card,borderRadius:13,padding:"14px 15px",marginBottom:9,border:"1px solid "+(visitadoHoy?C.grn2:inactivo?"#991b1b":C.border),opacity:inactivo?0.6:1,cursor:"pointer"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>{c.foto_url&&<img src={c.foto_url} style={{width:48,height:48,borderRadius:8,objectFit:"cover",marginRight:10,flexShrink:0,border:"1px solid "+C.border}}/>}<div style={{flex:1,minWidth:0}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}><div style={{fontWeight:700,color:C.text,fontSize:15}}>{c.nombre}</div><span style={{background:C.bg3,color:C.acc3,border:"1px solid "+C.border2,borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:800}}>{c.zona}</span>{tienePreEsp&&<span style={{background:"#1c1003",color:C.warn,border:"1px solid #854d0e",borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:800}}>$ esp</span>}{visitadoHoy&&<span style={{background:"#052e16",color:C.grn3,border:"1px solid "+C.grn2,borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:800}}>✓ Visitado</span>}</div><div style={{color:C.text2,fontSize:12}}>{c.direccion}</div>{c.lat&&<div style={{color:C.acc3,fontSize:10,marginTop:2}}>GPS ok</div>}{(c.bidones20||c.bidones12||c.bidones12up||c.sifones)>0&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>{[c.bidones20?"B20:"+c.bidones20:"",c.bidones12?"B12:"+c.bidones12:"",c.bidones12up?"B12UP:"+c.bidones12up:"",c.sifones?"Sif:"+c.sifones:""].filter(Boolean).join(" · ")}</div>}</div><div style={{textAlign:"right",flexShrink:0,marginLeft:12}}><div style={{fontWeight:900,fontSize:22,lineHeight:1,color:d?C.err:f?C.grn3:C.text2}}>{d?"-":f?"+":""}{fmt(c.saldo)}</div><div style={{fontSize:10,color:C.text2}}>{d?"DEBE":f?"A FAVOR":"AL DIA"}</div></div></div></div>);})}
 </div>);}
 
 function CerrarDiaModal({cobros,pedidos,clientes,productos,repId,onCerrar,onConfirmar}){
@@ -408,7 +425,7 @@ return(
 </div>
 <div style={{color:C.text2,fontSize:12}}>{c.direccion}</div>
 <div style={{color:C.acc3,fontSize:11,marginTop:2}}>📍 {c.dist}m</div>
-{(c.bidones||0)>0&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>Bidones: {c.bidones}</div>}
+{(c.bidones||c.bidones20||c.bidones12||c.bidones12up||c.sifones)&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>{[c.bidones20?"B20:"+c.bidones20:"",c.bidones12?"B12:"+c.bidones12:"",c.bidones12up?"B12UP:"+c.bidones12up:"",c.sifones?"Sif:"+c.sifones:""].filter(Boolean).join(" · ")||("Bidones: "+(c.bidones||0))}</div>}
 </div>
 <div style={{textAlign:"right",flexShrink:0,marginLeft:10}}>
 <div style={{fontWeight:900,fontSize:22,color:d?C.err:f?C.grn3:C.text2}}>{d?"-":f?"+":""}{fmt(c.saldo)}</div>
