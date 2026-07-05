@@ -81,10 +81,7 @@ try{
 const nuevoSaldo=(c.saldo||0)+m;
 await sb.from("clientes").update({saldo:nuevoSaldo}).eq("id",c.id);
 await sb.from("cobros").insert({clienteid:c.id,monto:m,metodopago:cobMetodo,fecha:today(),notas:cobNotas||""});
-const pendientes=pedidos.filter(p=>p.clienteId===c.id&&!p.pagado);
-if(pendientes.length>0){
-for(const p of pendientes){await sb.from("pedidos").update({pagado:true}).eq("id",p.id);}
-}
+await sb.from("pedidos").update({pagado:true}).eq("clienteId",c.id).eq("pagado",false);
 setMsg("Cobro: "+fmt(m));setCobMonto("");setCobNotas("");
 onActualizar&&onActualizar();
 }catch(e){setMsg("Error.");}
