@@ -724,7 +724,7 @@ const cobrosHoy=[...cobros].filter(c=>c.fecha===today()).sort((a,b)=>b.id-a.id);
 return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:11,marginBottom:14}}><Card label="Por cobrar" value={fmt(stats.porCobrar)} icon={IC.bi} accent={C.warn}/><Card label="Cobrado hoy" value={fmt(totalHoy)} icon={IC.ch} accent={C.grn}/></div>
 <div style={{background:C.card,borderRadius:13,padding:16,marginBottom:14,border:"1px solid "+C.grn2}}>
-<div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:14}}>Cobros de hoy ({cobrosHoy.length})</div>
+<div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:14}}>Cobros del {today()} ({cobrosHoy.length})</div>
 {cobrosHoy.length===0?<div style={{color:C.text2,fontSize:13}}>Sin cobros hoy</div>:cobrosHoy.map(co=>{
 const cl=clientes.find(c=>c.id===(co.clienteid||co.clienteId));
 return(<div key={co.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:"1px solid "+C.border}}>
