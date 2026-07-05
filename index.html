@@ -29,7 +29,7 @@ function RolSelector({onSelect}){return(<div style={{minHeight:"100vh",backgroun
 
 function DetalleCliente({c,productos,cobros,pedidos,preciosEspeciales,repId,onActualizar,onCerrar,puedeEditar,onEditar}){
 const historial=[...pedidos].filter(p=>p.clienteId===c.id).sort((a,b)=>b.fecha.localeCompare(a.fecha));
-const cobrosCliente=[...cobros].filter(x=>x.clienteId===c.id).sort((a,b)=>b.id-a.id);
+const cobrosCliente=[...cobros].filter(x=>(x.clienteId||x.clienteid)===c.id).sort((a,b)=>b.id-a.id);
 const preciosesp=preciosEspeciales.filter(x=>Number(x.clienteId||x.clienteid||0)===c.id);
 const [tabActual,setTabActual]=useState("venta");
 const [prodId,setProdId]=useState(productos[0]?.id||"");
