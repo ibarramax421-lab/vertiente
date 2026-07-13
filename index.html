@@ -555,6 +555,8 @@ const [saving,setSaving]=useState(false);
 const [saveError,setSaveError]=useState("");
 const [fechaReporte,setFechaReporte]=useState(today());
 const [clienteHistorial,setClienteHistorial]=useState(null);
+const [dashSeccion,setDashSeccion]=useState(null);
+const [clienteDeudor,setClienteDeudor]=useState(null);
 const [editProd,setEditProd]=useState(null);
 const [gastoCategoria,setGastoCategoria]=useState("Combustible");
 const [gastoDesc,setGastoDesc]=useState("");
@@ -708,16 +710,14 @@ const totCobrado=cobros.filter(c=>c.fecha===today()).reduce((a,c)=>a+c.monto,0);
 const visitasHoy=pedidos.filter(p=>p.fecha===today()&&p.estado==="entregado").length;
 const deudores=[...clientes].filter(c=>c.saldo<0).sort((a,b)=>a.saldo-b.saldo);
 const clientesActivos=clientes.filter(c=>c.activo!==false).length;
-const [seccion,setSeccion]=useState(null);
-const [clienteDeudor,setClienteDeudor]=useState(null);
 if(clienteDeudor){
 const clActual=clientes.find(x=>x.id===clienteDeudor.id)||clienteDeudor;
 return <DetalleCliente c={clActual} productos={productos} cobros={cobros} pedidos={pedidos} preciosEspeciales={preciosEspeciales} repId={repartidores[0]?.id} onActualizar={()=>cargarDatos(true)} puedeEditar={true} onEditar={()=>setClienteDeudor(null)} onCerrar={()=>setClienteDeudor(null)} defaultTab="cobro"/>;
 }
-if(seccion==="deudores")return(
+if(dashSeccion==="deudores")return(
 <div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
-<button onClick={()=>setSeccion(null)} style={{background:C.bg2,border:"1px solid "+C.border,color:C.acc3,borderRadius:8,padding:"7px 12px",cursor:"pointer",fontSize:13,fontWeight:700}}>← Volver</button>
+<button onClick={()=>setDashSeccion(null)} style={{background:C.bg2,border:"1px solid "+C.border,color:C.acc3,borderRadius:8,padding:"7px 12px",cursor:"pointer",fontSize:13,fontWeight:700}}>← Volver</button>
 <span style={{fontWeight:700,fontSize:16,color:C.text}}>Deudores ({deudores.length})</span>
 </div>
 {deudores.length===0?<div style={{color:C.text2,fontSize:14,textAlign:"center",marginTop:40}}>Sin deudores 🎉</div>:deudores.map((c,i)=>(
@@ -727,10 +727,10 @@ if(seccion==="deudores")return(
 </div>
 ))}
 </div>);
-if(seccion==="sinvisita")return(
+if(dashSeccion==="sinvisita")return(
 <div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
-<button onClick={()=>setSeccion(null)} style={{background:C.bg2,border:"1px solid "+C.border,color:C.acc3,borderRadius:8,padding:"7px 12px",cursor:"pointer",fontSize:13,fontWeight:700}}>← Volver</button>
+<button onClick={()=>setDashSeccion(null)} style={{background:C.bg2,border:"1px solid "+C.border,color:C.acc3,borderRadius:8,padding:"7px 12px",cursor:"pointer",fontSize:13,fontWeight:700}}>← Volver</button>
 <span style={{fontWeight:700,fontSize:16,color:C.text}}>Sin visita 7+ días ({sinVisita.length})</span>
 </div>
 {sinVisita.length===0?<div style={{color:C.text2,fontSize:14,textAlign:"center",marginTop:40}}>Todos visitados 🎉</div>:sinVisita.map(c=>{
@@ -764,8 +764,8 @@ return(<div style={{padding:"0 0 100px",maxWidth:560,margin:"0 auto"}}>
 <DashCard titulo="Visitas hoy" valor={visitasHoy} subtitulo="entregas" icono="🚚" color={C.border} onClick={()=>setTab("reporte")}/>
 <DashCard titulo="Estadísticas" valor="→" subtitulo="ver detalle" icono="📊" color={C.border} onClick={()=>setTab("stats")}/>
 </div>
-<DashCard titulo="Deudores" valor={deudores.length} subtitulo={deudores.length>0?"Total: "+fmt(deudores.reduce((a,c)=>a+Math.abs(c.saldo),0)):"Sin deudas"} icono="⚠️" color={deudores.length>0?"#991b1b":C.border} onClick={()=>setSeccion("deudores")}/>
-<DashCard titulo="Sin visita 7+ días" valor={sinVisita.length} subtitulo="clientes pendientes" icono="📅" color={sinVisita.length>0?"#c2410c":C.border} onClick={()=>setSeccion("sinvisita")}/>
+<DashCard titulo="Deudores" valor={deudores.length} subtitulo={deudores.length>0?"Total: "+fmt(deudores.reduce((a,c)=>a+Math.abs(c.saldo),0)):"Sin deudas"} icono="⚠️" color={deudores.length>0?"#991b1b":C.border} onClick={()=>setDashSeccion("deudores")}/>
+<DashCard titulo="Sin visita 7+ días" valor={sinVisita.length} subtitulo="clientes pendientes" icono="📅" color={sinVisita.length>0?"#c2410c":C.border} onClick={()=>setDashSeccion("sinvisita")}/>
 </div>
 </div>);}
 if(tab==="cobranzas"){
