@@ -702,22 +702,71 @@ return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 {gastosHoy.length>0&&(<div style={{background:C.card,borderRadius:13,padding:16,border:"1px solid "+C.border}}><div style={{fontWeight:700,color:C.text,fontSize:14,marginBottom:12}}>Gastos de hoy</div>{gastosHoy.map(g=>(<div key={g.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><div style={{color:g.tipo==="insumo"?C.grn3:C.warn,fontWeight:600,fontSize:13}}>{g.categoria}{g.descripcion?" - "+g.descripcion:""}</div><div style={{color:g.tipo==="insumo"?C.grn3:C.err,fontWeight:700}}>{fmt(g.monto)}</div></div>))}{totalInsumos>0&&<div style={{display:"flex",justifyContent:"space-between",padding:"7px 0",marginTop:8,borderTop:"1px solid "+C.border}}><span style={{color:C.text2,fontSize:12}}>Total insumos</span><span style={{color:C.grn3,fontWeight:700}}>{fmt(totalInsumos)}</span></div>}</div>)}
 </div>);}
 if(tab==="dashboard"){
-const hoy=pedidos.filter(p=>p.fecha===today()&&p.estado==="pendiente");
 const limite7=getLimite7();
 const sinVisita=clientes.filter(c=>{var up=pedidos.filter(p=>p.clienteId===c.id).sort((a,b)=>b.fecha.localeCompare(a.fecha))[0];return !up||up.fecha<limite7;});
-const cobHoy=cobros.filter(c=>c.fecha===today());
-const ef=cobHoy.filter(c=>(c.metodoPago||c.metodopago)==="Efectivo").reduce((a,c)=>a+c.monto,0);
-const tr=cobHoy.filter(c=>(c.metodoPago||c.metodopago)==="Transferencia"||(c.metodoPago||c.metodopago)==="QR").reduce((a,c)=>a+c.monto,0);
-const ta=cobHoy.filter(c=>(c.metodoPago||c.metodopago)==="Tarjeta").reduce((a,c)=>a+c.monto,0);
-const ot=cobHoy.filter(c=>(c.metodoPago||c.metodopago)==="Otros").reduce((a,c)=>a+c.monto,0);
-const totCobrado=cobHoy.reduce((a,c)=>a+c.monto,0);
-const sinCobrarHoy=pedidos.filter(p=>p.fecha===today()&&p.estado==="entregado"&&!p.pagado).reduce((a,p)=>a+p.total,0);
-return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>{error&&<div style={{background:"#1c0505",border:"1px solid #991b1b",borderRadius:10,padding:"10px 14px",marginBottom:12,color:C.err,fontSize:13}}>{error}</div>}
-<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:11,marginBottom:14}}><Card label="Por Cobrar" value={fmt(stats.porCobrar)} icon={IC.bi} accent={C.warn}/><Card label="Cobrado" value={fmt(stats.cobrado)} icon={IC.bi} accent={C.grn}/><Card label="Entregados" value={stats.entregados} icon={IC.tr} accent={C.acc}/><Card label="Pendientes" value={stats.pendientes} icon={IC.or} accent="#a78bfa"/></div>
-<div style={{background:C.card,border:"1px solid "+C.border2,borderRadius:13,padding:16,marginBottom:14}}><div style={{fontWeight:700,color:C.acc3,fontSize:14,marginBottom:12}}>Ventas del dia</div><div style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3,fontSize:13}}>Efectivo</span><span style={{color:C.grn3,fontWeight:700}}>{fmt(ef)}</span></div><div style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3,fontSize:13}}>Transfer/QR</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(tr)}</span></div><div style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3,fontSize:13}}>Tarjeta</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(ta)}</span></div><div style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3,fontSize:13}}>Otros</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(ot)}</span></div><div style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.err,fontSize:13}}>Sin cobrar</span><span style={{color:C.err,fontWeight:700}}>{fmt(sinCobrarHoy)}</span></div><div style={{display:"flex",justifyContent:"space-between",padding:"9px 0",marginTop:4,borderTop:"2px solid "+C.border2}}><span style={{color:C.text,fontWeight:700}}>TOTAL COBRADO</span><span style={{color:C.grn3,fontWeight:900,fontSize:18}}>{fmt(totCobrado)}</span></div></div>
-{sinVisita.length>0&&(<div style={{background:"#1c0a00",border:"1px solid #c2410c",borderRadius:13,padding:16,marginBottom:12}}><div style={{fontWeight:700,color:"#fb923c",marginBottom:10,fontSize:14}}>Sin visita 7+ dias ({sinVisita.length})</div>{sinVisita.slice(0,10).map(c=>{var up=pedidos.filter(p=>p.clienteId===c.id).sort((a,b)=>b.fecha.localeCompare(a.fecha))[0];var dias=up?Math.floor((new Date()-new Date(up.fecha))/(1000*60*60*24)):999;return(<div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:C.bg2,borderRadius:8,padding:"9px 11px",marginBottom:6}}><div><div style={{color:C.text,fontWeight:600,fontSize:13}}>{c.nombre}</div><div style={{color:C.text2,fontSize:11}}>{c.telefono}</div></div><div style={{color:"#fb923c",fontWeight:700,fontSize:13}}>{dias===999?"Nunca":dias+" dias"}</div></div>);})}</div>)}
-{hoy.length>0&&<div style={{background:C.card,borderRadius:13,padding:16,border:"1px solid "+C.border,marginBottom:12}}><div style={{fontWeight:700,color:C.text,marginBottom:10,fontSize:14}}>Pendientes ({hoy.length})</div>{hoy.map(p=>{const cl=clientes.find(c=>c.id===p.clienteId),pr=productos.find(x=>x.id===p.productoId),rp=repartidores.find(r=>r.id===p.repId);return(<div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:C.bg2,borderRadius:9,padding:"9px 11px",marginBottom:7}}><div><div style={{color:C.text,fontWeight:600,fontSize:13}}>{cl?.nombre}</div><div style={{color:C.text2,fontSize:11}}>{cl?.direccion}</div></div><div style={{textAlign:"right"}}><div style={{color:C.acc3,fontWeight:700}}>{fmt(p.total)}</div><button onClick={()=>entregar(p.id)} style={{marginTop:4,background:"#052e16",color:C.grn3,border:"1px solid "+C.grn2,borderRadius:6,padding:"5px 10px",cursor:"pointer",fontSize:12,fontWeight:700}}>Entregar</button></div></div>);})}</div>}
-<div style={{background:C.card,borderRadius:13,padding:16,border:"1px solid "+C.border}}><div style={{fontWeight:700,color:C.text,marginBottom:10,fontSize:14}}>Productos</div>{productos.map(p=>(<div key={p.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>{p.name}</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(p.price)}</span></div>))}</div>
+const totCobrado=cobros.filter(c=>c.fecha===today()).reduce((a,c)=>a+c.monto,0);
+const visitasHoy=pedidos.filter(p=>p.fecha===today()&&p.estado==="entregado").length;
+const deudores=[...clientes].filter(c=>c.saldo<0).sort((a,b)=>a.saldo-b.saldo);
+const clientesActivos=clientes.filter(c=>c.activo!==false).length;
+const [seccion,setSeccion]=useState(null);
+const [clienteDeudor,setClienteDeudor]=useState(null);
+if(clienteDeudor){
+const clActual=clientes.find(x=>x.id===clienteDeudor.id)||clienteDeudor;
+return <DetalleCliente c={clActual} productos={productos} cobros={cobros} pedidos={pedidos} preciosEspeciales={preciosEspeciales} repId={repartidores[0]?.id} onActualizar={()=>cargarDatos(true)} puedeEditar={true} onEditar={()=>setClienteDeudor(null)} onCerrar={()=>setClienteDeudor(null)} defaultTab="cobro"/>;
+}
+if(seccion==="deudores")return(
+<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
+<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+<button onClick={()=>setSeccion(null)} style={{background:C.bg2,border:"1px solid "+C.border,color:C.acc3,borderRadius:8,padding:"7px 12px",cursor:"pointer",fontSize:13,fontWeight:700}}>← Volver</button>
+<span style={{fontWeight:700,fontSize:16,color:C.text}}>Deudores ({deudores.length})</span>
+</div>
+{deudores.length===0?<div style={{color:C.text2,fontSize:14,textAlign:"center",marginTop:40}}>Sin deudores 🎉</div>:deudores.map((c,i)=>(
+<div key={c.id} onClick={()=>setClienteDeudor(c)} style={{background:C.card,borderRadius:13,padding:"14px 15px",marginBottom:9,border:"1px solid #991b1b",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+<div><div style={{fontWeight:700,color:C.text,fontSize:15}}>{c.nombre}</div><div style={{color:C.text2,fontSize:12}}>{c.telefono} · {c.zona}</div></div>
+<div style={{textAlign:"right"}}><div style={{color:C.err,fontWeight:900,fontSize:20}}>-{fmt(c.saldo)}</div><div style={{fontSize:10,color:C.err}}>DEBE</div></div>
+</div>
+))}
+</div>);
+if(seccion==="sinvisita")return(
+<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
+<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+<button onClick={()=>setSeccion(null)} style={{background:C.bg2,border:"1px solid "+C.border,color:C.acc3,borderRadius:8,padding:"7px 12px",cursor:"pointer",fontSize:13,fontWeight:700}}>← Volver</button>
+<span style={{fontWeight:700,fontSize:16,color:C.text}}>Sin visita 7+ días ({sinVisita.length})</span>
+</div>
+{sinVisita.length===0?<div style={{color:C.text2,fontSize:14,textAlign:"center",marginTop:40}}>Todos visitados 🎉</div>:sinVisita.map(c=>{
+var up=pedidos.filter(p=>p.clienteId===c.id).sort((a,b)=>b.fecha.localeCompare(a.fecha))[0];
+var dias=up?Math.floor((new Date()-new Date(up.fecha))/(1000*60*60*24)):999;
+return(<div key={c.id} style={{background:C.card,borderRadius:13,padding:"14px 15px",marginBottom:9,border:"1px solid #c2410c",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+<div><div style={{fontWeight:700,color:C.text,fontSize:15}}>{c.nombre}</div><div style={{color:C.text2,fontSize:12}}>{c.telefono}</div></div>
+<div style={{color:"#fb923c",fontWeight:700,fontSize:14}}>{dias===999?"Nunca":dias+" días"}</div>
+</div>);})}
+</div>);
+const DashCard=({titulo,valor,subtitulo,color,icono,onClick})=>(
+<div onClick={onClick} style={{background:"linear-gradient(135deg,"+C.card+" 60%,"+C.bg3+")",border:"1px solid "+(color||C.border),borderRadius:16,padding:"18px 16px",cursor:onClick?"pointer":"default",display:"flex",flexDirection:"column",gap:4,position:"relative",overflow:"hidden"}}>
+<div style={{position:"absolute",right:12,top:12,fontSize:28,opacity:.15}}>{icono}</div>
+<div style={{fontSize:11,color:C.text2,fontWeight:700,letterSpacing:.8,textTransform:"uppercase"}}>{titulo}</div>
+<div style={{fontSize:28,fontWeight:900,color:C.text,lineHeight:1}}>{valor}</div>
+{subtitulo&&<div style={{fontSize:11,color:C.text2}}>{subtitulo}</div>}
+</div>);
+return(<div style={{padding:"0 0 100px",maxWidth:560,margin:"0 auto"}}>
+<div style={{background:"linear-gradient(135deg,"+C.bg2+","+C.bg3+")",padding:"24px 18px 20px",textAlign:"center",borderBottom:"1px solid "+C.border}}>
+<img src={LOGO} style={{width:72,height:72,objectFit:"contain",borderRadius:14,marginBottom:10}}/>
+<div style={{fontWeight:900,fontSize:22,color:C.acc3}}>Vertiente Natural</div>
+<div style={{fontSize:12,color:C.text2,marginTop:2}}>{today()}</div>
+</div>
+<div style={{padding:"16px 14px",display:"flex",flexDirection:"column",gap:10}}>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+<DashCard titulo="Clientes" valor={clientesActivos} subtitulo="activos" icono="👥" color={C.border2} onClick={()=>setTab("clientes")}/>
+<DashCard titulo="Productos" valor={productos.length} subtitulo="en catálogo" icono="💧" color={C.border} onClick={()=>setTab("productos")}/>
+</div>
+<DashCard titulo="Ventas del día" valor={fmt(totCobrado)} subtitulo={"Cobrado hoy · "+visitasHoy+" entregas"} icono="💰" color={C.grn2} onClick={()=>setTab("reporte")}/>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+<DashCard titulo="Visitas hoy" valor={visitasHoy} subtitulo="entregas" icono="🚚" color={C.border} onClick={()=>setTab("reporte")}/>
+<DashCard titulo="Estadísticas" valor="→" subtitulo="ver detalle" icono="📊" color={C.border} onClick={()=>setTab("stats")}/>
+</div>
+<DashCard titulo="Deudores" valor={deudores.length} subtitulo={deudores.length>0?"Total: "+fmt(deudores.reduce((a,c)=>a+Math.abs(c.saldo),0)):"Sin deudas"} icono="⚠️" color={deudores.length>0?"#991b1b":C.border} onClick={()=>setSeccion("deudores")}/>
+<DashCard titulo="Sin visita 7+ días" valor={sinVisita.length} subtitulo="clientes pendientes" icono="📅" color={sinVisita.length>0?"#c2410c":C.border} onClick={()=>setSeccion("sinvisita")}/>
+</div>
 </div>);}
 if(tab==="cobranzas"){
 const deudores=[...clientes].filter(c=>c.saldo<0).sort((a,b)=>a.saldo-b.saldo);
