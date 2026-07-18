@@ -543,6 +543,7 @@ const [recorrido,setRecorrido]=useState([]);
 const [gastos,setGastos]=useState([]);const [cierres,setCierres]=useState([]);
 const [loading,setLoading]=useState(true);
 const [refreshing,setRefreshing]=useState(false);
+  const [temaVersion,setTemaVersion]=useState(0);
 const [error,setError]=useState("");
 const [modal,setModal]=useState(null);
 const [editC,setEditC]=useState(null);
@@ -579,6 +580,14 @@ async function cargarUbicaciones(){
 const{data}=await sb.from("ubicaciones_repartidor").select("*").eq("fecha",today()).order("created_at",{ascending:false});
 if(data){const latest={};data.forEach(u=>{if(!latest[u.repartidorId])latest[u.repartidorId]=u;});setUbicaciones(Object.values(latest));setRecorrido([...data].reverse());}
 }
+  async function cargarApariencia(){
+try{
+const{data}=await sb.from("configuracion_apariencia").select("*").eq("id",1).single();
+if(data){
+Object.assign(C,{bg:data.color_fondo||C.bg,bg2:data.color_fondo2||C.bg2,card:data.color_tarjeta||C.card,border:data.color_borde||C.border,acc:data.color_acento||C.acc,acc2:data.color_acento||C.acc2,acc3:data.color_acento||C.acc3,grn:data.color_verde||C.grn,grn2:data.color_verde||C.grn2,grn3:data.color_verde||C.grn3,text:data.color_texto||C.text,err:data.color_error||C.err,warn:data.color_alerta||C.warn});
+setTemaVersion(v=>v+1);
+}
+}catch(e){}}
 async function cargarDatos(r=false){
 if(r)setRefreshing(true);else setLoading(true);
 setError("");
@@ -592,6 +601,7 @@ await cargarUbicaciones();
 setLoading(false);setRefreshing(false);}
 useEffect(()=>{
 cargarDatos();
+  cargarApariencia();
 sb.from("cierres_dia").select("*").order("fecha",{ascending:false}).limit(30).then(r=>{if(r.data)setCierres(r.data);});
 const ch=sb.channel("c").on("postgres_changes",{event:"*",schema:"public",table:"clientes"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"pedidos"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"cobros"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"ubicaciones_repartidor"},()=>cargarUbicaciones()).subscribe();
 const intervalo=setInterval(cargarUbicaciones,60000);
