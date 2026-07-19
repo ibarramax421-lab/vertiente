@@ -266,13 +266,17 @@ const [nombre,setNombre]=useState(cliente.nombre||"");
 const [telefono,setTelefono]=useState(cliente.telefono||"");
 const [direccion,setDireccion]=useState(cliente.direccion||"");
 const [zona,setZona]=useState(cliente.zona||"Z1");
+const [lat,setLat]=useState(cliente.lat||null);
+const [lng,setLng]=useState(cliente.lng||null);
+const [geoMsg,setGeoMsg]=useState(cliente.lat?"GPS guardado":"");
+function getGPS(){if(!navigator.geolocation){setGeoMsg("GPS no disponible.");return;}setGeoMsg("Obteniendo GPS...");navigator.geolocation.getCurrentPosition(p=>{setLat(p.coords.latitude);setLng(p.coords.longitude);setGeoMsg("GPS: "+p.coords.latitude.toFixed(5)+", "+p.coords.longitude.toFixed(5));},()=>setGeoMsg("No se pudo obtener GPS."),{enableHighAccuracy:true,timeout:15000});}
 const [guardando,setGuardando]=useState(false);
 const [msg,setMsg]=useState("");
 async function guardar(){
 if(!nombre.trim())return;
 setGuardando(true);setMsg("");
 try{
-await sb.from("clientes").update({nombre,telefono,direccion,zona}).eq("id",cliente.id);
+await sb.from("clientes").update({nombre,telefono,direccion,zona,lat,lng}).eq("id",cliente.id);
 setMsg("Guardado!");
 setTimeout(()=>onGuardado(),800);
 }catch(e){setMsg("Error al guardar.");}
@@ -287,7 +291,7 @@ return(
 <Fld label="Nombre"><input style={S.inp} value={nombre} onChange={e=>setNombre(e.target.value)}/></Fld>
 <Fld label="Telefono"><input style={S.inp} type="tel" value={telefono} onChange={e=>setTelefono(e.target.value)}/></Fld>
 <Fld label="Direccion"><input style={S.inp} value={direccion} onChange={e=>setDireccion(e.target.value)}/></Fld>
-<Fld label="Zona"><select style={S.inp} value={zona} onChange={e=>setZona(e.target.value)}>{ZONAS.map(z=><option key={z} value={z}>{z}</option>)}</select></Fld>
+<Fld label="Zona"><select style={S.inp} value={zona} onChange={e=>setZona(e.target.value)}>{ZONAS.map(z=><option key={z} value={z}>{z}</option>)}</select></Fld><div style={{background:C.bg2,borderRadius:11,padding:14,marginBottom:13,border:"1px solid "+C.border}}><div style={{fontWeight:700,color:C.grn3,fontSize:14,marginBottom:6}}>GPS</div><button onClick={getGPS} style={S.btnG}>Guardar ubicacion GPS</button>{geoMsg&&<div style={{fontSize:12,textAlign:"center",marginTop:10,padding:"8px",borderRadius:8,background:geoMsg.startsWith("GPS")?C.bg3:"#1c0505",color:geoMsg.startsWith("GPS")?C.grn3:C.err}}>{geoMsg}</div>}</div>
 {msg&&<div style={{color:msg.startsWith("Error")?C.err:C.grn3,fontSize:13,marginBottom:10,fontWeight:700}}>{msg}</div>}
 <button onClick={guardar} disabled={guardando} style={S.btnG}>{guardando?"Guardando...":"Guardar cambios"}</button>
 </div>
