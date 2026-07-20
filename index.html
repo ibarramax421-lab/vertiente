@@ -589,6 +589,7 @@ const [gastos,setGastos]=useState([]);const [cierres,setCierres]=useState([]);
 const [loading,setLoading]=useState(true);
 const [refreshing,setRefreshing]=useState(false);
   const [temaVersion,setTemaVersion]=useState(0);
+              const [iconos,setIconos]=useState({icono_opacidad:0.35,icono_clientes:"👥",icono_productos:"💧",icono_ventas:"💰",icono_visitas:"🚚",icono_deudores:"⚠️",icono_sinvisita:"📅"});
 const [error,setError]=useState("");
 const [modal,setModal]=useState(null);
 const [editC,setEditC]=useState(null);
@@ -631,6 +632,7 @@ const{data}=await sb.from("configuracion_apariencia").select("*").eq("id",1).sin
 if(data){
 Object.assign(C,{bg:data.color_fondo||C.bg,bg2:data.color_fondo2||C.bg2,card:data.color_tarjeta||C.card,border:data.color_borde||C.border,acc:data.color_acento||C.acc,acc2:data.color_acento||C.acc2,acc3:data.color_acento||C.acc3,grn:data.color_verde||C.grn,grn2:data.color_verde||C.grn2,grn3:data.color_verde||C.grn3,text:data.color_texto||C.text,err:data.color_error||C.err,warn:data.color_alerta||C.warn});
 setTemaVersion(v=>v+1);
+       setIconos({icono_opacidad:data.icono_opacidad??0.35,icono_clientes:data.icono_clientes||"👥",icono_productos:data.icono_productos||"💧",icono_ventas:data.icono_ventas||"💰",icono_visitas:data.icono_visitas||"🚚",icono_deudores:data.icono_deudores||"⚠️",icono_sinvisita:data.icono_sinvisita||"📅"});
 }
 }catch(e){}}
 async function cargarDatos(r=false){
@@ -798,7 +800,7 @@ return(<div key={c.id} style={{background:C.card,borderRadius:13,padding:"14px 1
 </div>);
 const DashCard=({titulo,valor,subtitulo,color,icono,onClick})=>(
 <div onClick={onClick} style={{background:"linear-gradient(135deg,"+C.card+" 60%,"+C.bg3+")",border:"1px solid "+(color||C.border),borderRadius:16,padding:"18px 16px",cursor:onClick?"pointer":"default",display:"flex",flexDirection:"column",gap:4,position:"relative",overflow:"hidden"}}>
-<div style={{position:"absolute",right:12,top:12,fontSize:28,opacity:.15}}>{icono}</div>
+<div style={{position:"absolute",right:12,top:12,fontSize:28,opacity:iconos.icono_opacidad}}>{icono}</div>
 <div style={{fontSize:11,color:C.text2,fontWeight:700,letterSpacing:.8,textTransform:"uppercase"}}>{titulo}</div>
 <div style={{fontSize:28,fontWeight:900,color:C.text,lineHeight:1}}>{valor}</div>
 {subtitulo&&<div style={{fontSize:11,color:C.text2}}>{subtitulo}</div>}
@@ -811,16 +813,16 @@ return(<div style={{padding:"0 0 100px",maxWidth:560,margin:"0 auto"}}>
 </div>
 <div style={{padding:"16px 14px",display:"flex",flexDirection:"column",gap:10}}>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-<DashCard titulo="Clientes" valor={clientesActivos} subtitulo="activos" icono="👥" color={C.border2} onClick={()=>setTab("clientes")}/>
-<DashCard titulo="Productos" valor={productos.length} subtitulo="en catálogo" icono="💧" color={C.border} onClick={()=>setTab("productos")}/>
+<DashCard titulo="Clientes" valor={clientesActivos} subtitulo="activos" icono={iconos.icono_clientes} color={C.border2} onClick={()=>setTab("clientes")}/>
+<DashCard titulo="Productos" valor={productos.length} subtitulo="en catálogo" icono={iconos.icono_productos} color={C.border} onClick={()=>setTab("productos")}/>
 </div>
-<DashCard titulo="Ventas del día" valor={fmt(totCobrado)} subtitulo={"Cobrado hoy · "+visitasHoy+" entregas"} icono="💰" color={C.grn2} onClick={()=>setTab("reporte")}/>
+<DashCard titulo="Ventas del día" valor={fmt(totCobrado)} subtitulo={"Cobrado hoy · "+visitasHoy+" entregas"} icono={iconos.icono_ventas} color={C.grn2} onClick={()=>setTab("reporte")}/>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-<DashCard titulo="Visitas hoy" valor={visitasHoy} subtitulo="entregas" icono="🚚" color={C.border} onClick={()=>setTab("reporte")}/>
+<DashCard titulo="Visitas hoy" valor={visitasHoy} subtitulo="entregas" icono={iconos.icono_visitas} color={C.border} onClick={()=>setTab("reporte")}/>
 <DashCard titulo="Estadísticas" valor="→" subtitulo="ver detalle" icono="📊" color={C.border} onClick={()=>setTab("stats")}/>
 </div>
-<DashCard titulo="Deudores" valor={deudores.length} subtitulo={deudores.length>0?"Total: "+fmt(deudores.reduce((a,c)=>a+Math.abs(c.saldo),0)):"Sin deudas"} icono="⚠️" color={deudores.length>0?"#991b1b":C.border} onClick={()=>setDashSeccion("deudores")}/>
-<DashCard titulo="Sin visita 7+ días" valor={sinVisita.length} subtitulo="clientes pendientes" icono="📅" color={sinVisita.length>0?"#c2410c":C.border} onClick={()=>setDashSeccion("sinvisita")}/>
+<DashCard titulo="Deudores" valor={deudores.length} subtitulo={deudores.length>0?"Total: "+fmt(deudores.reduce((a,c)=>a+Math.abs(c.saldo),0)):"Sin deudas"} icono={iconos.icono_deudores} color={deudores.length>0?"#991b1b":C.border} onClick={()=>setDashSeccion("deudores")}/>
+<DashCard titulo="Sin visita 7+ días" valor={sinVisita.length} subtitulo="clientes pendientes" icono={iconos.icono_sinvisita} color={sinVisita.length>0?"#c2410c":C.border} onClick={()=>setDashSeccion("sinvisita")}/>
 </div>
 </div>);}
 if(tab==="cobranzas"){
