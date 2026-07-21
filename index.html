@@ -280,7 +280,7 @@ await sb.from("clientes").update({nombre,telefono,direccion,zona,lat,lng}).eq("i
 setMsg("Guardado!");
        setIconos(iconosVal);
 setTimeout(()=>onGuardado(),800);
-}catch(e){setMsg("Error al guardar.");}
+}catch(e){setMsg("Error: "+e.message);}
 setGuardando(false);}
 return(
 <div style={{position:"fixed",inset:0,background:C.bg,zIndex:2000,display:"flex",flexDirection:"column"}}>
