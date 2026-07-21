@@ -44,6 +44,12 @@ const [msg,setMsg]=useState("");
 const [guardando,setGuardando]=useState(false);
 const [editPrecio,setEditPrecio]=useState(null);const [ajusteMontoLocal,setAjusteMontoLocal]=useState("");const [ajusteTipoLocal,setAjusteTipoLocal]=useState("debe");
 const [editPrecioVal,setEditPrecioVal]=useState("");
+       const [deudaAnt,setDeudaAnt]=useState(c.deuda_anterior||0);
+const [guardandoDeuda,setGuardandoDeuda]=useState(false);
+async function guardarDeudaAnterior(){
+setGuardandoDeuda(true);
+try{await sb.from("clientes").update({deuda_anterior:Number(deudaAnt)||0}).eq("id",c.id);onActualizar&&onActualizar();}catch(e){}
+setGuardandoDeuda(false);}
 const [fotoFile,setFotoFile]=useState(null);
 const pr=productos.find(p=>p.id===Number(prodId));
 const precioEsp=pr?getPrecioEsp(preciosEspeciales,c.id,pr.id):null;
@@ -164,7 +170,24 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 </div>))}
 </div>)}
 </div>)}
-{tabActual==="datos"&&(<div><div style={{background:"#1c1003",border:"1px solid #854d0e",borderRadius:12,padding:"14px",marginBottom:14}}><div style={{fontWeight:700,color:C.warn,fontSize:13,marginBottom:10}}>Ajustar saldo</div><div style={{display:"flex",gap:8,marginBottom:10}}><button onClick={()=>setAjusteTipoLocal("debe")} style={{flex:1,padding:"11px",borderRadius:8,border:"1px solid "+(ajusteTipoLocal==="debe"?"#991b1b":C.border),background:ajusteTipoLocal==="debe"?"#1c0505":C.bg2,color:ajusteTipoLocal==="debe"?C.err:C.text2,cursor:"pointer",fontWeight:700}}>Debe</button><button onClick={()=>setAjusteTipoLocal("favor")} style={{flex:1,padding:"11px",borderRadius:8,border:"1px solid "+(ajusteTipoLocal==="favor"?C.grn2:C.border),background:ajusteTipoLocal==="favor"?C.bg3:C.bg2,color:ajusteTipoLocal==="favor"?C.grn3:C.text2,cursor:"pointer",fontWeight:700}}>A favor</button></div><input type="number" style={{...S.inp,marginBottom:8}} value={ajusteMontoLocal} onChange={e=>setAjusteMontoLocal(e.target.value)} placeholder="Monto"/><button onClick={async()=>{const m=Number(ajusteMontoLocal);if(!m||m<=0)return;const nuevoSaldo=ajusteTipoLocal==="debe"?-m:m;await sb.from("clientes").update({saldo:nuevoSaldo}).eq("id",c.id);setAjusteMontoLocal("");onActualizar&&onActualizar();}} style={{...S.btnG,marginTop:0}}>Confirmar</button></div>
+{tabActual==="datos"&&(<div><div style={{background:C.bg2,borderRadius:12,padding:"14px",marginBottom:14,border:"1px solid "+C.border}}>
+<div style={{fontWeight:700,color:C.acc3,fontSize:13,marginBottom:10}}>Cuenta corriente</div>
+<div style={{marginBottom:10}}>
+<div style={{fontSize:11,color:C.text2,marginBottom:4}}>Deuda anterior (cargar manualmente)</div>
+<div style={{display:"flex",gap:8}}>
+<input type="number" style={{...S.inp,flex:1}} value={deudaAnt} onChange={e=>setDeudaAnt(e.target.value)}/>
+<button onClick={guardarDeudaAnterior} disabled={guardandoDeuda} style={{background:"#052e16",color:C.grn3,border:"1px solid "+C.grn2,borderRadius:8,padding:"0 16px",cursor:"pointer",fontWeight:700,fontSize:13}}>{guardandoDeuda?"...":"Guardar"}</button>
+</div>
+</div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderTop:"1px solid "+C.border}}>
+<span style={{color:C.text3,fontSize:13}}>Saldo por entregas sin cobrar</span>
+<span style={{color:C.err,fontWeight:700}}>{fmt(historial.filter(p=>!p.pagado).reduce((a,p)=>a+p.total,0))}</span>
+</div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderTop:"2px solid "+C.border2,marginTop:4}}>
+<span style={{color:C.text,fontWeight:700,fontSize:14}}>Saldo total actual</span>
+<span style={{color:C.err,fontWeight:900,fontSize:18}}>{fmt((c.deuda_anterior||0)+historial.filter(p=>!p.pagado).reduce((a,p)=>a+p.total,0))}</span>
+</div>
+</div><div style={{background:"#1c1003",border:"1px solid #854d0e",borderRadius:12,padding:"14px",marginBottom:14}}><div style={{fontWeight:700,color:C.warn,fontSize:13,marginBottom:10}}>Ajustar saldo</div><div style={{display:"flex",gap:8,marginBottom:10}}><button onClick={()=>setAjusteTipoLocal("debe")} style={{flex:1,padding:"11px",borderRadius:8,border:"1px solid "+(ajusteTipoLocal==="debe"?"#991b1b":C.border),background:ajusteTipoLocal==="debe"?"#1c0505":C.bg2,color:ajusteTipoLocal==="debe"?C.err:C.text2,cursor:"pointer",fontWeight:700}}>Debe</button><button onClick={()=>setAjusteTipoLocal("favor")} style={{flex:1,padding:"11px",borderRadius:8,border:"1px solid "+(ajusteTipoLocal==="favor"?C.grn2:C.border),background:ajusteTipoLocal==="favor"?C.bg3:C.bg2,color:ajusteTipoLocal==="favor"?C.grn3:C.text2,cursor:"pointer",fontWeight:700}}>A favor</button></div><input type="number" style={{...S.inp,marginBottom:8}} value={ajusteMontoLocal} onChange={e=>setAjusteMontoLocal(e.target.value)} placeholder="Monto"/><button onClick={async()=>{const m=Number(ajusteMontoLocal);if(!m||m<=0)return;const nuevoSaldo=ajusteTipoLocal==="debe"?-m:m;await sb.from("clientes").update({saldo:nuevoSaldo}).eq("id",c.id);setAjusteMontoLocal("");onActualizar&&onActualizar();}} style={{...S.btnG,marginTop:0}}>Confirmar</button></div>
 <div style={{background:C.bg2,borderRadius:12,padding:"14px",marginBottom:14}}>
 <div style={{color:C.text2,fontSize:13,marginBottom:6}}><strong style={{color:C.text}}>Tel:</strong> {c.telefono||"Sin teléfono"}</div>
 <div style={{color:C.text2,fontSize:13,marginBottom:6}}><strong style={{color:C.text}}>Dir:</strong> {c.direccion||"Sin dirección"}</div>
