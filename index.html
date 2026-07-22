@@ -151,16 +151,10 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 </div>
 </div>
 <div style={{background:C.card,borderRadius:10,border:"1px solid "+C.border,overflow:"hidden",marginBottom:12}}>
-<div style={{background:C.bg3,padding:"10px 14px",borderBottom:"1px solid "+C.border,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-<span style={{color:C.text3,fontSize:11,fontWeight:700}}>CUENTA CORRIENTE</span>
-</div>
 <div style={{padding:"10px 14px",borderBottom:"1px solid "+C.border,display:"flex",justifyContent:"space-between",alignItems:"center",background:"#1c1003"}}>
-<div>
-<div style={{color:C.warn,fontSize:12,fontWeight:700}}>Saldo inicial</div>
-<div style={{color:C.text2,fontSize:10}}>Editable · se recalcula todo</div>
-</div>
+<span style={{color:C.warn,fontSize:13,fontWeight:700}}>Saldo anterior</span>
 <div style={{display:"flex",alignItems:"center",gap:8}}>
-<input type="number" style={{...S.inp,width:110,padding:"6px 10px",fontSize:13,textAlign:"right"}} value={saldoInicialEdit} onChange={e=>setSaldoInicialEdit(e.target.value)} onBlur={async()=>{const v=Number(saldoInicialEdit)||0;await sb.from("clientes").update({saldo_inicial:v}).eq("id",c.id);onActualizar&&onActualizar();}}/>
+<input type="number" style={{...S.inp,width:120,padding:"6px 10px",fontSize:14,textAlign:"right"}} value={saldoInicialEdit} onChange={e=>setSaldoInicialEdit(e.target.value)} onBlur={async()=>{const v=Number(saldoInicialEdit)||0;await sb.from("clientes").update({saldo_inicial:v}).eq("id",c.id);onActualizar&&onActualizar();}}/>
 </div>
 </div>
 {(()=>{
@@ -168,30 +162,36 @@ const saldoInicial=Number(c.saldo_inicial)||0;
 const movimientos=[];
 const pedOrden=[...historial].sort((a,b)=>a.fecha.localeCompare(b.fecha)||(a.id-b.id));
 const cobOrden=[...cobrosCliente].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.id-b.id));
-pedOrden.forEach(p=>{const prr=productos.find(x=>x.id===p.productoId);movimientos.push({tipo:"pedido",fecha:p.fecha,id:p.id,desc:(p.cantidad||1)+"x "+(prr?.name||""),monto:p.pagado?0:-p.total,cobrado:p.pagado,total:p.total,obj:p});});
-cobOrden.forEach(co=>{movimientos.push({tipo:"cobro",fecha:co.fecha||"",id:"c"+co.id,desc:(co.metodopago||co.metodoPago||"Cobro"),monto:co.monto,cobrado:true});});
+pedOrden.forEach(p=>{const prr=productos.find(x=>x.id===p.productoId);movimientos.push({tipo:"pedido",fecha:p.fecha,id:p.id,desc:(p.cantidad||1)+"x "+(prr?.name||""),cobrado:p.pagado,total:p.total,obj:p});});
+cobOrden.forEach(co=>{movimientos.push({tipo:"cobro",fecha:co.fecha||"",id:"c"+co.id,desc:(co.metodopago||co.metodoPago||"Cobro"),monto:co.monto});});
 movimientos.sort((a,b)=>a.fecha.localeCompare(b.fecha));
 let saldoAcum=saldoInicial;
-const filas=movimientos.map(m=>{if(m.tipo==="cobro"){saldoAcum+=m.monto;}else{saldoAcum-=m.total;}return{...m,saldoTras:saldoAcum};});
-return filas.map((m,i)=>(<div key={m.id} style={{padding:"9px 14px",borderBottom:"1px solid "+C.border,display:"flex",justifyContent:"space-between",alignItems:"center",background:i%2===0?C.bg2:C.bg}}>
+const filas=movimientos.map(m=>{
+if(m.tipo==="cobro"){saldoAcum+=m.monto;}
+else{if(!m.cobrado)saldoAcum-=m.total;}
+return{...m,saldoTras:saldoAcum};
+});
+return filas.map((m,i)=>(<div key={m.id} style={{padding:"9px 14px",borderBottom:"1px solid "+C.border,display:"flex",justifyContent:"space-between",alignItems:"flex-start",background:i%2===0?C.bg2:C.bg}}>
 <div style={{flex:1,minWidth:0}}>
-<div style={{display:"flex",gap:6,alignItems:"center"}}>
-{m.tipo==="cobro"?<span style={{color:C.grn3,fontSize:10,fontWeight:700,background:"#052e16",borderRadius:4,padding:"1px 5px"}}>COBRO</span>:<span style={{color:m.cobrado?C.acc3:C.err,fontSize:10,fontWeight:700,background:m.cobrado?C.bg3:"#1c0505",borderRadius:4,padding:"1px 5px"}}>{m.cobrado?"PAGADO":"PENDIENTE"}</span>}
+<div style={{display:"flex",gap:6,alignItems:"center",marginBottom:2}}>
+{m.tipo==="cobro"
+?<span style={{color:C.grn3,fontSize:10,fontWeight:700,background:"#052e16",borderRadius:4,padding:"1px 5px"}}>COBRO</span>
+:<span style={{color:m.cobrado?C.grn3:C.err,fontSize:10,fontWeight:700,background:m.cobrado?"#052e16":"#1c0505",borderRadius:4,padding:"1px 5px"}}>{m.cobrado?"PAGADO":"PENDIENTE"}</span>}
 <span style={{color:C.text,fontSize:12,fontWeight:600}}>{m.desc}</span>
 </div>
 <div style={{color:C.text2,fontSize:10}}>{m.fecha}</div>
 {m.tipo==="pedido"&&m.obj&&(m.obj.bidones_dev||0)>0&&<div style={{color:C.warn,fontSize:10}}>↩ Dev {m.obj.bidones_dev}</div>}
 </div>
 <div style={{textAlign:"right",flexShrink:0,marginLeft:10}}>
-<div style={{color:m.tipo==="cobro"?C.grn3:C.acc3,fontWeight:700,fontSize:13}}>{m.tipo==="cobro"?"+":"-"}{fmt(m.tipo==="cobro"?m.monto:m.total)}</div>
-<div style={{color:m.saldoTras<0?C.err:m.saldoTras>0?C.grn3:C.text2,fontSize:10,fontWeight:700}}>{m.saldoTras<0?"-":m.saldoTras>0?"+":"$0"}{m.saldoTras!==0?fmt(m.saldoTras):""}</div>
+<div style={{color:m.tipo==="cobro"?C.grn3:m.cobrado?C.acc3:C.err,fontWeight:700,fontSize:13}}>{m.tipo==="cobro"?"+":m.cobrado?"-":"-"}{fmt(m.tipo==="cobro"?m.monto:m.total)}</div>
+<div style={{color:m.saldoTras<0?C.err:m.saldoTras>0?C.grn3:C.text2,fontSize:10,fontWeight:600}}>{m.saldoTras<0?"Debe "+fmt(Math.abs(m.saldoTras)):m.saldoTras>0?"Favor "+fmt(m.saldoTras):"Al día"}</div>
 </div>
-{m.tipo==="pedido"&&puedeEditar&&<button onClick={()=>borrarPedido(m.obj)} style={{marginLeft:8,background:"none",color:C.text2,border:"none",padding:0,cursor:"pointer",fontSize:10,textDecoration:"underline",flexShrink:0}}>borrar</button>}
+{m.tipo==="pedido"&&puedeEditar&&<button onClick={()=>borrarPedido(m.obj)} style={{marginLeft:8,background:"none",color:C.text2,border:"none",padding:0,cursor:"pointer",fontSize:10,textDecoration:"underline",flexShrink:0,marginTop:2}}>borrar</button>}
 </div>));
 })()}
-<div style={{padding:"12px 14px",background:C.bg3,display:"flex",justifyContent:"space-between",alignItems:"center",borderTop:"2px solid "+C.border2}}>
-<span style={{color:C.text,fontWeight:700,fontSize:14}}>SALDO ACTUAL</span>
-<span style={{color:c.saldo<0?C.err:c.saldo>0?C.grn3:C.text2,fontWeight:900,fontSize:20}}>{c.saldo<0?"-":c.saldo>0?"+":"$0"}{c.saldo!==0?fmt(c.saldo):""}</span>
+<div style={{padding:"14px",background:C.bg3,display:"flex",justifyContent:"space-between",alignItems:"center",borderTop:"2px solid "+C.border2}}>
+<span style={{color:C.text,fontWeight:700,fontSize:15}}>TOTAL</span>
+<span style={{color:c.saldo<0?C.err:c.saldo>0?C.grn3:C.text2,fontWeight:900,fontSize:22}}>{c.saldo<0?"Debe "+fmt(Math.abs(c.saldo)):c.saldo>0?"Favor "+fmt(c.saldo):"Al día"}</span>
 </div>
 </div>
 <button onClick={compartirWhatsApp} style={{...S.btn,marginTop:4,background:C.bg3,border:"1px solid "+C.grn2,color:C.grn3,boxShadow:"none"}}>Compartir por WhatsApp</button>
