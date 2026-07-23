@@ -665,7 +665,7 @@ function cambiarRol(){setRol(null);localStorage.removeItem("vn_rol");}
 async function cargarUbicaciones(){
 const{data}=await sb.from("ubicaciones_repartidor").select("*").eq("fecha",today()).order("created_at",{ascending:false});
 if(data){const latest={};data.forEach(u=>{if(!latest[u.repartidorId])latest[u.repartidorId]=u;});setUbicaciones(Object.values(latest));setRecorrido([...data].reverse());}
-  async function cargarApariencia(){
+  }async function cargarApariencia(){
 try{
 const{data}=await sb.from("configuracion_apariencia").select("*").eq("id",1).single();
 if(data){
