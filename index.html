@@ -41,6 +41,7 @@ const [cant,setCant]=useState("");
 const [metodo,setMetodo]=useState("Efectivo");
 const [pagado,setPagado]=useState(true);
 const [devBid,setDevBid]=useState("");
+            const [carrito,setCarrito]=useState([]);
 const [cobMonto,setCobMonto]=useState("");
 const [cobMetodo,setCobMetodo]=useState("Efectivo");
 const [cobNotas,setCobNotas]=useState("");
@@ -56,26 +57,37 @@ const precio=precioEsp!==null?precioEsp:(pr?.price||0);
 const total=precio*Number(cant||1);
 const d=c.saldo<0,f=c.saldo>0;
 const inactivo=c.activo===false;
-async function registrarVenta(){
+            const totalCarrito=carrito.reduce((a,x)=>a+x.totalItem,0);
+function agregarAlCarrito(){
 if(!prodId||!cant||Number(cant)<=0)return;
+const prSel=productos.find(p=>p.id===Number(prodId));
+const peSel=getPrecioEsp(preciosEspeciales,c.id,Number(prodId));
+const precioSel=peSel!==null?peSel:(prSel?.price||0);
+setCarrito(cart=>[...cart,{key:Date.now()+Math.random(),productoId:Number(prodId),nombre:prSel?.name||"",cantidad:Number(cant),devolucion:Number(devBid)||0,precio:precioSel,totalItem:precioSel*Number(cant)}]);
+setCant("");setDevBid("");
+}
+function quitarDelCarrito(key){setCarrito(cart=>cart.filter(x=>x.key!==key));}
+async function registrarVenta(){
+if(carrito.length===0)return;
 setGuardando(true);setMsg("");
 try{
 const repIdFinal=repId||1;
-const{error:e1}=await sb.from("pedidos").insert({clienteId:c.id,productoId:Number(prodId),repId:Number(repIdFinal),cantidad:Number(cant),fecha:today(),estado:"entregado",pagado,total,bidones_dev:Number(devBid)||0});
-if(e1)throw e1;
-let nuevoSaldo=c.saldo;
-const bidField=getBidField(prodId);
 let updateCliente={};
+for(const item of carrito){
+const{error:e1}=await sb.from("pedidos").insert({clienteId:c.id,productoId:item.productoId,repId:Number(repIdFinal),cantidad:item.cantidad,fecha:today(),estado:"entregado",pagado,total:item.totalItem,bidones_dev:item.devolucion});
+if(e1)throw e1;
+const bidField=getBidField(item.productoId);
 if(bidField){
-const actual=c[bidField]||0;
-const devueltos=Number(devBid)||0;
-updateCliente[bidField]=Math.max(0,actual+Number(cant)-devueltos);
+const actual=(updateCliente[bidField]!==undefined?updateCliente[bidField]:(c[bidField]||0));
+updateCliente[bidField]=Math.max(0,actual+item.cantidad-item.devolucion);
 }
-if(pagado){await sb.from("cobros").insert({clienteid:c.id,monto:total,metodopago:metodo,fecha:today(),notas:""});}
-else{nuevoSaldo=(c.saldo||0)-total;}
+}
+let nuevoSaldo=c.saldo;
+if(pagado){await sb.from("cobros").insert({clienteid:c.id,monto:totalCarrito,metodopago:metodo,fecha:today(),notas:""});}
+else{nuevoSaldo=(c.saldo||0)-totalCarrito;}
 updateCliente.saldo=nuevoSaldo;
 await sb.from("clientes").update(updateCliente).eq("id",c.id);
-setMsg("Venta registrada!");setCant("");setDevBid("");
+setMsg("Venta registrada!");setCarrito([]);
 onActualizar&&onActualizar();
 }catch(e){setMsg("Error: "+e.message);}
 setGuardando(false);}
@@ -132,7 +144,7 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 <button onClick={()=>setPagado(false)} style={{flex:1,padding:"11px",borderRadius:8,border:"1px solid "+(!pagado?"#991b1b":C.border),background:!pagado?"#1c0505":C.bg2,color:!pagado?C.err:C.text2,cursor:"pointer",fontWeight:700}}>Sin cobrar</button>
 </div></Fld>
 {pagado&&<Fld label="Forma de pago"><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{METODOS_PAGO.map(m=>(<button key={m} onClick={()=>setMetodo(m)} style={{padding:"7px 12px",borderRadius:20,border:"1px solid "+(metodo===m?C.grn2:C.border),background:metodo===m?C.bg3:C.bg2,color:metodo===m?C.grn3:C.text2,cursor:"pointer",fontSize:12,fontWeight:700}}>{m}</button>))}</div></Fld>}
-<Fld label="Devolucion bidones"><input type="number" min={0} style={S.inp} value={devBid} onChange={e=>setDevBid(e.target.value)} placeholder="0 (opcional)"/></Fld>
+<Fld label="Devolucion bidones"><input type="number" min={0} style={S.inp} value={devBid} onChange={e=>setDevBid(e.target.value)} placeholder="0 (opcional)"/></Fld><button onClick={agregarAlCarrito} style={{...S.btn,marginBottom:14,background:C.bg3,border:"1px solid "+C.border2,color:C.acc3,boxShadow:"none"}}>🛒 Agregar al carrito</button>{carrito.length>0&&(<div style={{background:C.card,borderRadius:10,padding:"10px 14px",marginBottom:14,border:"1px solid "+C.grn2}}><div style={{fontSize:12,color:C.grn3,fontWeight:700,marginBottom:8}}>🛒 CARRITO</div>{carrito.map(item=>(<div key={item.key} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid "+C.border}}><div><div style={{color:C.text,fontSize:13,fontWeight:600}}>{item.cantidad}x {item.nombre}</div>{item.devolucion>0&&<div style={{color:C.warn,fontSize:11}}>↩ Devuelve {item.devolucion}</div>}</div><div style={{display:"flex",alignItems:"center",gap:8}}><span style={{color:C.grn3,fontWeight:700,fontSize:13}}>{fmt(item.totalItem)}</span><button onClick={()=>quitarDelCarrito(item.key)} style={{background:"none",border:"none",color:C.err,cursor:"pointer",fontSize:16}}>✕</button></div></div>))}<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0 0",marginTop:4}}><span style={{color:C.text,fontWeight:700,fontSize:14}}>TOTAL</span><span style={{color:C.grn3,fontWeight:900,fontSize:18}}>{fmt(totalCarrito)}</span></div></div>)}
 <button onClick={registrarVenta} disabled={guardando} style={{...S.btnG,marginTop:4}}>{guardando?"Guardando...":"Confirmar venta"}</button>
 </div>)}
 {tabActual==="cobro"&&(<div>
