@@ -422,7 +422,7 @@ return(
 <div>
 <div style={{color:C.text2,fontSize:12,marginBottom:8}}>{clientesFiltrados.length} resultados</div>
 {clientesFiltrados.map(function(c){
-var d=c.saldo<0,f=c.saldo>0;
+var deuda=calcularDeuda(c,pedidos,cobros);var d=deuda>0,f=false;
 var visitado=pedidos.some(function(p){return p.clienteId===c.id&&p.fecha===hoy;});
 return(
 <div key={c.id} onClick={function(){setClienteAbierto(c);}} style={{background:C.card,borderRadius:12,padding:"13px 14px",marginBottom:8,border:"1px solid "+(visitado?C.grn2:C.border),cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -435,7 +435,7 @@ return(
 <div style={{color:C.text2,fontSize:12}}>{c.direccion}</div>
 </div>
 <div style={{textAlign:"right"}}>
-<div style={{fontWeight:900,fontSize:18,color:d?C.err:f?C.grn3:C.text2}}>{d?"-":f?"+":""}{fmt(c.saldo)}</div>
+<div style={{fontWeight:900,fontSize:18,color:d?C.err:f?C.grn3:C.text2}}>{fmt(deuda)}</div>
 </div>
 </div>
 );
@@ -447,7 +447,7 @@ return(
 <div style={{marginBottom:6,color:C.text2,fontSize:11,fontWeight:700,letterSpacing:.5}}>CERCA DE VOS</div>
 )}
 {cercanos.map(function(c){
-var d=c.saldo<0,f=c.saldo>0;
+var deuda=calcularDeuda(c,pedidos,cobros);var d=deuda>0,f=false;
 var visitado=pedidos.some(function(p){return p.clienteId===c.id&&p.fecha===hoy;});
 return(
 <div key={c.id} onClick={function(){setClienteAbierto(c);}} style={{background:C.card,borderRadius:13,padding:"14px 15px",marginBottom:10,border:"2px solid "+(visitado?C.grn2:C.border2),cursor:"pointer"}}>
@@ -464,7 +464,7 @@ return(
 {(c.bidones||c.bidones20||c.bidones12||c.bidones12up||c.sifones)&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>{[c.bidones20?"B20:"+c.bidones20:"",c.bidones12?"B12:"+c.bidones12:"",c.bidones12up?"B12UP:"+c.bidones12up:"",c.sifones?"Sif:"+c.sifones:""].filter(Boolean).join(" · ")||("Bidones: "+(c.bidones||0))}</div>}
 </div>
 <div style={{textAlign:"right",flexShrink:0,marginLeft:10}}>
-<div style={{fontWeight:900,fontSize:22,color:d?C.err:f?C.grn3:C.text2}}>{d?"-":f?"+":""}{fmt(c.saldo)}</div>
+<div style={{fontWeight:900,fontSize:22,color:d?C.err:f?C.grn3:C.text2}}>{fmt(deuda)}</div>
 <div style={{fontSize:10,color:C.text2}}>{d?"DEBE":f?"A FAVOR":"AL DIA"}</div>
 </div>
 </div>
