@@ -60,7 +60,7 @@ try{
 const repIdFinal=repId||1;
 const esRetornable=getBidField(prodId)!==null;
 const esPrimerPedido=pedidos.filter(p=>p.clienteId===c.id).length===0;
-const{error:e1}=await sb.from("pedidos").insert({clienteId:c.id,productoId:Number(prodId),repId:Number(repIdFinal),cantidad:Number(cant),fecha:today(),estado:"entregado",pagado,total,bidones_dev:Number(devBid)||0});
+const{error:e1}=await sb.from("pedidos").insert({clienteId:c.id,productoId:Number(prodId),repId:Number(repIdFinal),cantidad:Number(cant),fecha:today(),hora:new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"}),estado:"entregado",pagado,total,bidones_dev:Number(devBid)||0});
 if(e1)throw e1;
 let nuevoSaldo=c.saldo;
 const bidField=getBidField(prodId);
@@ -194,7 +194,7 @@ return filas.map((m,i)=>(<div key={m.id} style={{padding:"9px 14px",borderBottom
 :<span style={{color:m.cobrado?C.grn3:C.err,fontSize:10,fontWeight:700,background:m.cobrado?"#052e16":"#1c0505",borderRadius:4,padding:"1px 5px"}}>{m.cobrado?"PAGADO":"PENDIENTE"}</span>}
 <span style={{color:C.text,fontSize:12,fontWeight:600}}>{m.desc}</span>
 </div>
-<div style={{color:C.text2,fontSize:10}}>{m.fecha}</div>
+<div style={{color:C.text2,fontSize:10}}>{m.fecha}{m.obj?.hora?" · "+m.obj.hora:""}</div>
 {m.tipo==="pedido"&&m.obj&&(m.obj.bidones_dev||0)>0&&<div style={{color:C.warn,fontSize:10}}>↩ Dev {m.obj.bidones_dev}</div>}
 </div>
 <div style={{textAlign:"right",flexShrink:0,marginLeft:10}}>
@@ -736,7 +736,7 @@ return(<div key={p.id} style={{background:C.bg2,borderRadius:10,padding:"11px 13
 <div style={{textAlign:"right"}}><div style={{color:p.pagado?C.grn3:C.err,fontWeight:900,fontSize:16}}>{fmt(p.total)}</div></div>
 </div>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-<div style={{fontSize:12,color:C.text3}}>{p.cantidad}x {pr?.name} · {p.pagado?(metodo||"Cobrado"):"Sin cobrar"}</div>
+<div style={{fontSize:12,color:C.text3}}>{p.cantidad}x {pr?.name}{p.hora?" · "+p.hora:""} · {p.pagado?(metodo||"Cobrado"):"Sin cobrar"}</div>
 <button onClick={()=>anularEntrega(p)} style={{background:"#1c0505",color:C.err,border:"1px solid #991b1b",borderRadius:6,padding:"5px 10px",cursor:"pointer",fontSize:11,fontWeight:700}}>Anular</button>
 </div>
 </div>);})}
