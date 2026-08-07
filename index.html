@@ -600,6 +600,7 @@ const [recorrido,setRecorrido]=useState([]);
 const [gastos,setGastos]=useState([]);const [cierres,setCierres]=useState([]);const [bonificaciones,setBonificaciones]=useState([]);
 const [config,setConfig]=useState({color_fondo:"#030d1a",color_card:"#063d22",color_acento:"#00d4ff",color_boton:"#16a34a",tamanio_letra:"15",estilo_tarjeta:"redondeado"});
 const [showConfig,setShowConfig]=useState(false);
+useEffect(()=>{if(config.color_fondo){C.bg=config.color_fondo;C.bg2=config.color_fondo;C.bg3=config.color_fondo;}if(config.color_card)C.card=config.color_card;if(config.color_acento){C.border2=config.color_acento;C.acc=config.color_acento;C.acc2=config.color_acento;C.acc3=config.color_acento;}if(config.color_boton){C.grn2=config.color_boton;C.grn3=config.color_boton;}if(config.tamanio_letra){document.body.style.fontSize=config.tamanio_letra+"px";}if(config.estilo_tarjeta){const r=config.estilo_tarjeta==="cuadrado"?"2px":config.estilo_tarjeta==="muy redondeado"?"24px":"13px";document.documentElement.style.setProperty("--border-radius",r);}},[config]);
 const [loading,setLoading]=useState(true);
 const [refreshing,setRefreshing]=useState(false);
 const [error,setError]=useState("");
@@ -932,6 +933,7 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
 <span style={{fontWeight:800,fontSize:18,color:C.text}}>🎨 Personalizar</span>
 <button onClick={()=>setShowConfig(false)} style={{background:C.bg3,border:"none",color:C.text2,cursor:"pointer",borderRadius:8,padding:"6px 14px",fontSize:14,fontWeight:700}}>Cerrar</button>
+<button onClick={()=>window.location.reload()} style={{background:"#052e16",border:"1px solid "+C.grn2,color:C.grn3,cursor:"pointer",borderRadius:8,padding:"6px 14px",fontSize:14,fontWeight:700}}>Aplicar cambios</button>
 </div>
 {[
 {clave:"color_fondo",label:"Color de fondo",tipo:"color"},
