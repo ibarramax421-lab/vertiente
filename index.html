@@ -78,7 +78,7 @@ await sb.from("bonificaciones").insert({fecha:today(),clienteid:c.id,repid:Numbe
 }
 if(pagado){
 const montoEfectivo=montoPagado&&Number(montoPagado)>0?Number(montoPagado):totalGeneral;
-await sb.from("cobros").insert({clienteid:c.id,monto:montoEfectivo,metodopago:metodo,fecha:today(),notas:""});
+await sb.from("cobros").insert({clienteid:c.id,monto:montoEfectivo,metodopago:metodo,fecha:today(),notas:"",tipo:"venta"});
 if(montoEfectivo<totalGeneral){nuevoSaldo=(c.saldo||0)-(totalGeneral-montoEfectivo);}
 }else{nuevoSaldo=(c.saldo||0)-totalGeneral;}
 updateCliente.saldo=nuevoSaldo;
@@ -93,7 +93,7 @@ setGuardando(true);setMsg("");
 try{
 const nuevoSaldo=(c.saldo||0)+m;
 await sb.from("clientes").update({saldo:nuevoSaldo}).eq("id",c.id);
-await sb.from("cobros").insert({clienteid:c.id,monto:m,metodopago:cobMetodo,fecha:today(),notas:cobNotas||""});
+await sb.from("cobros").insert({clienteid:c.id,monto:m,metodopago:cobMetodo,fecha:today(),notas:cobNotas||"",tipo:"cobranza"});
 await sb.from("pedidos").update({pagado:true}).eq("clienteId",c.id).eq("pagado",false);
 setMsg("Cobro: "+fmt(m));setCobMonto("");setCobNotas("");
 onActualizar&&onActualizar();
@@ -672,7 +672,7 @@ async function ajustarSaldo(){const m=Number(ajusteMonto);if(!m||!ajusteC)return
 async function guardarGasto(){const m=Number(gastoMonto);if(!m||m<=0)return;setGastoGuardando(true);setGastoMsg("");try{await sb.from("gastos").insert({fecha:today(),categoria:gastoCategoria,descripcion:gastoDesc||"",monto:m,tipo:"diario"});await cargarDatos();setGastoMonto("");setGastoDesc("");setGastoMsg("Guardado!");}catch(e){setGastoMsg("Error.");}setGastoGuardando(false);}
 async function guardarInsumo(){const m=Number(insumoMonto);if(!m||m<=0)return;setGastoGuardando(true);setInsumoMsg("");try{await sb.from("gastos").insert({fecha:today(),categoria:"Insumo",descripcion:insumoDesc||"",monto:m,tipo:"insumo"});await cargarDatos();setInsumoMonto("");setInsumoDesc("");setInsumoMsg("Guardado!");}catch(e){setInsumoMsg("Error.");}setGastoGuardando(false);}
 const stats=useMemo(()=>({cobrado:pedidos.filter(p=>p.pagado).reduce((a,p)=>a+p.total,0),porCobrar:pedidos.filter(p=>!p.pagado&&p.estado==="entregado").reduce((a,p)=>a+p.total,0),entregados:pedidos.filter(p=>p.estado==="entregado").length,pendientes:pedidos.filter(p=>p.estado==="pendiente").length,totalCobrosManual:cobros.reduce((a,c)=>a+c.monto,0)}),[pedidos,cobros]);
-const NAV=[{id:"dashboard",label:"Inicio",icon:IC.db},{id:"mapa",label:"Mapa",icon:IC.mp},{id:"clientes",label:"Clientes",icon:IC.cl},{id:"cobranzas",label:"Cobros",icon:IC.bi},{id:"reporte",label:"Reporte",icon:IC.rp},{id:"gastos",label:"Gastos",icon:IC.dr},{id:"stats",label:"Stats",icon:IC.st},{id:"cierre",label:"Cierre",icon:IC.ch},{id:"productos",label:"Productos",icon:IC.or}];
+const NAV=[{id:"dashboard",label:"Inicio",icon:IC.db},{id:"mapa",label:"Mapa",icon:IC.mp},{id:"clientes",label:"Clientes",icon:IC.cl},{id:"cobranzas",label:"Cobranza",icon:IC.bi},{id:"reporte",label:"Reporte",icon:IC.rp},{id:"gastos",label:"Gastos",icon:IC.dr},{id:"stats",label:"Stats",icon:IC.st},{id:"cierre",label:"Cierre",icon:IC.ch},{id:"productos",label:"Productos",icon:IC.or}];
 if(editProd)return <EditProductoModal producto={editProd} onCerrar={()=>setEditProd(null)} onGuardado={()=>cargarDatos(true)}/>;
 if(!rol)return <RolSelector onSelect={seleccionarRol}/>;
 if(loading)return(<div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16}}><img src={LOGO} style={{width:90,height:90,objectFit:"contain",borderRadius:14}}/><div style={{color:C.acc3,fontWeight:700,fontSize:18}}>Vertiente Natural</div><div style={{color:C.text2,fontSize:14}}>Conectando...</div></div>);
@@ -838,24 +838,29 @@ return(<div style={{padding:"0 0 100px",maxWidth:560,margin:"0 auto"}}>
 </div>
 </div>);}
 if(tab==="cobranzas"){
+const cobranzasHoy=[...cobros].filter(c=>c.fecha===today()&&c.tipo==="cobranza").sort((a,b)=>b.id-a.id);
+const efCobranza=cobranzasHoy.filter(c=>(c.metodopago||"").toLowerCase()==="efectivo").reduce((a,c)=>a+c.monto,0);
+const transCobranza=cobranzasHoy.filter(c=>(c.metodopago||"").toLowerCase()!=="efectivo").reduce((a,c)=>a+c.monto,0);
+const totalCobranza=efCobranza+transCobranza;
 const deudores=[...clientes].filter(c=>c.saldo<0).sort((a,b)=>a.saldo-b.saldo);
-const totalCobrosManual=cobros.reduce((a,c)=>a+c.monto,0);
-const totalHoy=cobros.filter(c=>c.fecha===today()).reduce((a,c)=>a+c.monto,0);
-const cobrosHoy=[...cobros].filter(c=>c.fecha===today()).sort((a,b)=>b.id-a.id);
 return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
-<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:11,marginBottom:14}}><Card label="Por cobrar" value={fmt(stats.porCobrar)} icon={IC.bi} accent={C.warn}/><Card label="Cobrado hoy" value={fmt(totalHoy)} icon={IC.ch} accent={C.grn}/></div>
+<div style={{background:C.card,border:"1px solid "+C.border2,borderRadius:13,padding:16,marginBottom:14}}>
+<div style={{fontWeight:800,color:C.acc3,fontSize:15,marginBottom:12}}>Reporte de Cobranza - {today()}</div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Efectivo cobrado</span><span style={{color:C.grn3,fontWeight:800,fontSize:15}}>{fmt(efCobranza)}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Transferencia cobrada</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(transCobranza)}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderTop:"2px solid "+C.border2,marginTop:4}}><span style={{color:C.text,fontWeight:700,fontSize:15}}>TOTAL COBRANZA</span><span style={{color:C.grn3,fontWeight:900,fontSize:20}}>{fmt(totalCobranza)}</span></div>
+</div>
 <div style={{background:C.card,borderRadius:13,padding:16,marginBottom:14,border:"1px solid "+C.grn2}}>
-<div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:14}}>Cobros del {today()} ({cobrosHoy.length})</div>
-{cobrosHoy.length===0?<div style={{color:C.text2,fontSize:13}}>Sin cobros hoy</div>:cobrosHoy.map(co=>{
+<div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:14}}>Cobranzas del día ({cobranzasHoy.length})</div>
+{cobranzasHoy.length===0?<div style={{color:C.text2,fontSize:13}}>Sin cobranzas hoy</div>:cobranzasHoy.map(co=>{
 const cl=clientes.find(c=>c.id===(co.clienteid||co.clienteId));
 return(<div key={co.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:"1px solid "+C.border}}>
-<div><div style={{color:C.text,fontWeight:600,fontSize:13}}>{cl?.nombre||"Cliente"}</div><div style={{color:C.text2,fontSize:11}}>{co.metodopago||co.metodoPago} · Saldo: <span style={{color:cl?.saldo<0?C.err:cl?.saldo>0?C.grn3:C.text2,fontWeight:700}}>{cl?.saldo<0?"-":cl?.saldo>0?"+":""}{fmt(cl?.saldo||0)}</span></div></div>
+<div><div style={{color:C.text,fontWeight:600,fontSize:13}}>{cl?.nombre||"Cliente"}</div><div style={{color:C.text2,fontSize:11}}>{co.metodopago} · Saldo actual: <span style={{color:C.err,fontWeight:700}}>{fmt(Math.abs(cl?.saldo||0))}</span></div></div>
 <div style={{color:C.grn3,fontWeight:800,fontSize:15}}>{fmt(co.monto)}</div>
 </div>);
 })}
 </div>
-<div style={{background:C.card,borderRadius:13,padding:16,marginBottom:14,border:"1px solid #991b1b"}}><div style={{fontWeight:700,color:C.err,marginBottom:10,fontSize:14}}>Ranking deudores ({deudores.length})</div>{deudores.length===0?<div style={{color:C.text2,fontSize:13}}>Sin deudores</div>:deudores.map((c,i)=>(<div key={c.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:"1px solid "+C.border}}><div style={{width:26,height:26,borderRadius:"50%",flexShrink:0,background:i===0?"#991b1b":i===1?"#7f1d1d":"#1c0505",display:"flex",alignItems:"center",justifyContent:"center",color:C.err,fontWeight:900,fontSize:11}}>{i+1}</div><div style={{flex:1}}><div style={{color:C.text,fontWeight:600,fontSize:13}}>{c.nombre}</div><div style={{color:C.text2,fontSize:11}}>{c.telefono} - {c.zona}</div></div><div style={{color:C.err,fontWeight:800,fontSize:16}}>{fmt(Math.abs(c.saldo))}</div></div>))}</div>
-<div style={{background:C.card,borderRadius:13,padding:16,border:"1px solid "+C.grn2}}><div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:14}}>Saldos</div>{clientes.filter(c=>c.saldo!==0).sort((a,b)=>a.saldo-b.saldo).map(c=>(<div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid "+C.border}}><div><div style={{color:C.text,fontWeight:600,fontSize:13}}>{c.nombre}</div><div style={{color:C.text2,fontSize:11}}>{c.zona}</div></div><span style={{fontWeight:700,color:c.saldo<0?C.err:C.grn3}}>{fmt(Math.abs(c.saldo))}</span></div>))}</div>
+<div style={{background:C.card,borderRadius:13,padding:16,border:"1px solid #991b1b"}}><div style={{fontWeight:700,color:C.err,marginBottom:10,fontSize:14}}>Deudores ({deudores.length})</div>{deudores.length===0?<div style={{color:C.text2,fontSize:13}}>Sin deudores</div>:deudores.map((c,i)=>(<div key={c.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:"1px solid "+C.border}}><div style={{width:26,height:26,borderRadius:"50%",flexShrink:0,background:i===0?"#991b1b":i===1?"#7f1d1d":"#1c0505",display:"flex",alignItems:"center",justifyContent:"center",color:C.err,fontWeight:900,fontSize:11}}>{i+1}</div><div style={{flex:1}}><div style={{color:C.text,fontWeight:600,fontSize:13}}>{c.nombre}</div><div style={{color:C.text2,fontSize:11}}>{c.telefono} - {c.zona}</div></div><div style={{color:C.err,fontWeight:800,fontSize:16}}>{fmt(Math.abs(c.saldo))}</div></div>))}</div>
 </div>);}
 if(tab==="cierre"){
 const cierreHoy=cierres.find(c=>(c.fecha||"").slice(0,10)===today());
