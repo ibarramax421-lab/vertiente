@@ -61,27 +61,26 @@ try{
 const repIdFinal=repId||1;
 const esPrimerPedido=pedidos.filter(p=>p.clienteId===c.id).length===0;
 const hora=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
-let nuevoSaldo=c.saldo;
 let updateCliente={};
 let totalGeneral=carrito.reduce((a,item)=>a+item.total,0);
+const montoEfectivo=pagado&&montoPagado&&Number(montoPagado)>0?Number(montoPagado):pagado?totalGeneral:0;
+const deudaNueva=totalGeneral-montoEfectivo;
 for(const item of carrito){
 const esRetornable=getBidField(item.prodId)!==null;
-await sb.from("pedidos").insert({clienteId:c.id,productoId:item.prodId,repId:Number(repIdFinal),cantidad:item.cantidad,fecha:today(),hora,estado:"entregado",pagado,total:item.total,bidones_dev:item.devBid||0});
+const{data:ped}=await sb.from("pedidos").insert({clienteId:c.id,productoId:item.prodId,repId:Number(repIdFinal),cantidad:item.cantidad,fecha:today(),hora,estado:"entregado",pagado:item.total<=montoEfectivo,total:item.total,bidones_dev:item.devBid||0}).select().single();
+if(deudaNueva>0){
+await sb.from("movimientos").insert({clienteid:c.id,fecha:today(),hora,tipo:"venta",descripcion:item.cantidad+"x "+item.nombre,monto:item.total,repid:Number(repIdFinal),ref_pedido:ped?.id});
+}
 const bidField=getBidField(item.prodId);
-if(bidField){
-const actual=c[bidField]||0;
-updateCliente[bidField]=(updateCliente[bidField]||actual)+item.cantidad-item.devBid;
+if(bidField){const actual=c[bidField]||0;updateCliente[bidField]=(updateCliente[bidField]||actual)+item.cantidad-item.devBid;}
+if(esPrimerPedido&&esRetornable){await sb.from("bonificaciones").insert({fecha:today(),clienteid:c.id,repid:Number(repIdFinal),monto:item.total,descripcion:"Bonificacion cliente nuevo - "+c.nombre});}
 }
-if(esPrimerPedido&&esRetornable){
-await sb.from("bonificaciones").insert({fecha:today(),clienteid:c.id,repid:Number(repIdFinal),monto:item.total,descripcion:"Bonificacion cliente nuevo - "+c.nombre});
-}
-}
-if(pagado){
-const montoEfectivo=montoPagado&&Number(montoPagado)>0?Number(montoPagado):totalGeneral;
+if(montoEfectivo>0){
 await sb.from("cobros").insert({clienteid:c.id,monto:montoEfectivo,metodopago:metodo,fecha:today(),notas:"",tipo:"venta"});
-if(montoEfectivo<totalGeneral){nuevoSaldo=(c.saldo||0)-(totalGeneral-montoEfectivo);}
-}else{nuevoSaldo=(c.saldo||0)-totalGeneral;}
-updateCliente.saldo=nuevoSaldo;
+await sb.from("movimientos").insert({clienteid:c.id,fecha:today(),hora,tipo:"cobro",descripcion:"Cobro venta "+metodo,monto:-montoEfectivo,metodopago:metodo});
+}
+const{data:saldoData}=await sb.rpc("saldo_cliente",{p_clienteid:c.id});
+updateCliente.saldo=-(saldoData||0);
 await sb.from("clientes").update(updateCliente).eq("id",c.id);
 setMsg("Venta registrada!");setCant("");setDevBid("");setMontoPagado("");setCarrito([]);
 onActualizar&&onActualizar();
@@ -91,10 +90,11 @@ async function registrarCobro(){
 const m=Number(cobMonto);if(!m||m<=0)return;
 setGuardando(true);setMsg("");
 try{
-const nuevoSaldo=(c.saldo||0)+m;
-await sb.from("clientes").update({saldo:nuevoSaldo}).eq("id",c.id);
 await sb.from("cobros").insert({clienteid:c.id,monto:m,metodopago:cobMetodo,fecha:today(),notas:cobNotas||"",tipo:"cobranza"});
+await sb.from("movimientos").insert({clienteid:c.id,fecha:today(),tipo:"cobro",descripcion:"Cobranza "+cobMetodo,monto:-m,metodopago:cobMetodo});
 await sb.from("pedidos").update({pagado:true}).eq("clienteId",c.id).eq("pagado",false);
+const{data:saldoData}=await sb.rpc("saldo_cliente",{p_clienteid:c.id});
+await sb.from("clientes").update({saldo:-(saldoData||0)}).eq("id",c.id);
 setMsg("Cobro: "+fmt(m));setCobMonto("");setCobNotas("");
 onActualizar&&onActualizar();
 }catch(e){setMsg("Error.");}
@@ -183,7 +183,7 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 <span style={{color:C.warn,fontSize:13,fontWeight:700}}>Saldo anterior</span>
 <div style={{display:"flex",alignItems:"center",gap:6}}>
 <input type="number" style={{...S.inp,width:110,padding:"6px 10px",fontSize:14,textAlign:"right"}} value={saldoInicialEdit} onChange={e=>setSaldoInicialEdit(e.target.value)}/>
-<button onClick={async()=>{const v=Number(saldoInicialEdit)||0;const ventasSinCobrar=historial.filter(p=>!p.pagado).reduce((a,p)=>a+p.total,0);const nuevoSaldo=-(v+ventasSinCobrar);await sb.from("clientes").update({saldo_inicial:v,saldo:nuevoSaldo}).eq("id",c.id);c.saldo=nuevoSaldo;c.saldo_inicial=v;setMsg("Saldo guardado!");setTimeout(()=>setMsg(""),2000);}} style={{background:"#052e16",color:C.grn3,border:"1px solid "+C.grn2,borderRadius:8,padding:"7px 12px",cursor:"pointer",fontSize:12,fontWeight:700,whiteSpace:"nowrap"}}>Guardar</button>
+<button onClick={async()=>{const v=Number(saldoInicialEdit)||0;await sb.from("movimientos").delete().eq("clienteid",c.id).eq("tipo","saldo_inicial");if(v>0){await sb.from("movimientos").insert({clienteid:c.id,fecha:"2000-01-01",tipo:"saldo_inicial",descripcion:"Saldo anterior",monto:v});}const{data:saldoData}=await sb.rpc("saldo_cliente",{p_clienteid:c.id});const nuevoSaldo=-(saldoData||0);await sb.from("clientes").update({saldo_inicial:v,saldo:nuevoSaldo}).eq("id",c.id);c.saldo=nuevoSaldo;c.saldo_inicial=v;setMsg("Saldo guardado!");setTimeout(()=>setMsg(""),2000);}} style={{background:"#052e16",color:C.grn3,border:"1px solid "+C.grn2,borderRadius:8,padding:"7px 12px",cursor:"pointer",fontSize:12,fontWeight:700,whiteSpace:"nowrap"}}>Guardar</button>
 </div>
 </div>
 {(()=>{
