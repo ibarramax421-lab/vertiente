@@ -183,7 +183,7 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 <span style={{color:C.warn,fontSize:13,fontWeight:700}}>Saldo anterior</span>
 <div style={{display:"flex",alignItems:"center",gap:6}}>
 <input type="number" style={{...S.inp,width:110,padding:"6px 10px",fontSize:14,textAlign:"right"}} value={saldoInicialEdit} onChange={e=>setSaldoInicialEdit(e.target.value)}/>
-<button onClick={async()=>{const v=Number(saldoInicialEdit)||0;await sb.from("clientes").update({saldo_inicial:v,saldo:-v}).eq("id",c.id);c.saldo=-v;c.saldo_inicial=v;setMsg("Saldo guardado!");setTimeout(()=>setMsg(""),2000);}} style={{background:"#052e16",color:C.grn3,border:"1px solid "+C.grn2,borderRadius:8,padding:"7px 12px",cursor:"pointer",fontSize:12,fontWeight:700,whiteSpace:"nowrap"}}>Guardar</button>
+<button onClick={async()=>{const v=Number(saldoInicialEdit)||0;const ventasSinCobrar=historial.filter(p=>!p.pagado).reduce((a,p)=>a+p.total,0);const nuevoSaldo=-(v+ventasSinCobrar);await sb.from("clientes").update({saldo_inicial:v,saldo:nuevoSaldo}).eq("id",c.id);c.saldo=nuevoSaldo;c.saldo_inicial=v;setMsg("Saldo guardado!");setTimeout(()=>setMsg(""),2000);}} style={{background:"#052e16",color:C.grn3,border:"1px solid "+C.grn2,borderRadius:8,padding:"7px 12px",cursor:"pointer",fontSize:12,fontWeight:700,whiteSpace:"nowrap"}}>Guardar</button>
 </div>
 </div>
 {(()=>{
