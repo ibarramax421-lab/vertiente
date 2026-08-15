@@ -213,7 +213,7 @@ return filas.map((m,i)=>(<div key={m.id} style={{padding:"9px 14px",borderBottom
 {m.tipo==="pedido"&&m.obj&&(m.obj.bidones_dev||0)>0&&<div style={{color:C.warn,fontSize:10}}>↩ Dev {m.obj.bidones_dev}</div>}
 </div>
 <div style={{textAlign:"right",flexShrink:0,marginLeft:10}}>
-<div style={{color:m.tipo==="cobro"?C.grn3:C.err,fontWeight:700,fontSize:13}}>{m.tipo==="cobro"?"-":"+"}{fmt(m.tipo==="cobro"?m.monto:m.total)}</div>
+<div style={{color:m.tipo==="cobro"?C.grn3:C.err,fontWeight:700,fontSize:13}}>{fmt(m.tipo==="cobro"?m.monto:m.total)}</div>
 </div>
 {m.tipo==="pedido"&&puedeEditar&&<button onClick={()=>borrarPedido(m.obj)} style={{marginLeft:8,background:"none",color:C.text2,border:"none",padding:0,cursor:"pointer",fontSize:10,textDecoration:"underline",flexShrink:0,marginTop:2}}>borrar</button>}
 </div>));
