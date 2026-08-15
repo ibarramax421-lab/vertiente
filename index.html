@@ -59,21 +59,18 @@ if(carrito.length===0)return;
 setGuardando(true);setMsg("");
 try{
 const repIdFinal=repId||1;
-const esPrimerPedido=pedidos.filter(p=>p.clienteId===c.id).length===0;
 const hora=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
 let updateCliente={};
 let totalGeneral=carrito.reduce((a,item)=>a+item.total,0);
 const montoEfectivo=pagado&&montoPagado&&Number(montoPagado)>0?Number(montoPagado):pagado?totalGeneral:0;
 const deudaNueva=totalGeneral-montoEfectivo;
 for(const item of carrito){
-const esRetornable=getBidField(item.prodId)!==null;
 const{data:ped}=await sb.from("pedidos").insert({clienteId:c.id,productoId:item.prodId,repId:Number(repIdFinal),cantidad:item.cantidad,fecha:today(),hora,estado:"entregado",pagado:item.total<=montoEfectivo,total:item.total,bidones_dev:item.devBid||0}).select().single();
 if(deudaNueva>0){
 await sb.from("movimientos").insert({clienteid:c.id,fecha:today(),hora,tipo:"venta",descripcion:item.cantidad+"x "+item.nombre,monto:item.total,repid:Number(repIdFinal),ref_pedido:ped?.id});
 }
 const bidField=getBidField(item.prodId);
 if(bidField){const actual=c[bidField]||0;updateCliente[bidField]=(updateCliente[bidField]||actual)+item.cantidad-item.devBid;}
-if(esPrimerPedido&&esRetornable){await sb.from("bonificaciones").insert({fecha:today(),clienteid:c.id,repid:Number(repIdFinal),monto:item.total,descripcion:"Bonificacion cliente nuevo - "+c.nombre});}
 }
 if(montoEfectivo>0){
 await sb.from("cobros").insert({clienteid:c.id,monto:montoEfectivo,metodopago:metodo,fecha:today(),notas:"",tipo:"venta"});
@@ -711,8 +708,6 @@ const pedidosReporte=pedidos.filter(p=>p.fecha===fechaReporte&&p.estado==="entre
 const sinCobrar=pedidosReporte.filter(p=>!p.pagado).reduce((a,p)=>a+p.total,0);
 const totalVentas=pedidosReporte.reduce((a,p)=>a+p.total,0);
 const totalBidonesEnt=pedidosReporte.reduce((a,p)=>a+p.cantidad,0);
-const bonificacionesReporte=bonificaciones.filter(b=>b.fecha===fechaReporte);
-const totalBonificaciones=bonificacionesReporte.reduce((a,b)=>a+b.monto,0);
 const entPorProd=productos.map(pr=>({id:pr.id,name:pr.name,tipo:pr.tipo_envase,cant:pedidosReporte.filter(p=>p.productoId===pr.id).reduce((a,p)=>a+p.cantidad,0),total:pedidosReporte.filter(p=>p.productoId===pr.id).reduce((a,p)=>a+p.total,0)})).filter(x=>x.cant>0);
 async function anularEntrega(p){
 if(!window.confirm("Anular entrega de "+clientes.find(c=>c.id===p.clienteId)?.nombre+"?"))return;
@@ -738,10 +733,7 @@ return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Tarjeta</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(totalTarjeta)}</span></div>
 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.err}}>Sin cobrar (credito)</span><span style={{color:C.err,fontWeight:700}}>{fmt(sinCobrar)}</span></div>
 <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderTop:"2px solid "+C.grn2,marginTop:4}}><span style={{color:C.text,fontWeight:700,fontSize:15}}>TOTAL VENTAS</span><span style={{color:C.grn3,fontWeight:900,fontSize:20}}>{fmt(totalVentas)}</span></div>
-{bonificacionesReporte.length>0&&(<div style={{marginTop:4,borderTop:"1px solid #854d0e",paddingTop:8}}>
-{bonificacionesReporte.map(b=>(<div key={b.id} style={{display:"flex",justifyContent:"space-between",padding:"6px 0"}}><span style={{color:C.warn,fontSize:12}}>🎁 {b.descripcion}</span><span style={{color:C.warn,fontWeight:700}}>-{fmt(b.monto)}</span></div>))}
-<div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderTop:"1px solid #854d0e"}}><span style={{color:C.text,fontWeight:700}}>NETO (sin bonif.)</span><span style={{color:C.grn3,fontWeight:900,fontSize:18}}>{fmt(totalVentas-totalBonificaciones)}</span></div>
-</div>)}
+
 </div>
 <div style={{background:C.card,borderRadius:13,padding:16,marginBottom:14,border:"1px solid "+C.border}}>
 <div style={{fontWeight:700,color:C.text,marginBottom:12,fontSize:14}}>Detalle de entregas ({pedidosReporte.length})</div>
