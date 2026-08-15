@@ -77,7 +77,9 @@ if(esPrimerPedido&&esRetornable){await sb.from("bonificaciones").insert({fecha:t
 }
 if(montoEfectivo>0){
 await sb.from("cobros").insert({clienteid:c.id,monto:montoEfectivo,metodopago:metodo,fecha:today(),notas:"",tipo:"venta"});
-await sb.from("movimientos").insert({clienteid:c.id,fecha:today(),hora,tipo:"cobro",descripcion:"Cobro venta "+metodo,monto:-montoEfectivo,metodopago:metodo});
+if(deudaNueva<0){
+await sb.from("movimientos").insert({clienteid:c.id,fecha:today(),hora,tipo:"cobro",descripcion:"Cobro venta "+metodo,monto:deudaNueva,metodopago:metodo});
+}
 }
 const{data:saldoData}=await sb.rpc("saldo_cliente",{p_clienteid:c.id});
 updateCliente.saldo=-(saldoData||0);
