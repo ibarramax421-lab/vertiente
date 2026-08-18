@@ -785,7 +785,11 @@ if(dashSeccion==="deudores")return(
 {deudores.length===0?<div style={{color:C.text2,fontSize:14,textAlign:"center",marginTop:40}}>Sin deudores 🎉</div>:deudores.map((c,i)=>(
 <div key={c.id} onClick={()=>setClienteDeudor(c)} style={{background:C.card,borderRadius:13,padding:"14px 15px",marginBottom:9,border:"1px solid #991b1b",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
 <div><div style={{fontWeight:700,color:C.text,fontSize:15}}>{c.nombre}</div><div style={{color:C.text2,fontSize:12}}>{c.telefono} · {c.zona}</div></div>
-<div style={{textAlign:"right"}}><div style={{color:C.err,fontWeight:900,fontSize:20}}>{fmt(Math.abs(c.saldo))}</div><div style={{fontSize:10,color:C.err}}>DEBE</div></div>
+<div style={{textAlign:"right"}}>
+<div style={{color:C.err,fontWeight:900,fontSize:20}}>{fmt(Math.abs(c.saldo))}</div>
+<div style={{fontSize:10,color:C.err}}>DEBE</div>
+{c.telefono&&<a href={"https://wa.me/549"+c.telefono.replace(/\D/g,"").replace(/^0/,"")+"?text="+encodeURIComponent("Hola "+c.nombre+"! 💧 Te recordamos que tenés un saldo pendiente de $"+Math.abs(c.saldo).toLocaleString("es-AR")+". Cuando puedas coordinamos. Gracias, Vertiente Natural")} target="_blank" onClick={e=>e.stopPropagation()} style={{display:"inline-block",marginTop:4,background:"#25D366",color:"#fff",borderRadius:6,padding:"3px 8px",fontSize:10,fontWeight:700,textDecoration:"none"}}>💧 WhatsApp</a>}
+</div>
 </div>
 ))}
 </div>);
@@ -800,7 +804,10 @@ var up=pedidos.filter(p=>p.clienteId===c.id).sort((a,b)=>b.fecha.localeCompare(a
 var dias=up?Math.floor((new Date()-new Date(up.fecha))/(1000*60*60*24)):999;
 return(<div key={c.id} style={{background:C.card,borderRadius:13,padding:"14px 15px",marginBottom:9,border:"1px solid #c2410c",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
 <div><div style={{fontWeight:700,color:C.text,fontSize:15}}>{c.nombre}</div><div style={{color:C.text2,fontSize:12}}>{c.telefono}</div></div>
+<div style={{textAlign:"right"}}>
 <div style={{color:"#fb923c",fontWeight:700,fontSize:14}}>{dias===999?"Nunca":dias+" días"}</div>
+{c.telefono&&<a href={"https://wa.me/549"+c.telefono.replace(/\D/g,"").replace(/^0/,"")+"?text="+encodeURIComponent("Hola "+c.nombre+"! 💧 Hace un tiempo que no te visitamos. ¿Necesitás agua? Avisanos. Gracias, Vertiente Natural")} target="_blank" onClick={e=>e.stopPropagation()} style={{display:"inline-block",marginTop:4,background:"#25D366",color:"#fff",borderRadius:6,padding:"3px 8px",fontSize:10,fontWeight:700,textDecoration:"none"}}>💧 WhatsApp</a>}
+</div>
 </div>);})}
 </div>);
 const DashCard=({titulo,valor,subtitulo,color,icono,onClick})=>(
