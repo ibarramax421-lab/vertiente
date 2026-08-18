@@ -65,18 +65,15 @@ let totalGeneral=carrito.reduce((a,item)=>a+item.total,0);
 const montoEfectivo=pagado&&montoPagado&&Number(montoPagado)>0?Number(montoPagado):pagado?totalGeneral:0;
 const deudaNueva=totalGeneral-montoEfectivo;
 for(const item of carrito){
-const{data:ped}=await sb.from("pedidos").insert({clienteId:c.id,productoId:item.prodId,repId:Number(repIdFinal),cantidad:item.cantidad,fecha:today(),hora,estado:"entregado",pagado:item.total<=montoEfectivo,total:item.total,bidones_dev:item.devBid||0}).select().single();
-if(deudaNueva>0){
-await sb.from("movimientos").insert({clienteid:c.id,fecha:today(),hora,tipo:"venta",descripcion:item.cantidad+"x "+item.nombre,monto:item.total,repid:Number(repIdFinal),ref_pedido:ped?.id});
-}
+const{data:ped}=await sb.from("pedidos").insert({clienteId:c.id,productoId:item.prodId,repId:Number(repIdFinal),cantidad:item.cantidad,fecha:today(),hora,estado:"entregado",pagado:deudaNueva<=0,total:item.total,bidones_dev:item.devBid||0}).select().single();
 const bidField=getBidField(item.prodId);
 if(bidField){const actual=c[bidField]||0;updateCliente[bidField]=(updateCliente[bidField]||actual)+item.cantidad-item.devBid;}
 }
+if(deudaNueva>0){
+await sb.from("movimientos").insert({clienteid:c.id,fecha:today(),hora,tipo:"venta",descripcion:carrito.map(i=>i.cantidad+"x "+i.nombre).join(", "),monto:deudaNueva,repid:Number(repIdFinal)});
+}
 if(montoEfectivo>0){
 await sb.from("cobros").insert({clienteid:c.id,monto:montoEfectivo,metodopago:metodo,fecha:today(),notas:"",tipo:"venta"});
-if(deudaNueva<0){
-await sb.from("movimientos").insert({clienteid:c.id,fecha:today(),hora,tipo:"cobro",descripcion:"Cobro venta "+metodo,monto:deudaNueva,metodopago:metodo});
-}
 }
 const{data:saldoData}=await sb.rpc("saldo_cliente",{p_clienteid:c.id});
 updateCliente.saldo=-(saldoData||0);
