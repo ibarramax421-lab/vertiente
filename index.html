@@ -166,6 +166,23 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 <div style={{marginTop:14}}><div style={{fontWeight:700,color:C.text2,fontSize:13,marginBottom:8}}>Cobros anteriores</div>{cobrosCliente.length===0?<div style={{color:C.text2,fontSize:13}}>Sin cobros</div>:cobrosCliente.slice(0,10).map(co=>(<div key={co.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 0",borderBottom:"1px solid "+C.border}}><div><div style={{color:C.grn3,fontWeight:700}}>{fmt(co.monto)}</div><div style={{color:C.text2,fontSize:11}}>{co.fecha} · {co.metodopago||co.metodoPago}</div></div>{puedeEditar&&<button onClick={async()=>{if(!window.confirm("Borrar este cobro?"))return;await sb.from("cobros").delete().eq("id",co.id);await sb.from("movimientos").delete().eq("clienteid",c.id).eq("tipo","cobro").eq("monto",-co.monto);const{data:s}=await sb.rpc("saldo_cliente",{p_clienteid:c.id});await sb.from("clientes").update({saldo:-(s||0)}).eq("id",c.id);onActualizar&&onActualizar();}} style={{background:"none",border:"none",color:C.err,cursor:"pointer",fontSize:11,textDecoration:"underline"}}>borrar</button>}</div>))}</div>
 </div>)}
 {tabActual==="historial"&&(<div>
+{(()=>{
+const totalComprado=historial.reduce((a,p)=>a+p.total,0);
+const ultimaCompra=historial.length>0?[...historial].sort((a,b)=>b.fecha.localeCompare(a.fecha))[0]?.fecha:null;
+const diasDesdeUltima=ultimaCompra?Math.floor((new Date()-new Date(ultimaCompra))/(1000*60*60*24)):null;
+const meses={};historial.forEach(p=>{const m=p.fecha?.slice(0,7);if(m)meses[m]=(meses[m]||0)+p.total;});
+const promedioMensual=Object.keys(meses).length>0?Math.round(Object.values(meses).reduce((a,v)=>a+v,0)/Object.keys(meses).length):0;
+const frecuencia=historial.length>1?(()=>{const fechas=[...historial].sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(p=>new Date(p.fecha));let difs=[];for(let i=1;i<fechas.length;i++)difs.push((fechas[i]-fechas[i-1])/(1000*60*60*24));return Math.round(difs.reduce((a,v)=>a+v,0)/difs.length);})():null;
+return(<div style={{background:C.card,borderRadius:10,padding:"12px 14px",marginBottom:12,border:"1px solid "+C.border2}}>
+<div style={{color:C.acc3,fontSize:11,fontWeight:700,marginBottom:10,textTransform:"uppercase"}}>Estadísticas del cliente</div>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+<div style={{background:C.bg2,borderRadius:8,padding:"8px 10px"}}><div style={{color:C.text2,fontSize:10}}>Total comprado</div><div style={{color:C.grn3,fontWeight:800,fontSize:16}}>{fmt(totalComprado)}</div></div>
+<div style={{background:C.bg2,borderRadius:8,padding:"8px 10px"}}><div style={{color:C.text2,fontSize:10}}>Promedio mensual</div><div style={{color:C.grn3,fontWeight:800,fontSize:16}}>{fmt(promedioMensual)}</div></div>
+<div style={{background:C.bg2,borderRadius:8,padding:"8px 10px"}}><div style={{color:C.text2,fontSize:10}}>Última compra</div><div style={{color:C.text,fontWeight:700,fontSize:13}}>{diasDesdeUltima===0?"Hoy":diasDesdeUltima===1?"Ayer":diasDesdeUltima?diasDesdeUltima+" días":"Nunca"}</div></div>
+<div style={{background:C.bg2,borderRadius:8,padding:"8px 10px"}}><div style={{color:C.text2,fontSize:10}}>Frecuencia</div><div style={{color:C.text,fontWeight:700,fontSize:13}}>{frecuencia?`Cada ${frecuencia} días`:"Sin datos"}</div></div>
+</div>
+</div>);
+})()}
 <div style={{background:C.card,borderRadius:10,padding:"12px 14px",marginBottom:12,border:"1px solid #854d0e"}}>
 <div style={{color:C.text3,fontSize:11,fontWeight:700,marginBottom:4}}>ENVASES EN PODER DEL CLIENTE</div>
 <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
