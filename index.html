@@ -433,10 +433,9 @@ useEffect(function(){
 if(!navigator.geolocation)return;
 var id=navigator.geolocation.watchPosition(function(p){
 setUserPos({lat:p.coords.latitude,lng:p.coords.longitude});
-if(enRuta&&repId){sb.from("ubicaciones_repartidor").insert({repartidorId:Number(repId),lat:p.coords.latitude,lng:p.coords.longitude,fecha:hoy}).catch(function(){});}
 },function(){},{enableHighAccuracy:true,timeout:15000,maximumAge:5000});
 return function(){navigator.geolocation.clearWatch(id);};
-},[enRuta,repId]);
+},[]);
 const cercanos=useMemo(function(){
 if(!userPos)return[];
 return clientes.filter(function(c){return c.lat&&c.lng&&c.activo!==false;}).map(function(c){return Object.assign({},c,{dist:Math.round(distM(userPos.lat,userPos.lng,c.lat,c.lng))});}).sort(function(a,b){return a.dist-b.dist;}).slice(0,3);
