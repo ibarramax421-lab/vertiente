@@ -449,11 +449,11 @@ function iniciarRuta(){setEnRuta(true);localStorage.setItem("vn_gps","1");}
 function onCierreFinalizado(){setCerrarModal(false);setEnRuta(false);localStorage.removeItem("vn_gps");onActualizar&&onActualizar();}
 useEffect(()=>{
 if(!enRuta||!repId)return;
-function enviarUbicacion(){
+async function enviarUbicacion(){
 if(!navigator.geolocation)return;
-navigator.geolocation.getCurrentPosition(async p=>{
-await sb.from("ubicaciones").upsert({repid:repId,lat:p.coords.latitude,lng:p.coords.longitude,updated_at:new Date().toISOString()},{onConflict:"repid"});
-},{},{enableHighAccuracy:true,timeout:10000});
+navigator.geolocation.getCurrentPosition(async function(p){
+try{await sb.from("ubicaciones").upsert({repid:repId,lat:p.coords.latitude,lng:p.coords.longitude,updated_at:new Date().toISOString()},{onConflict:"repid"});}catch(e){}
+},function(){},{enableHighAccuracy:true,timeout:10000});
 }
 enviarUbicacion();
 const intervalo=setInterval(enviarUbicacion,30000);
@@ -731,7 +731,7 @@ sb.from("cierres_dia").select("*").order("fecha",{ascending:false}).limit(30).th
 const ch=sb.channel("c").on("postgres_changes",{event:"*",schema:"public",table:"clientes"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"pedidos"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"cobros"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"ubicaciones"},()=>cargarUbicaciones()).subscribe();
 const intervalo=setInterval(cargarUbicaciones,30000);
 return()=>{sb.removeChannel(ch);clearInterval(intervalo);};},[]);
-useEffect(()=>{if(!navigator.geolocation)return;const id=navigator.geolocation.watchPosition(p=>setUserPos({lat:p.coords.latitude,lng:p.coords.longitude}),()=>{},{enableHighAccuracy:true,timeout:15000,maximumAge:5000});return()=>navigator.geolocation.clearWatch(id);},[]);
+useEffect(()=>{if(!navigator.geolocation)return;const id=navigator.geolocation.watchPosition(function(p){setUserPos({lat:p.coords.latitude,lng:p.coords.longitude});},function(){},{enableHighAccuracy:true,timeout:15000,maximumAge:5000});return()=>navigator.geolocation.clearWatch(id);},[]);
 function getGPS(){if(!navigator.geolocation){setGeoMsg("GPS no disponible.");return;}setGeoMsg("Obteniendo GPS...");navigator.geolocation.getCurrentPosition(p=>{setFC(f=>({...f,lat:p.coords.latitude,lng:p.coords.longitude}));setGeoMsg("GPS: "+p.coords.latitude.toFixed(5)+", "+p.coords.longitude.toFixed(5));},()=>setGeoMsg("No se pudo obtener GPS."),{enableHighAccuracy:true,timeout:15000});}
 async function subirFotoCliente(clienteId,file){if(!file)return null;try{const ext=file.name.split(".").pop()||"jpg";const path="cliente_"+clienteId+"."+ext;const{error}=await sb.storage.from("fotos").upload(path,file,{upsert:true});if(error)throw error;const{data}=sb.storage.from("fotos").getPublicUrl(path);return data.publicUrl;}catch(e){return null;}}
 function openNuevo(){setEditC(null);setFC(EC);setGeoMsg("");setSaveError("");setFotoFile(null);setModal("cliente");}
