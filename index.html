@@ -447,6 +447,18 @@ return clientes.filter(function(c){return c.activo!==false&&c.nombre.toLowerCase
 },[busqueda,clientes]);
 function iniciarRuta(){setEnRuta(true);localStorage.setItem("vn_gps","1");}
 function onCierreFinalizado(){setCerrarModal(false);setEnRuta(false);localStorage.removeItem("vn_gps");onActualizar&&onActualizar();}
+useEffect(()=>{
+if(!enRuta||!repId)return;
+function enviarUbicacion(){
+if(!navigator.geolocation)return;
+navigator.geolocation.getCurrentPosition(async p=>{
+await sb.from("ubicaciones").upsert({repid:repId,lat:p.coords.latitude,lng:p.coords.longitude,updated_at:new Date().toISOString()},{onConflict:"repid"});
+},{},{enableHighAccuracy:true,timeout:10000});
+}
+enviarUbicacion();
+const intervalo=setInterval(enviarUbicacion,30000);
+return()=>clearInterval(intervalo);
+},[enRuta,repId]);
 async function guardarNuevoCliente(){
 if(!fNC.nombre.trim())return;
 setGuardandoNC(true);
@@ -696,8 +708,8 @@ const [fPago,setFPago]=useState({monto:"",pedidoId:""});
 function seleccionarRol(r){setRol(r);localStorage.setItem("vn_rol",r);}
 function cambiarRol(){setRol(null);localStorage.removeItem("vn_rol");}
 async function cargarUbicaciones(){
-const{data}=await sb.from("ubicaciones_repartidor").select("*").eq("fecha",today()).order("created_at",{ascending:false});
-if(data){const latest={};data.forEach(u=>{if(!latest[u.repartidorId])latest[u.repartidorId]=u;});setUbicaciones(Object.values(latest));setRecorrido([...data].reverse());}
+const{data}=await sb.from("ubicaciones").select("*").order("updated_at",{ascending:false});
+if(data){const latest={};data.forEach(u=>{if(!latest[u.repid])latest[u.repid]=u;});setUbicaciones(Object.values(latest));}
 }
 async function cargarDatos(r=false){
 if(r)setRefreshing(true);else setLoading(true);
@@ -716,8 +728,8 @@ setLoading(false);setRefreshing(false);}
 useEffect(()=>{
 cargarDatos();
 sb.from("cierres_dia").select("*").order("fecha",{ascending:false}).limit(30).then(r=>{if(r.data)setCierres(r.data);});
-const ch=sb.channel("c").on("postgres_changes",{event:"*",schema:"public",table:"clientes"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"pedidos"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"cobros"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"ubicaciones_repartidor"},()=>cargarUbicaciones()).subscribe();
-const intervalo=setInterval(cargarUbicaciones,60000);
+const ch=sb.channel("c").on("postgres_changes",{event:"*",schema:"public",table:"clientes"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"pedidos"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"cobros"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"ubicaciones"},()=>cargarUbicaciones()).subscribe();
+const intervalo=setInterval(cargarUbicaciones,30000);
 return()=>{sb.removeChannel(ch);clearInterval(intervalo);};},[]);
 useEffect(()=>{if(!navigator.geolocation)return;const id=navigator.geolocation.watchPosition(p=>setUserPos({lat:p.coords.latitude,lng:p.coords.longitude}),()=>{},{enableHighAccuracy:true,timeout:15000,maximumAge:5000});return()=>navigator.geolocation.clearWatch(id);},[]);
 function getGPS(){if(!navigator.geolocation){setGeoMsg("GPS no disponible.");return;}setGeoMsg("Obteniendo GPS...");navigator.geolocation.getCurrentPosition(p=>{setFC(f=>({...f,lat:p.coords.latitude,lng:p.coords.longitude}));setGeoMsg("GPS: "+p.coords.latitude.toFixed(5)+", "+p.coords.longitude.toFixed(5));},()=>setGeoMsg("No se pudo obtener GPS."),{enableHighAccuracy:true,timeout:15000});}
@@ -1069,7 +1081,7 @@ return()=>{if(map.current){map.current.remove();map.current=null;}};
 return <div ref={ref} style={{width:"100%",height:"calc(100vh - 220px)",minHeight:300,borderRadius:12,overflow:"hidden",border:"1px solid "+C.border}}/>;}
 
 function MapaRepartidor({repartidores,ubicaciones,recorrido}){
-const ref=useRef(null),map=useRef(null);
+const ref=useRef(null),map=useRef(null),markersRef=useRef({});
 const DEF_LAT=-33.8891,DEF_LNG=-61.1234;
 useEffect(()=>{
 if(!window.L||!ref.current||map.current)return;
@@ -1079,15 +1091,24 @@ const lng=ubicaciones[0]?.lng||DEF_LNG;
 map.current=L.map(ref.current,{zoomControl:true,attributionControl:false}).setView([lat,lng],14);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map.current);
 setTimeout(()=>map.current&&map.current.invalidateSize(),300);
-if(recorrido&&recorrido.length>1){L.polyline(recorrido.map(u=>[u.lat,u.lng]),{color:"#00d4ff",weight:3,opacity:.7,dashArray:"6,4"}).addTo(map.current);}
-repartidores.forEach(rep=>{
-const ub=ubicaciones.find(u=>u.repartidorId===rep.id);
-if(!ub)return;
-const ri=L.divIcon({className:"",html:"<div style='background:#f59e0b;border:3px solid #fff;border-radius:50%;width:24px;height:24px;box-shadow:0 0 12px #f59e0b;display:flex;align-items:center;justify-content:center;font-size:13px;'>🚚</div>",iconSize:[24,24],iconAnchor:[12,12]});
-L.marker([ub.lat,ub.lng],{icon:ri}).addTo(map.current).bindPopup("<b>"+rep.name+"</b><br>"+new Date(ub.created_at).toLocaleTimeString());
-});
 return()=>{if(map.current){map.current.remove();map.current=null;}};
 },[]);
+useEffect(()=>{
+if(!window.L||!map.current)return;
+const L=window.L;
+Object.values(markersRef.current).forEach(m=>m.remove());
+markersRef.current={};
+repartidores.forEach(rep=>{
+const ub=ubicaciones.find(u=>u.repid===rep.id);
+if(!ub||!ub.lat||!ub.lng)return;
+const mins=Math.floor((new Date()-new Date(ub.updated_at))/60000);
+const ri=L.divIcon({className:"",html:"<div style='background:#f59e0b;border:3px solid #fff;border-radius:50%;width:32px;height:32px;box-shadow:0 0 12px #f59e0b;display:flex;align-items:center;justify-content:center;font-size:18px;'>🚚</div>",iconSize:[32,32],iconAnchor:[16,16]});
+const marker=L.marker([ub.lat,ub.lng],{icon:ri}).addTo(map.current).bindPopup("<b>"+rep.name+"</b><br>Hace "+mins+" min");
+markersRef.current[rep.id]=marker;
+map.current.setView([ub.lat,ub.lng],15);
+});
+},[ubicaciones,repartidores]);
+if(ubicaciones.length===0)return(<div style={{padding:20,textAlign:"center",color:C.text2,fontSize:14}}>El repartidor aún no inició la ruta o el GPS no está activo.</div>);
 return <div ref={ref} style={{width:"100%",height:"calc(100vh - 260px)",minHeight:280,borderRadius:12,overflow:"hidden",border:"1px solid "+C.border}}/>;}
 
 function MapaVisitas({clientes,pedidos,fecha}){
