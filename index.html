@@ -30,6 +30,9 @@ function RolSelector({onSelect}){return(<div style={{minHeight:"100vh",backgroun
 function DetalleCliente({c,productos,cobros,pedidos,preciosEspeciales,repId,onActualizar,onCerrar,puedeEditar,onEditar}){
 const historial=[...pedidos].filter(p=>p.clienteId===c.id).sort((a,b)=>b.fecha.localeCompare(a.fecha));
 const cobrosCliente=[...cobros].filter(x=>(x.clienteId||x.clienteid)===c.id).sort((a,b)=>b.id-a.id);
+const [contactosCliente,setContactosCliente]=useState([]);
+const [loadingContactos,setLoadingContactos]=useState(false);
+useEffect(()=>{sb.from("contactos").select("*").eq("clienteid",c.id).order("id",{ascending:false}).then(r=>{if(r.data)setContactosCliente(r.data);});},[c.id]);
 const preciosesp=preciosEspeciales.filter(x=>Number(x.clienteId||x.clienteid||0)===c.id);
 const [tabActual,setTabActual]=useState("venta");
 const [prodId,setProdId]=useState(productos[0]?.id||"");
@@ -99,7 +102,7 @@ async function borrarPedido(p){if(!window.confirm("Borrar este pedido del "+p.fe
 async function toggleActivo(){await sb.from("clientes").update({activo:inactivo?true:false}).eq("id",c.id);onActualizar&&onActualizar();onCerrar();}
 async function borrarHistorial(){if(!window.confirm("Esto borra TODOS los pedidos y cobros de "+c.nombre+" y resetea su saldo y bidones a 0. No se puede deshacer. Continuar?"))return;await sb.from("pedidos").delete().eq("clienteId",c.id);await sb.from("cobros").delete().eq("clienteid",c.id);await sb.from("clientes").update({saldo:0,bidones:0}).eq("id",c.id);onActualizar&&onActualizar();}
 function compartirWhatsApp(){const totalDebe=historial.filter(p=>!p.pagado).reduce((a,p)=>a+p.total,0);let msg="*Vertiente Natural*\nCliente: "+c.nombre+"\nSaldo: "+(d?"-":f?"+":"$0")+fmt(c.saldo)+"\nBidones: "+(c.bidones||0);if(totalDebe>0)msg+="\nDeuda pendiente: "+fmt(totalDebe);window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");}
-const TABS=[{id:"venta",label:"Venta"},{id:"cobro",label:"Cobrar"},{id:"historial",label:"Historial"},{id:"datos",label:"Datos"}];
+const TABS=[{id:"venta",label:"Venta"},{id:"cobro",label:"Cobrar"},{id:"historial",label:"Historial"},{id:"contactos",label:"Contactos"},{id:"datos",label:"Datos"}];
 return(<div style={{minHeight:"100vh",background:C.bg}}>
 <div style={{background:"linear-gradient(90deg,"+C.bg2+","+C.bg3+")",borderBottom:"1px solid "+C.border,padding:"12px 18px",display:"flex",alignItems:"center",gap:10,position:"sticky",top:0,zIndex:50,paddingTop:"max(14px,env(safe-area-inset-top))"}}>
 <button onClick={onCerrar} style={{background:C.bg2,border:"1px solid "+C.border,color:C.acc3,borderRadius:8,padding:"7px 12px",cursor:"pointer",fontSize:13,fontWeight:700}}>← Volver</button>
@@ -215,6 +218,40 @@ return filas.map((m,i)=>(<div key={m.id} style={{padding:"9px 14px",borderBottom
 
 </div>
 <button onClick={compartirWhatsApp} style={{...S.btn,marginTop:4,background:C.bg3,border:"1px solid "+C.grn2,color:C.grn3,boxShadow:"none"}}>Compartir por WhatsApp</button>
+</div>)}
+{tabActual==="contactos"&&(<div>
+<div style={{marginBottom:12}}>
+<div style={{color:C.text2,fontSize:11,fontWeight:700,marginBottom:8,textTransform:"uppercase"}}>Registrar contacto</div>
+<div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
+{["❌ No estaba","💧 Ya tiene agua","🚫 No quiere más"].map(op=>(
+<button key={op} onClick={async()=>{const hora=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});await sb.from("contactos").insert({clienteid:c.id,fecha:today(),hora,tipo:op,repid:repId||null});setContactosCliente(prev=>[{id:Date.now(),clienteid:c.id,fecha:today(),hora,tipo:op},  ...prev]);}} style={{background:C.bg2,border:"1px solid "+C.border,color:C.text,borderRadius:10,padding:"10px 14px",cursor:"pointer",fontSize:13,fontWeight:700}}>{op}</button>
+))}
+</div>
+{puedeEditar&&(<div>
+<div style={{color:C.text2,fontSize:11,fontWeight:700,marginBottom:8,textTransform:"uppercase"}}>Admin</div>
+<div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
+{["📞 Llamada","💬 WhatsApp","✅ Visita exitosa"].map(op=>(
+<button key={op} onClick={async()=>{const hora=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});await sb.from("contactos").insert({clienteid:c.id,fecha:today(),hora,tipo:op,repid:repId||null});setContactosCliente(prev=>[{id:Date.now(),clienteid:c.id,fecha:today(),hora,tipo:op},...prev]);}} style={{background:C.bg3,border:"1px solid "+C.border2,color:C.acc3,borderRadius:10,padding:"10px 14px",cursor:"pointer",fontSize:13,fontWeight:700}}>{op}</button>
+))}
+</div>
+<Fld label="Nota libre">
+<div style={{display:"flex",gap:8}}>
+<input style={{...S.inp,flex:1}} placeholder="Escribí una nota..." id="notaContacto"/>
+<button onClick={async()=>{const nota=document.getElementById("notaContacto").value;if(!nota.trim())return;const hora=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});await sb.from("contactos").insert({clienteid:c.id,fecha:today(),hora,tipo:"📝 Nota",nota,repid:repId||null});setContactosCliente(prev=>[{id:Date.now(),clienteid:c.id,fecha:today(),hora,tipo:"📝 Nota",nota},...prev]);document.getElementById("notaContacto").value="";}} style={{...S.btnG,marginTop:0,padding:"0 14px"}}>Guardar</button>
+</div>
+</Fld>
+</div>)}
+</div>
+<div style={{marginTop:4}}>
+<div style={{color:C.text2,fontSize:11,fontWeight:700,marginBottom:8,textTransform:"uppercase"}}>Historial de contactos</div>
+{contactosCliente.length===0?<div style={{color:C.text2,fontSize:13}}>Sin contactos registrados</div>:contactosCliente.map(co=>(<div key={co.id} style={{background:C.bg2,borderRadius:8,padding:"9px 11px",marginBottom:6,border:"1px solid "+C.border}}>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+<span style={{color:C.text,fontSize:13,fontWeight:600}}>{co.tipo}</span>
+<span style={{color:C.text2,fontSize:10}}>{co.fecha}{co.hora?" · "+co.hora:""}</span>
+</div>
+{co.nota&&<div style={{color:C.text2,fontSize:12,marginTop:4,fontStyle:"italic"}}>"{co.nota}"</div>}
+</div>))}
+</div>
 </div>)}
 {tabActual==="datos"&&(<div>
 <div style={{background:C.bg2,borderRadius:12,padding:"14px",marginBottom:14}}>
