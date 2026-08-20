@@ -126,6 +126,20 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 </div>
 {msg&&<div style={{background:msg.startsWith("Error")?"#1c0505":"#052e16",border:"1px solid "+(msg.startsWith("Error")?"#991b1b":C.grn2),borderRadius:10,padding:"10px 14px",marginBottom:14,color:msg.startsWith("Error")?C.err:C.grn3,fontWeight:700,fontSize:13,textAlign:"center"}}>{msg}</div>}
 {tabActual==="venta"&&(<div>
+<div style={{display:"flex",gap:8,marginBottom:14}}>
+<button onClick={async()=>{
+const hora=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+await sb.from("contactos").insert({clienteid:c.id,fecha:today(),hora,tipo:"❌ No estaba",repid:repId||null});
+if(c.telefono){const msg="Hola "+c.nombre+"! Te visitamos a las "+hora+" y no había nadie en casa. Por favor avisanos cuándo podemos pasar. Gracias, Vertiente Natural";window.open("https://wa.me/549"+c.telefono.replace(/\D/g,"").replace(/^0/,"")+"?text="+encodeURIComponent(msg),"_blank");}
+setMsg("Registrado: No estaba");
+}} style={{flex:1,background:"#1c0505",border:"1px solid #991b1b",color:C.err,borderRadius:10,padding:"10px 8px",cursor:"pointer",fontSize:12,fontWeight:700}}>❌ No estaba</button>
+<button onClick={async()=>{
+const hora=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+await sb.from("contactos").insert({clienteid:c.id,fecha:today(),hora,tipo:"🪣 Sin bidones vacíos",repid:repId||null});
+if(c.telefono){const msg="Hola "+c.nombre+"! Pasamos por tu casa a las "+hora+" y no estaban los bidones vacíos para retirar. Por favor tené los bidones listos para la próxima visita. Gracias, Vertiente Natural";window.open("https://wa.me/549"+c.telefono.replace(/\D/g,"").replace(/^0/,"")+"?text="+encodeURIComponent(msg),"_blank");}
+setMsg("Registrado: Sin bidones");
+}} style={{flex:1,background:"#1c1003",border:"1px solid #854d0e",color:C.warn,borderRadius:10,padding:"10px 8px",cursor:"pointer",fontSize:12,fontWeight:700}}>🪣 Sin bidones</button>
+</div>
 {preciosesp.length>0&&(<div style={{background:C.bg2,borderRadius:10,padding:"10px 14px",marginBottom:14,border:"1px solid "+C.border2}}><div style={{fontSize:11,color:C.acc3,fontWeight:700,marginBottom:6}}>PRECIOS ESPECIALES</div>{preciosesp.map((pe,i)=>{const prr=productos.find(x=>x.id===Number(pe.productoId||pe.productoid||0));const editando=editPrecio&&editPrecio.id===pe.id;return(<div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}><span style={{color:C.text3,fontSize:13}}>{prr?.name}</span><div style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:C.grn3,fontWeight:700}}>{fmt(pe.precio)}</span>{puedeEditar&&<button onClick={()=>{setEditPrecio(pe);setEditPrecioVal(String(pe.precio));}} style={{background:C.bg3,border:"1px solid "+C.border,color:C.acc3,borderRadius:6,padding:"3px 8px",cursor:"pointer",fontSize:11}}>Editar</button>}</div></div>);})}{editPrecio&&<div style={{marginTop:8,display:"flex",gap:8}}><input type="number" style={{...S.inp,flex:1,padding:"8px 10px"}} value={editPrecioVal} onChange={e=>setEditPrecioVal(e.target.value)}/><button onClick={guardarPrecioEsp} style={{background:"#052e16",color:C.grn3,border:"1px solid "+C.grn2,borderRadius:6,padding:"8px 12px",cursor:"pointer",fontWeight:700,fontSize:12}}>OK</button></div>}</div>)}
 <Fld label="Producto"><select style={S.inp} value={prodId} onChange={e=>setProdId(e.target.value)}>{productos.map(p=>{const pe=getPrecioEsp(preciosEspeciales,c.id,p.id);return(<option key={p.id} value={p.id}>{p.name} - {fmt(pe!==null?pe:p.price)}{pe!==null?" (esp)":""}</option>);})}</select></Fld>
 <Fld label="Cantidad"><input type="number" min={1} style={S.inp} value={cant} onChange={e=>setCant(e.target.value)}/></Fld>
