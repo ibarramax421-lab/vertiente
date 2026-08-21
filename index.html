@@ -95,7 +95,7 @@ await sb.from("pedidos").update({pagado:true}).eq("clienteId",c.id).eq("pagado",
 const{data:saldoData}=await sb.rpc("saldo_cliente",{p_clienteid:c.id});
 await sb.from("clientes").update({saldo:-(saldoData||0)}).eq("id",c.id);
 setMsg("Cobro: "+fmt(m));setCobMonto("");setCobNotas("");
-setTimeout(()=>onActualizar&&onActualizar(),500);
+c.saldo=-(saldoData||0);
 }catch(e){setMsg("Error.");}
 setGuardando(false);}
 async function guardarPrecioEsp(){const m=Number(editPrecioVal);if(!m||m<=0)return;await sb.from("precios_especiales").update({precio:m,updated_at:new Date().toISOString()}).eq("id",editPrecio.id);setEditPrecio(null);onActualizar&&onActualizar();}
