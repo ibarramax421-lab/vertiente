@@ -486,7 +486,11 @@ if(!enRuta||!repId)return;
 async function enviarUbicacion(){
 if(!navigator.geolocation)return;
 navigator.geolocation.getCurrentPosition(async function(p){
-try{await sb.from("ubicaciones").upsert({repid:repId,lat:p.coords.latitude,lng:p.coords.longitude,updated_at:new Date().toISOString()},{onConflict:"repid"});}catch(e){}
+try{
+const lat=p.coords.latitude,lng=p.coords.longitude;
+await sb.from("ubicaciones").upsert({repid:repId,lat,lng,updated_at:new Date().toISOString()},{onConflict:"repid"});
+await sb.from("recorrido").insert({repid:repId,lat,lng,fecha:today()});
+}catch(e){}
 },function(){},{enableHighAccuracy:true,timeout:10000});
 }
 enviarUbicacion();
@@ -744,6 +748,8 @@ function cambiarRol(){setRol(null);localStorage.removeItem("vn_rol");}
 async function cargarUbicaciones(){
 const{data}=await sb.from("ubicaciones").select("*").order("updated_at",{ascending:false});
 if(data){const latest={};data.forEach(u=>{if(!latest[u.repid])latest[u.repid]=u;});setUbicaciones(Object.values(latest));}
+const{data:recData}=await sb.from("recorrido").select("*").eq("fecha",today()).order("created_at",{ascending:true});
+if(recData)setRecorrido(recData);
 }
 async function cargarDatos(r=false){
 if(r)setRefreshing(true);else setLoading(true);
@@ -1132,6 +1138,10 @@ if(!window.L||!map.current)return;
 const L=window.L;
 Object.values(markersRef.current).forEach(m=>m.remove());
 markersRef.current={};
+if(recorrido&&recorrido.length>1){
+if(markersRef.current._recorrido)markersRef.current._recorrido.remove();
+markersRef.current._recorrido=L.polyline(recorrido.map(u=>[u.lat,u.lng]),{color:"#00d4ff",weight:3,opacity:.7,dashArray:"6,4"}).addTo(map.current);
+}
 repartidores.forEach(rep=>{
 const ub=ubicaciones.find(u=>u.repid===rep.id);
 if(!ub||!ub.lat||!ub.lng)return;
@@ -1141,7 +1151,7 @@ const marker=L.marker([ub.lat,ub.lng],{icon:ri}).addTo(map.current).bindPopup("<
 markersRef.current[rep.id]=marker;
 map.current.setView([ub.lat,ub.lng],15);
 });
-},[ubicaciones,repartidores]);
+},[ubicaciones,repartidores,recorrido]);
 if(ubicaciones.length===0)return(<div style={{padding:20,textAlign:"center",color:C.text2,fontSize:14}}>El repartidor aún no inició la ruta o el GPS no está activo.</div>);
 return <div ref={ref} style={{width:"100%",height:"calc(100vh - 260px)",minHeight:280,borderRadius:12,overflow:"hidden",border:"1px solid "+C.border}}/>;}
 
