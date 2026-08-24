@@ -112,7 +112,7 @@ function compartirWhatsApp(){const totalDebe=historial.filter(p=>!p.pagado).redu
 const TABS=[{id:"venta",label:"Venta"},{id:"cobro",label:"Cobrar"},{id:"historial",label:"Historial"},{id:"contactos",label:"Contactos"},{id:"datos",label:"Datos"}];
 return(<div style={{minHeight:"100vh",background:C.bg}}>
 <div style={{background:"linear-gradient(90deg,"+C.bg2+","+C.bg3+")",borderBottom:"1px solid "+C.border,padding:"12px 18px",display:"flex",alignItems:"center",gap:10,position:"sticky",top:0,zIndex:50,paddingTop:"max(14px,env(safe-area-inset-top))"}}>
-<button onClick={onCerrar} style={{background:C.bg2,border:"1px solid "+C.border,color:C.acc3,borderRadius:8,padding:"7px 12px",cursor:"pointer",fontSize:13,fontWeight:700}}>← Volver</button>
+<button onClick={()=>{onActualizar&&onActualizar();onCerrar();}} style={{background:C.bg2,border:"1px solid "+C.border,color:C.acc3,borderRadius:8,padding:"7px 12px",cursor:"pointer",fontSize:13,fontWeight:700}}>← Volver</button>
 <div style={{flex:1,minWidth:0}}><div style={{fontWeight:700,fontSize:15,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.nombre}</div><div style={{fontSize:10,color:C.text2}}>{c.zona}</div></div>
 {c.telefono&&<a href={"tel:"+c.telefono} style={{background:C.bg3,border:"1px solid "+C.grn2,borderRadius:8,padding:"7px 10px",color:C.grn3,textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:12,fontWeight:700}}><I d={IC.ph} z={14}/>Llamar</a>}
 </div>
