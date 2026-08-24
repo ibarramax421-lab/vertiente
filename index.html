@@ -29,8 +29,9 @@ function RolSelector({onSelect}){return(<div style={{minHeight:"100vh",backgroun
 
 function DetalleCliente({c,productos,cobros,pedidos,preciosEspeciales,repId,onActualizar,onCerrar,puedeEditar,onEditar}){
 const historial=[...pedidos].filter(p=>p.clienteId===c.id).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+const [cobrosClienteLocal,setCobrosClienteLocal]=useState([...cobros].filter(x=>(x.clienteId||x.clienteid)===c.id).sort((a,b)=>b.id-a.id));
+const cobrosCliente=cobrosClienteLocal;
 const [saldoLocal,setSaldoLocal]=useState(c.saldo||0);
-const cobrosCliente=[...cobros].filter(x=>(x.clienteId||x.clienteid)===c.id).sort((a,b)=>b.id-a.id);
 const [contactosCliente,setContactosCliente]=useState([]);
 const [loadingContactos,setLoadingContactos]=useState(false);
 useEffect(()=>{sb.from("contactos").select("*").eq("clienteid",c.id).order("id",{ascending:false}).then(r=>{if(r.data)setContactosCliente(r.data);});},[c.id]);
@@ -97,6 +98,7 @@ const{data:saldoData}=await sb.rpc("saldo_cliente",{p_clienteid:c.id});
 await sb.from("clientes").update({saldo:-(saldoData||0)}).eq("id",c.id);
 setMsg("Cobro: "+fmt(m));setCobMonto("");setCobNotas("");
 setSaldoLocal(-(saldoData||0));
+setCobrosClienteLocal(prev=>[{id:Date.now(),clienteid:c.id,monto:m,metodopago:cobMetodo,fecha:today(),tipo:"cobranza"},...prev]);
 }catch(e){setMsg("Error.");}
 setGuardando(false);}
 async function guardarPrecioEsp(){const m=Number(editPrecioVal);if(!m||m<=0)return;await sb.from("precios_especiales").update({precio:m,updated_at:new Date().toISOString()}).eq("id",editPrecio.id);setEditPrecio(null);onActualizar&&onActualizar();}
