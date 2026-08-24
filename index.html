@@ -479,8 +479,18 @@ const clientesFiltrados=useMemo(function(){
 if(!busqueda)return[];
 return clientes.filter(function(c){return c.activo!==false&&c.nombre.toLowerCase().includes(busqueda.toLowerCase());}).sort(function(a,b){return a.nombre.localeCompare(b.nombre);}).slice(0,20);
 },[busqueda,clientes]);
-function iniciarRuta(){setEnRuta(true);localStorage.setItem("vn_gps","1");}
-function onCierreFinalizado(){setCerrarModal(false);setEnRuta(false);localStorage.removeItem("vn_gps");onActualizar&&onActualizar();}
+function iniciarRuta(){
+setEnRuta(true);
+localStorage.setItem("vn_gps","1");
+const hora=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+sb.from("actividad_rep").insert({repid:repId||1,fecha:today(),hora,accion:"Inició la ruta"}).then(()=>{});
+}
+function onCierreFinalizado(){
+setCerrarModal(false);setEnRuta(false);localStorage.removeItem("vn_gps");
+const hora=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+sb.from("actividad_rep").insert({repid:repId||1,fecha:today(),hora,accion:"Terminó la ruta"}).then(()=>{});
+onActualizar&&onActualizar();
+}
 useEffect(()=>{
 if(!enRuta||!repId)return;
 async function enviarUbicacion(){
@@ -707,7 +717,7 @@ const [cobros,setCobros]=useState([]);
 const [preciosEspeciales,setPreciosEspeciales]=useState([]);
 const [ubicaciones,setUbicaciones]=useState([]);
 const [recorrido,setRecorrido]=useState([]);
-const [gastos,setGastos]=useState([]);const [cierres,setCierres]=useState([]);const [bonificaciones,setBonificaciones]=useState([]);
+const [gastos,setGastos]=useState([]);const [cierres,setCierres]=useState([]);const [bonificaciones,setBonificaciones]=useState([]);const [actividadRep,setActividadRep]=useState([]);
 const [config,setConfig]=useState({color_fondo:"#030d1a",color_card:"#063d22",color_acento:"#00d4ff",color_boton:"#16a34a",tamanio_letra:"15",estilo_tarjeta:"redondeado"});
 const [showConfig,setShowConfig]=useState(false);
 useEffect(()=>{if(config.color_fondo){C.bg=config.color_fondo;C.bg2=config.color_fondo;C.bg3=config.color_fondo;}if(config.color_card)C.card=config.color_card;if(config.color_acento){C.border2=config.color_acento;C.acc=config.color_acento;C.acc2=config.color_acento;C.acc3=config.color_acento;}if(config.color_boton){C.grn2=config.color_boton;C.grn3=config.color_boton;}if(config.tamanio_letra){document.body.style.fontSize=config.tamanio_letra+"px";}if(config.estilo_tarjeta){const r=config.estilo_tarjeta==="cuadrado"?"2px":config.estilo_tarjeta==="muy redondeado"?"24px":"13px";document.documentElement.style.setProperty("--border-radius",r);}},[config]);
@@ -743,7 +753,14 @@ const EC={nombre:"",telefono:"",email:"",direccion:"",ciudad:"Colon",provincia:"
 const [fC,setFC]=useState(EC);
 const [fP,setFP]=useState({clienteId:"",productoId:"",cantidad:1,repId:"",fecha:today(),estado:"pendiente"});
 const [fPago,setFPago]=useState({monto:"",pedidoId:""});
-function seleccionarRol(r){setRol(r);localStorage.setItem("vn_rol",r);}
+function seleccionarRol(r){
+setRol(r);
+localStorage.setItem("vn_rol",r);
+if(r==="repartidor"){
+const hora=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+sb.from("actividad_rep").insert({repid:repartidores[0]?.id||1,fecha:today(),hora,accion:"Ingresó a la app"}).then(()=>{});
+}
+}
 function cambiarRol(){setRol(null);localStorage.removeItem("vn_rol");}
 async function cargarUbicaciones(){
 const{data}=await sb.from("ubicaciones").select("*").order("updated_at",{ascending:false});
@@ -760,6 +777,8 @@ if(rc.error)throw rc.error;
 if(rc.data)setClientes(rc.data);if(rp.data)setPedidos(rp.data);if(rprod.data)setProductos(rprod.data);if(rrep.data)setRepartidores(rrep.data);if(rcob.data)setCobros(rcob.data);if(rpe.data)setPreciosEspeciales(rpe.data);if(rg.data)setGastos(rg.data);
 if(rci&&rci.data)setCierres(rci.data);
 if(rbon&&rbon.data)setBonificaciones(rbon.data);
+const ract=await sb.from("actividad_rep").select("*").eq("fecha",today()).order("id",{ascending:false});
+if(ract&&ract.data)setActividadRep(ract.data);
 const rconf=await sb.from("configuracion").select("*");
 if(rconf.data){const cfg={};rconf.data.forEach(r=>{cfg[r.clave]=r.valor;});setConfig(c=>({...c,...cfg}));}
 await cargarUbicaciones();
@@ -949,6 +968,13 @@ return(<div style={{padding:"0 0 100px",maxWidth:560,margin:"0 auto"}}>
 </div>
 <DashCard titulo="Deudores" valor={deudores.length} subtitulo={deudores.length>0?"Total: "+fmt(deudores.reduce((a,c)=>a+Math.abs(c.saldo),0)):"Sin deudas"} icono="⚠️" color={deudores.length>0?"#991b1b":C.border} onClick={()=>setDashSeccion("deudores")}/>
 <DashCard titulo="Sin visita 7+ días" valor={sinVisita.length} subtitulo="clientes pendientes" icono="📅" color={sinVisita.length>0?"#c2410c":C.border} onClick={()=>setDashSeccion("sinvisita")}/>
+{actividadRep.length>0&&<div style={{background:C.card,border:"1px solid "+C.border,borderRadius:16,padding:"16px"}}>
+<div style={{fontSize:11,color:C.text2,fontWeight:700,textTransform:"uppercase",marginBottom:8}}>Actividad repartidor hoy</div>
+{actividadRep.slice(0,5).map(a=>(<div key={a.id} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",borderBottom:"1px solid "+C.border}}>
+<span style={{color:C.text,fontSize:13}}>{a.accion}</span>
+<span style={{color:C.text2,fontSize:11}}>{a.hora}</span>
+</div>))}
+</div>}
 </div>
 </div>);}
 if(tab==="cobranzas"){
