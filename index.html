@@ -29,7 +29,8 @@ function RolSelector({onSelect}){return(<div style={{minHeight:"100vh",backgroun
 
 function DetalleCliente({c,productos,cobros,pedidos,preciosEspeciales,repId,onActualizar,onCerrar,puedeEditar,onEditar}){
 const historial=[...pedidos].filter(p=>p.clienteId===c.id).sort((a,b)=>b.fecha.localeCompare(a.fecha));
-const cobrosCliente=[...cobros].filter(x=>(x.clienteId||x.clienteid)===c.id).sort((a,b)=>b.id-a.id);
+const [cobrosClienteLocal,setCobrosClienteLocal]=useState([...cobros].filter(x=>(x.clienteId||x.clienteid)===c.id).sort((a,b)=>b.id-a.id));
+const cobrosCliente=cobrosClienteLocal;
 const [saldoLocal,setSaldoLocal]=useState(c.saldo||0);
 const [contactosCliente,setContactosCliente]=useState([]);
 const [loadingContactos,setLoadingContactos]=useState(false);
@@ -97,6 +98,7 @@ const{data:saldoData}=await sb.rpc("saldo_cliente",{p_clienteid:c.id});
 const nuevoSaldo=-(saldoData||0);
 await sb.from("clientes").update({saldo:nuevoSaldo}).eq("id",c.id);
 setSaldoLocal(nuevoSaldo);
+setCobrosClienteLocal(prev=>[{id:Date.now(),clienteid:c.id,monto:m,metodopago:cobMetodo,fecha:today(),tipo:"cobranza"},...prev]);
 setCobMonto("");setCobNotas("");
 setMsg("✅ Cobro registrado: "+fmt(m));
 setTimeout(()=>setMsg(""),3000);
