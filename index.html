@@ -29,8 +29,7 @@ function RolSelector({onSelect}){return(<div style={{minHeight:"100vh",backgroun
 
 function DetalleCliente({c,productos,cobros,pedidos,preciosEspeciales,repId,onActualizar,onCerrar,puedeEditar,onEditar}){
 const historial=[...pedidos].filter(p=>p.clienteId===c.id).sort((a,b)=>b.fecha.localeCompare(a.fecha));
-const [cobrosClienteLocal,setCobrosClienteLocal]=useState([...cobros].filter(x=>(x.clienteId||x.clienteid)===c.id).sort((a,b)=>b.id-a.id));
-const cobrosCliente=cobrosClienteLocal;
+const cobrosCliente=[...cobros].filter(x=>(x.clienteId||x.clienteid)===c.id).sort((a,b)=>b.id-a.id);
 const [saldoLocal,setSaldoLocal]=useState(c.saldo||0);
 const [contactosCliente,setContactosCliente]=useState([]);
 const [loadingContactos,setLoadingContactos]=useState(false);
@@ -95,11 +94,13 @@ await sb.from("cobros").insert({clienteid:c.id,monto:m,metodopago:cobMetodo,fech
 await sb.from("movimientos").insert({clienteid:c.id,fecha:today(),tipo:"cobro",descripcion:"Cobranza "+cobMetodo,monto:-m,metodopago:cobMetodo});
 await sb.from("pedidos").update({pagado:true}).eq("clienteId",c.id).eq("pagado",false);
 const{data:saldoData}=await sb.rpc("saldo_cliente",{p_clienteid:c.id});
-await sb.from("clientes").update({saldo:-(saldoData||0)}).eq("id",c.id);
-setMsg("Cobro: "+fmt(m));setCobMonto("");setCobNotas("");
-setSaldoLocal(-(saldoData||0));
-setCobrosClienteLocal(prev=>[{id:Date.now(),clienteid:c.id,monto:m,metodopago:cobMetodo,fecha:today(),tipo:"cobranza"},...prev]);
-}catch(e){setMsg("Error.");}
+const nuevoSaldo=-(saldoData||0);
+await sb.from("clientes").update({saldo:nuevoSaldo}).eq("id",c.id);
+setSaldoLocal(nuevoSaldo);
+setCobMonto("");setCobNotas("");
+setMsg("✅ Cobro registrado: "+fmt(m));
+setTimeout(()=>setMsg(""),3000);
+}catch(e){setMsg("Error: "+e.message);}
 setGuardando(false);}
 async function guardarPrecioEsp(){const m=Number(editPrecioVal);if(!m||m<=0)return;await sb.from("precios_especiales").update({precio:m,updated_at:new Date().toISOString()}).eq("id",editPrecio.id);setEditPrecio(null);onActualizar&&onActualizar();}
 async function borrarPedido(p){if(!window.confirm("Borrar este pedido del "+p.fecha+"? Esto ajusta el saldo y bidones del cliente."))return;try{await sb.from("pedidos").delete().eq("id",p.id);const nuevoSaldo=p.pagado?(c.saldo||0):(c.saldo||0)+p.total;const nuevosBidones=Math.max(0,(c.bidones||0)-p.cantidad+(p.bidones_dev||0));await sb.from("clientes").update({saldo:nuevoSaldo,bidones:nuevosBidones}).eq("id",c.id);onActualizar&&onActualizar();}catch(e){}}
@@ -176,7 +177,7 @@ setMsg("Registrado: Sin bidones");
 <button onClick={registrarVenta} disabled={guardando||carrito.length===0} style={{...S.btnG,marginTop:8,opacity:carrito.length===0?0.5:1}}>{guardando?"Guardando...":"Confirmar venta"}</button>
 </div>)}
 {tabActual==="cobro"&&(<div>
-{d&&<div style={{background:"#1c0505",border:"1px solid #991b1b",borderRadius:10,padding:"12px 14px",marginBottom:14}}><div style={{color:C.err,fontWeight:700,fontSize:16,textAlign:"center"}}>Debe: {fmt(Math.abs(c.saldo))}</div></div>}
+{saldoLocal<0&&<div style={{background:"#1c0505",border:"1px solid #991b1b",borderRadius:10,padding:"12px 14px",marginBottom:14}}><div style={{color:C.err,fontWeight:700,fontSize:16,textAlign:"center"}}>Debe: {fmt(Math.abs(saldoLocal))}</div></div>}
 <Fld label="Monto"><input type="number" min={1} style={S.inp} value={cobMonto} onChange={e=>setCobMonto(e.target.value)} placeholder="0"/></Fld>
 <Fld label="Forma de pago"><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{METODOS_PAGO.map(m=>(<button key={m} onClick={()=>setCobMetodo(m)} style={{padding:"7px 12px",borderRadius:20,border:"1px solid "+(cobMetodo===m?C.grn2:C.border),background:cobMetodo===m?C.bg3:C.bg2,color:cobMetodo===m?C.grn3:C.text2,cursor:"pointer",fontSize:12,fontWeight:700}}>{m}</button>))}</div></Fld>
 <Fld label="Notas"><input style={S.inp} value={cobNotas} onChange={e=>setCobNotas(e.target.value)} placeholder="Opcional"/></Fld>
