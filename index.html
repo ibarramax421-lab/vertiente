@@ -1176,7 +1176,14 @@ Object.values(markersRef.current).forEach(m=>m.remove());
 markersRef.current={};
 if(recorridoLocal&&recorridoLocal.length>1){
 if(markersRef.current._recorrido)markersRef.current._recorrido.remove();
-markersRef.current._recorrido=L.polyline(recorridoLocal.map(u=>[u.lat,u.lng]),{color:"#00d4ff",weight:3,opacity:.7,dashArray:"6,4"}).addTo(map.current);
+const filtrado=recorridoLocal.filter((u,i)=>{
+if(i===0)return true;
+const prev=recorridoLocal[i-1];
+const dlat=u.lat-prev.lat,dlng=u.lng-prev.lng;
+const dist=Math.sqrt(dlat*dlat+dlng*dlng)*111000;
+return dist<500;
+});
+if(filtrado.length>1)markersRef.current._recorrido=L.polyline(filtrado.map(u=>[u.lat,u.lng]),{color:"#00d4ff",weight:3,opacity:.7,dashArray:"6,4"}).addTo(map.current);
 }
 repartidores.forEach(rep=>{
 const ub=ubicaciones.find(u=>u.repid===rep.id);
