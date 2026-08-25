@@ -1126,7 +1126,7 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 
 function MapaGeneral({clientes,userLat,userLng}){
 const ref=useRef(null),map=useRef(null);
-const DEF_LAT=-33.8891,DEF_LNG=-61.1234;
+const DEF_LAT=-33.8964,DEF_LNG=-61.1025;
 useEffect(()=>{
 if(!window.L||!ref.current||map.current)return;
 const L=window.L;
@@ -1149,7 +1149,7 @@ return <div ref={ref} style={{width:"100%",height:"calc(100vh - 220px)",minHeigh
 function MapaRepartidor({repartidores,ubicaciones,recorrido}){
 const ref=useRef(null),map=useRef(null),markersRef=useRef({});
 const [recorridoLocal,setRecorridoLocal]=useState(recorrido||[]);
-const DEF_LAT=-33.8891,DEF_LNG=-61.1234;
+const DEF_LAT=-33.8964,DEF_LNG=-61.1025;
 useEffect(()=>{
 async function cargarRecorrido(){
 const{data}=await sb.from("recorrido").select("*").eq("fecha",today()).order("created_at",{ascending:true});
@@ -1200,7 +1200,7 @@ return <div ref={ref} style={{width:"100%",height:"calc(100vh - 260px)",minHeigh
 
 function MapaVisitas({clientes,pedidos,fecha}){
 const ref=useRef(null),map=useRef(null);
-const DEF_LAT=-33.8891,DEF_LNG=-61.1234;
+const DEF_LAT=-33.8964,DEF_LNG=-61.1025;
 const pedsFecha=pedidos.filter(p=>p.fecha===fecha&&p.estado==="entregado");
 const visitados=clientes.filter(c=>pedsFecha.some(p=>p.clienteId===c.id)&&c.lat&&c.lng);
 useEffect(()=>{
