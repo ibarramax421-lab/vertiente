@@ -142,6 +142,11 @@ setMsg("Registrado: No estaba");
 }} style={{flex:1,background:"#1c0505",border:"1px solid #991b1b",color:C.err,borderRadius:10,padding:"10px 8px",cursor:"pointer",fontSize:12,fontWeight:700}}>❌ No estaba</button>
 <button onClick={async()=>{
 const hora=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+await sb.from("contactos").insert({clienteid:c.id,fecha:today(),hora,tipo:"💧 Tiene agua",repid:repId||null});
+setMsg("Registrado: Tiene agua");
+}} style={{flex:1,background:"#031a0f",border:"1px solid #1a5c3a",color:C.grn3,borderRadius:10,padding:"10px 8px",cursor:"pointer",fontSize:12,fontWeight:700}}>💧 Tiene agua</button>
+<button onClick={async()=>{
+const hora=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
 await sb.from("contactos").insert({clienteid:c.id,fecha:today(),hora,tipo:"🪣 Sin bidones vacíos",repid:repId||null});
 if(c.telefono){const msg="Hola "+c.nombre+"! Pasamos por tu casa a las "+hora+" y no estaban los bidones vacíos para retirar. Por favor tené los bidones listos para la próxima visita. Gracias, Vertiente Natural";window.open("https://wa.me/549"+c.telefono.replace(/\D/g,"").replace(/^0/,"")+"?text="+encodeURIComponent(msg),"_blank");}
 setMsg("Registrado: Sin bidones");
@@ -352,6 +357,8 @@ const ot=cobHoy.filter(c=>(c.metodoPago||c.metodopago)==="Otros").reduce((a,c)=>
 const entHoy=pedidos.filter(p=>p.fecha===hoy&&p.estado==="entregado");
 const sinCob=entHoy.filter(p=>!p.pagado).reduce((a,p)=>a+p.total,0);
 const tot=ef+tr+ta+ot;
+const cajaInicialGuardada=Number(localStorage.getItem("vn_caja_inicial")||0);
+const totalEfectivoFinal=ef+cajaInicialGuardada;
 const clientesEntregadosHoy=new Set(entHoy.map(p=>p.clienteId));
 const sinVisitaHoy=[...clientes].filter(c=>c.activo!==false&&!clientesEntregadosHoy.has(c.id)).map(c=>{
 const ped=[...pedidos].filter(p=>p.clienteId===c.id).sort((a,b)=>b.fecha.localeCompare(a.fecha));
@@ -385,6 +392,11 @@ return(
 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.text3}}>Transfer/QR</span><span style={{color:C.acc3,fontWeight:700}}>{fmt(tr)}</span></div>
 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid "+C.border}}><span style={{color:C.err}}>Sin cobrar</span><span style={{color:C.err,fontWeight:700}}>{fmt(sinCob)}</span></div>
 <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderTop:"2px solid "+C.border2,marginTop:4}}><span style={{color:C.text,fontWeight:700,fontSize:15}}>TOTAL COBRADO</span><span style={{color:C.grn3,fontWeight:900,fontSize:22}}>{fmt(tot)}</span></div>
+{cajaInicialGuardada>0&&<div style={{background:"#1c1003",borderRadius:10,padding:"12px 14px",marginTop:8,border:"1px solid #854d0e"}}>
+<div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:C.text2,fontSize:13}}>Caja inicial</span><span style={{color:C.warn,fontWeight:700}}>{fmt(cajaInicialGuardada)}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:C.text2,fontSize:13}}>Efectivo cobrado</span><span style={{color:C.warn,fontWeight:700}}>{fmt(ef)}</span></div>
+<div style={{display:"flex",justifyContent:"space-between",paddingTop:6,borderTop:"1px solid #854d0e"}}><span style={{color:C.text,fontWeight:700}}>Total efectivo en mano</span><span style={{color:C.grn3,fontWeight:900,fontSize:16}}>{fmt(totalEfectivoFinal)}</span></div>
+</div>}
 </div>
 <div style={{background:C.card,borderRadius:13,padding:16,marginBottom:14,border:"1px solid "+C.border}}>
 <div style={{fontWeight:700,color:C.text,fontSize:14,marginBottom:10}}>Detalle</div>
@@ -459,6 +471,8 @@ const [repId,setRepId]=useState(defaultRepId);
 const [enRuta,setEnRuta]=useState(function(){return localStorage.getItem("vn_gps")==="1";});
 const confirmadosHoyLocal=confirmadosHoy||[];
 const [cerrarModal,setCerrarModal]=useState(false);
+const [modalCajaInicial,setModalCajaInicial]=useState(false);
+const [cajaInicial,setCajaInicial]=useState("");
 const [clienteAbierto,setClienteAbierto]=useState(null);
 const [busqueda,setBusqueda]=useState("");
 const [modalNC,setModalNC]=useState(false);
@@ -488,10 +502,15 @@ if(!busqueda)return[];
 return clientes.filter(function(c){return c.activo!==false&&c.nombre.toLowerCase().includes(busqueda.toLowerCase());}).sort(function(a,b){return a.nombre.localeCompare(b.nombre);}).slice(0,20);
 },[busqueda,clientes]);
 function iniciarRuta(){
+setModalCajaInicial(true);
+}
+function confirmarInicioRuta(){
 setEnRuta(true);
 localStorage.setItem("vn_gps","1");
+if(cajaInicial)localStorage.setItem("vn_caja_inicial",cajaInicial);
+setModalCajaInicial(false);
 const hora=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
-sb.from("actividad_rep").insert({repid:repId||1,fecha:today(),hora,accion:"Inició la ruta"}).then(()=>{});
+sb.from("actividad_rep").insert({repid:repId||1,fecha:today(),hora,accion:"Inició la ruta (caja: $"+(cajaInicial||0)+")"}).then(()=>{});
 }
 function onCierreFinalizado(){
 setCerrarModal(false);setEnRuta(false);localStorage.removeItem("vn_gps");
@@ -535,6 +554,17 @@ return <EditClienteRep cliente={editarClienteRep} onGuardado={function(){onActua
 }
 return(
 <div style={{minHeight:"100vh",background:C.bg}}>
+{modalCajaInicial&&(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+<div style={{background:C.bg2,borderRadius:16,padding:24,width:"100%",maxWidth:360,border:"1px solid "+C.grn2}}>
+<div style={{fontWeight:800,fontSize:18,color:C.grn3,marginBottom:16,textAlign:"center"}}>💵 Caja inicial</div>
+<div style={{color:C.text2,fontSize:13,marginBottom:12,textAlign:"center"}}>¿Con cuánto efectivo empezás el reparto?</div>
+<input type="number" style={{...S.inp,fontSize:20,textAlign:"center",marginBottom:16}} value={cajaInicial} onChange={e=>setCajaInicial(e.target.value)} placeholder="$0" autoFocus/>
+<div style={{display:"flex",gap:10}}>
+<button onClick={()=>{setCajaInicial("");confirmarInicioRuta();}} style={{flex:1,background:C.bg3,border:"1px solid "+C.border,color:C.text2,borderRadius:10,padding:"12px",cursor:"pointer",fontWeight:700}}>Sin efectivo</button>
+<button onClick={confirmarInicioRuta} style={{flex:2,...S.btnG,margin:0}}>Iniciar ruta</button>
+</div>
+</div>
+</div>)}
 {cerrarModal&&<CerrarDiaModal cobros={cobros} pedidos={pedidos} clientes={clientes} productos={productos} repId={repId} onCerrar={function(){setCerrarModal(false);}} onConfirmar={onCierreFinalizado}/>}
 {modalNC&&<div style={{position:"fixed",inset:0,background:C.bg,zIndex:2000,display:"flex",flexDirection:"column"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 18px",borderBottom:"1px solid "+C.border,paddingTop:"max(16px,env(safe-area-inset-top))"}}><span style={{fontWeight:700,fontSize:17,color:C.text}}>Nuevo cliente</span><button onClick={function(){setModalNC(false);}} style={{background:C.bg2,border:"1px solid "+C.border,color:C.text2,cursor:"pointer",borderRadius:8,padding:"6px 14px",fontSize:13,fontWeight:700}}>Cerrar</button></div><div style={{flex:1,overflowY:"scroll",WebkitOverflowScrolling:"touch",padding:"18px"}}><Fld label="Nombre"><input style={S.inp} value={fNC.nombre} onChange={function(e){setFNC(function(f){return Object.assign({},f,{nombre:e.target.value});});}} placeholder="Nombre"/></Fld><Fld label="Telefono"><input style={S.inp} type="tel" value={fNC.telefono} onChange={function(e){setFNC(function(f){return Object.assign({},f,{telefono:e.target.value});});}} placeholder="Tel"/></Fld><Fld label="Direccion"><input style={S.inp} value={fNC.direccion} onChange={function(e){setFNC(function(f){return Object.assign({},f,{direccion:e.target.value});});}} placeholder="Direccion"/></Fld><Fld label="Zona"><select style={S.inp} value={fNC.zona} onChange={function(e){setFNC(function(f){return Object.assign({},f,{zona:e.target.value});});}}>{ZONAS.map(function(z){return <option key={z} value={z}>{z}</option>;})}</select></Fld><button onClick={guardarNuevoCliente} disabled={guardandoNC} style={S.btnG}>{guardandoNC?"...":"Guardar"}</button></div></div>}
 <div style={{background:"linear-gradient(90deg,"+C.bg2+","+C.bg3+")",borderBottom:"1px solid "+C.border,padding:"12px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:"max(14px,env(safe-area-inset-top))"}}>
