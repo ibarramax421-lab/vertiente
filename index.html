@@ -304,6 +304,7 @@ return filas.map((m,i)=>(<div key={m.id} style={{padding:"9px 14px",borderBottom
 {c.notas&&<div style={{color:C.text2,fontSize:13,fontStyle:"italic"}}>"{c.notas}"</div>}
 </div>
 {puedeEditar&&<button style={S.btn} onClick={onEditar}>Editar datos del cliente</button>}
+{puedeEditar&&<button onClick={async()=>{if(!navigator.geolocation){alert("GPS no disponible");return;}navigator.geolocation.getCurrentPosition(async function(p){await sb.from("clientes").update({lat:p.coords.latitude,lng:p.coords.longitude}).eq("id",c.id);c.lat=p.coords.latitude;c.lng=p.coords.longitude;alert("GPS guardado correctamente");onActualizar&&onActualizar();},function(){alert("No se pudo obtener la ubicación");},{enableHighAccuracy:true,timeout:10000});}} style={{...S.btn,marginTop:10,background:"#031a0f",border:"1px solid "+C.grn2,color:C.grn3}}>📍 Guardar ubicación GPS</button>}
 {puedeEditar&&<button onClick={borrarHistorial} style={{...S.btnR,marginTop:10,background:"#1c1003",color:C.warn,border:"1px solid #854d0e"}}>Borrar historial del cliente</button>}
 <button onClick={toggleActivo} style={{...S.btnR,marginTop:10,background:inactivo?"#052e16":"#1c0505",color:inactivo?C.grn3:C.err,border:inactivo?"1px solid "+C.grn2:"1px solid #991b1b"}}>{inactivo?"Habilitar cliente":"Inhabilitar cliente"}</button>
 </div>)}
