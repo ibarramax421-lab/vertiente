@@ -459,7 +459,10 @@ const [repId,setRepId]=useState(defaultRepId);
 const [enRuta,setEnRuta]=useState(function(){return localStorage.getItem("vn_gps")==="1";});
 const [confirmadosHoy,setConfirmadosHoy]=useState([]);
 useEffect(function(){
-sb.from("confirmaciones").select("*").eq("fecha",today()).then(function(r){if(r.data)setConfirmadosHoy(r.data.map(function(c){return c.clienteid;}));});
+var hoy=new Date().toISOString().slice(0,10);
+sb.from("confirmaciones").select("*").eq("fecha",hoy).then(function(r){
+if(r.data&&r.data.length>0)setConfirmadosHoy(r.data.map(function(x){return x.clienteid;}));
+});
 },[]);
 const [cerrarModal,setCerrarModal]=useState(false);
 const [clienteAbierto,setClienteAbierto]=useState(null);
