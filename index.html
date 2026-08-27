@@ -338,9 +338,9 @@ return(<div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 </div>
 <div style={{marginTop:8}}>Tocá el botón de WhatsApp en cada cliente para enviarle el mensaje.</div>
 </div>}
-<div style={{position:"sticky",top:0,zIndex:10,background:C.bg,paddingTop:4,paddingBottom:4}}>
-<div style={{position:"relative",marginBottom:8}}><span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:C.text2,fontSize:16}}>🔍</span><input style={{...S.inp,paddingLeft:36,paddingRight:36}} placeholder="Buscar cliente..." value={busqueda} onChange={e=>setBusqueda(e.target.value)}/>{busqueda&&<button onClick={()=>setBusqueda("")} style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:C.text2,cursor:"pointer",fontSize:18,padding:4}}>✕</button>}</div>
-<div style={{display:"flex",gap:6,marginBottom:8,flexWrap:"wrap"}}>{["todas",...ZONAS].map(z=>(<button key={z} onClick={()=>setFiltroZona(z)} style={{background:filtroZona===z?C.acc2:C.bg2,color:filtroZona===z?"#fff":C.text2,border:"1px solid "+(filtroZona===z?C.acc2:C.border),borderRadius:20,padding:"5px 14px",cursor:"pointer",fontSize:12,fontWeight:700}}>{z==="todas"?"Todas":z}</button>))}
+<div style={{position:"sticky",top:0,zIndex:100,background:C.bg,padding:"6px 0 4px"}}>
+<div style={{position:"relative",marginBottom:6}}><span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:C.text2,fontSize:16}}>🔍</span><input style={{...S.inp,paddingLeft:36,paddingRight:36}} placeholder="Buscar cliente..." value={busqueda} onChange={e=>setBusqueda(e.target.value)}/>{busqueda&&<button onClick={()=>setBusqueda("")} style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:C.text2,cursor:"pointer",fontSize:18,padding:4}}>✕</button>}</div>
+<div style={{display:"flex",gap:6,marginBottom:6,flexWrap:"wrap"}}>{["todas",...ZONAS].map(z=>(<button key={z} onClick={()=>setFiltroZona(z)} style={{background:filtroZona===z?C.acc2:C.bg2,color:filtroZona===z?"#fff":C.text2,border:"1px solid "+(filtroZona===z?C.acc2:C.border),borderRadius:20,padding:"4px 12px",cursor:"pointer",fontSize:11,fontWeight:700}}>{z==="todas"?"Todas":z}</button>))}
 </div>
 </div>
 <div style={{color:C.text2,fontSize:12,marginBottom:12}}>{cf.length} clientes</div>
