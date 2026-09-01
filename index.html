@@ -772,7 +772,7 @@ sb.from("confirmaciones").select("*").then(r=>{if(r.data)setConfirmadosHoyApp(r.
 },[]);
 const [config,setConfig]=useState({color_fondo:"#030d1a",color_card:"#063d22",color_acento:"#00d4ff",color_boton:"#16a34a",tamanio_letra:"15",estilo_tarjeta:"redondeado"});
 const [showConfig,setShowConfig]=useState(false);
-useEffect(()=>{if(config.color_fondo){C.bg=config.color_fondo;C.bg2=config.color_fondo;C.bg3=config.color_fondo;}if(config.color_card)C.card=config.color_card;if(config.color_acento){C.border2=config.color_acento;C.acc=config.color_acento;C.acc2=config.color_acento;C.acc3=config.color_acento;}if(config.color_boton){C.grn2=config.color_boton;C.grn3=config.color_boton;}if(config.color_texto){C.text=config.color_texto;}if(config.color_texto2){C.text2=config.color_texto2;}if(config.tamanio_letra){document.body.style.fontSize=config.tamanio_letra+"px";}if(config.estilo_tarjeta){const r=config.estilo_tarjeta==="cuadrado"?"2px":config.estilo_tarjeta==="muy redondeado"?"24px":"13px";document.documentElement.style.setProperty("--border-radius",r);}},[config]);
+useEffect(()=>{if(config.color_fondo){C.bg=config.color_fondo;C.bg2=config.color_fondo;C.bg3=config.color_fondo;}if(config.color_card)C.card=config.color_card;if(config.color_acento){C.border2=config.color_acento;C.acc=config.color_acento;C.acc2=config.color_acento;C.acc3=config.color_acento;}if(config.color_boton){C.grn2=config.color_boton;C.grn3=config.color_boton;}if(config.color_texto){C.text=config.color_texto;}if(config.color_texto2){C.text2=config.color_texto2;}if(config.color_texto3){C.text3=config.color_texto3;}if(config.tamanio_letra){document.body.style.fontSize=config.tamanio_letra+"px";}if(config.estilo_tarjeta){const r=config.estilo_tarjeta==="cuadrado"?"2px":config.estilo_tarjeta==="muy redondeado"?"24px":"13px";document.documentElement.style.setProperty("--border-radius",r);}},[config]);
 const [loading,setLoading]=useState(true);
 const [refreshing,setRefreshing]=useState(false);
 const [error,setError]=useState("");
@@ -1140,6 +1140,7 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 {clave:"color_boton",label:"Color de botones",tipo:"color"},
 {clave:"color_texto",label:"Color de texto principal",tipo:"color"},
 {clave:"color_texto2",label:"Color de texto secundario",tipo:"color"},
+{clave:"color_texto3",label:"Color de texto etiquetas",tipo:"color"},
 {clave:"tamanio_letra",label:"Tamaño de letra",tipo:"range",min:12,max:20},
 {clave:"estilo_tarjeta",label:"Estilo de tarjetas",tipo:"select",opciones:["redondeado","cuadrado","muy redondeado"]},
 ].map(item=>(
