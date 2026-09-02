@@ -658,7 +658,6 @@ return(
 })}
 {entregadosHoy.length>0&&(
 <div style={{marginTop:16,background:C.card,borderRadius:13,padding:14,border:"1px solid "+C.grn2}}>
-<div style={{color:C.text2,fontSize:10,marginBottom:8}}>Debug: {confirmadosHoyLocal.length} confirmados</div>
 {confirmadosHoyLocal.length>0&&(<div style={{background:C.bg2,borderRadius:13,padding:"14px 15px",marginBottom:12,border:"1px solid "+C.grn2}}>
 <div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:13}}>✅ Confirmaron pedido ({confirmadosHoyLocal.length})</div>
 {clientes.filter(function(c){return confirmadosHoyLocal.includes(c.id);}).map(function(c){const pedHoy=pedidos.filter(function(p){return p.clienteId===c.id&&p.fecha===today();});const entregado=pedHoy.length>0;return(<div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid "+C.border,opacity:entregado?.5:1}}>
@@ -843,7 +842,7 @@ setLoading(false);setRefreshing(false);}
 useEffect(()=>{
 cargarDatos();
 sb.from("cierres_dia").select("*").order("fecha",{ascending:false}).limit(30).then(r=>{if(r.data)setCierres(r.data);});
-const ch=sb.channel("c").on("postgres_changes",{event:"*",schema:"public",table:"pedidos"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"ubicaciones"},()=>cargarUbicaciones()).subscribe();
+const ch=sb.channel("c").on("postgres_changes",{event:"*",schema:"public",table:"pedidos"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"ubicaciones"},()=>cargarUbicaciones()).on("postgres_changes",{event:"*",schema:"public",table:"confirmaciones"},()=>{sb.from("confirmaciones").select("*").then(r=>{if(r.data)setConfirmadosHoyApp(r.data.map(x=>x.clienteid));});}).subscribe();
 const intervalo=setInterval(cargarUbicaciones,30000);
 return()=>{sb.removeChannel(ch);clearInterval(intervalo);};},[]);
 useEffect(()=>{if(!navigator.geolocation)return;const id=navigator.geolocation.watchPosition(function(p){setUserPos({lat:p.coords.latitude,lng:p.coords.longitude});},function(){},{enableHighAccuracy:true,timeout:15000,maximumAge:5000});return()=>navigator.geolocation.clearWatch(id);},[]);
