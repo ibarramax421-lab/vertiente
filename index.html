@@ -831,6 +831,8 @@ if(rci&&rci.data)setCierres(rci.data);
 if(rbon&&rbon.data)setBonificaciones(rbon.data);
 const ract=await sb.from("actividad_rep").select("*").eq("fecha",today()).order("id",{ascending:false});
 if(ract&&ract.data)setActividadRep(ract.data);
+const rconf2=await sb.from("confirmaciones").select("*");
+if(rconf2&&rconf2.data)setConfirmadosHoyApp(rconf2.data.map(x=>x.clienteid));
 const rconf=await sb.from("configuracion").select("*");
 if(rconf.data){const cfg={};rconf.data.forEach(r=>{cfg[r.clave]=r.valor;});setConfig(c=>({...c,...cfg}));}
 await cargarUbicaciones();
