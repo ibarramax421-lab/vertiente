@@ -520,9 +520,10 @@ sb.from("actividad_rep").insert({repid:repId||1,fecha:today(),hora,accion:"Inici
 sb.from("cierres_dia").upsert({fecha:today(),repartidorid:repId||1,caja_inicial:cajaVal},{onConflict:"fecha,repartidorid"}).then(()=>{});
 }
 function onCierreFinalizado(){
-setCerrarModal(false);setEnRuta(false);localStorage.removeItem("vn_gps");
+setCerrarModal(false);setEnRuta(false);localStorage.removeItem("vn_gps");localStorage.removeItem("vn_caja_inicial");
 const hora=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
 sb.from("actividad_rep").insert({repid:repId||1,fecha:today(),hora,accion:"Terminó la ruta"}).then(()=>{});
+sb.from("confirmaciones").delete().neq("id",0).then(()=>{});
 onActualizar&&onActualizar();
 }
 useEffect(()=>{
