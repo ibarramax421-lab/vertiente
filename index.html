@@ -668,15 +668,15 @@ return(
 </div>
 );
 })}
-{entregadosHoy.length>0&&(
-<div style={{marginTop:16,background:C.card,borderRadius:13,padding:14,border:"1px solid "+C.grn2}}>
-{confirmadosFinal.length>0&&(<div style={{background:C.bg2,borderRadius:13,padding:"14px 15px",marginBottom:12,border:"1px solid "+C.grn2}}>
+<div style={{background:C.bg2,borderRadius:13,padding:"14px 15px",marginBottom:12,border:"1px solid "+C.grn2}}>
 <div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:13}}>✅ Confirmaron pedido ({confirmadosFinal.length})</div>
-{clientes.filter(function(c){return confirmadosFinal.includes(c.id);}).map(function(c){const pedHoy=pedidos.filter(function(p){return p.clienteId===c.id&&p.fecha===today();});const entregado=pedHoy.length>0;return(<div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid "+C.border,opacity:entregado?.5:1}}>
+{confirmadosFinal.length===0?<div style={{color:C.text2,fontSize:12}}>Sin confirmaciones pendientes</div>:clientes.filter(function(c){return confirmadosFinal.includes(c.id);}).map(function(c){const pedHoy=pedidos.filter(function(p){return p.clienteId===c.id&&p.fecha===today();});const entregado=pedHoy.length>0;return(<div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid "+C.border,opacity:entregado?.5:1}}>
 <div><div style={{color:entregado?C.text2:C.text,fontWeight:600,fontSize:13,textDecoration:entregado?"line-through":"none"}}>{c.nombre}</div><div style={{color:C.text2,fontSize:11}}>{c.zona} · {c.direccion}</div></div>
 {entregado?<span style={{color:C.grn3,fontSize:11,fontWeight:700}}>✓ Entregado</span>:<span style={{color:C.warn,fontSize:11,fontWeight:700}}>Pendiente</span>}
 </div>);})}
-</div>)}
+</div>
+{entregadosHoy.length>0&&(
+<div style={{marginTop:16,background:C.card,borderRadius:13,padding:14,border:"1px solid "+C.grn2}}>
 <div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:13}}>Entregas de hoy ({entregadosHoy.length}) - {fmt(totalCobradoHoy)}</div>
 {entregadosHoy.map(function(p){
 var cl=clientes.find(function(c){return c.id===p.clienteId;});
