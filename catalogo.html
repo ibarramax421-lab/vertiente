@@ -66,6 +66,13 @@ const params=new URLSearchParams(window.location.search);
 const CLIENT_ID=params.get("cid")?Number(params.get("cid")):null;
 
 async function cargar(){
+if(CLIENT_ID){
+try{
+const rc=await fetch(SUPA_URL+"/rest/v1/clientes?select=nombre&id=eq."+CLIENT_ID,{headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
+const clData=await rc.json();
+if(clData&&clData[0]){document.getElementById("nombre").value=clData[0].nombre;document.getElementById("nombre").disabled=true;}
+}catch(e){}
+}
 const r=await fetch(SUPA_URL+"/rest/v1/productos?select=*&order=id",{headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
 const prods=await r.json();
 const div=document.getElementById("productos");
