@@ -66,7 +66,7 @@ const params=new URLSearchParams(window.location.search);
 const CLIENT_ID=params.get("cid")?Number(params.get("cid")):null;
 
 async function cargar(){
-const r=await fetch(SUPA_URL+"/rest/v1/productos?select=*&activo=neq.false&order=id",{headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
+const r=await fetch(SUPA_URL+"/rest/v1/productos?select=*&order=id",{headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
 const prods=await r.json();
 const div=document.getElementById("productos");
 if(!prods||prods.length===0){div.innerHTML="<div class='loading'>Sin productos disponibles</div>";return;}
