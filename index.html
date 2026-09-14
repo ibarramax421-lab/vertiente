@@ -789,7 +789,7 @@ const [pedidosCatalogo,setPedidosCatalogo]=useState([]);
 useEffect(()=>{
 const hoy=new Date().toISOString().slice(0,10);
 sb.from("confirmaciones").select("*").then(r=>{if(r.data)setConfirmadosHoyApp(r.data.map(x=>x.clienteid));});
-sb.from("pedidos_catalogo").select("*").eq("fecha",hoy).eq("estado","pendiente").then(r=>{if(r.data)setPedidosCatalogo(r.data);});
+sb.from("pedidos_catalogo").select("*").eq("estado","pendiente").then(r=>{if(r.data)setPedidosCatalogo(r.data);});
 },[]);
 const [config,setConfig]=useState({color_fondo:"#030d1a",color_card:"#063d22",color_acento:"#00d4ff",color_boton:"#16a34a",tamanio_letra:"15",estilo_tarjeta:"redondeado"});
 const [showConfig,setShowConfig]=useState(false);
