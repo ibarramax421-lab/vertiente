@@ -474,7 +474,13 @@ function PanelRepartidor({repartidores,productos,pedidos,clientes,cobros,precios
 var defaultRepId=localStorage.getItem("vn_repId")||(repartidores[0]?String(repartidores[0].id):"1");
 const [repId,setRepId]=useState(defaultRepId);
 const [enRuta,setEnRuta]=useState(function(){return localStorage.getItem("vn_gps")==="1";});
-const confirmadosHoyLocal=confirmadosHoy||[];
+const [pulling,setPulling]=useState(false);
+const [startY,setStartY]=useState(0);
+function handleTouchStart(e){setStartY(e.touches[0].clientY);}
+function handleTouchEnd(e){
+const dy=e.changedTouches[0].clientY-startY;
+if(dy>80&&window.scrollY===0){setPulling(true);onActualizar&&onActualizar();setTimeout(()=>setPulling(false),1500);}
+}
 const [confirmadosDirect,setConfirmadosDirect]=useState(confirmadosHoy||[]);
 useEffect(function(){
 sb.from("confirmaciones").select("clienteid").then(function(r){
@@ -569,7 +575,8 @@ if(editarClienteRep){
 return <EditClienteRep cliente={editarClienteRep} onGuardado={function(){onActualizar&&onActualizar();setEditarClienteRep(null);}} onCerrar={function(){setEditarClienteRep(null);setClienteAbierto(editarClienteRep);}}/>;
 }
 return(
-<div style={{minHeight:"100vh",background:C.bg}}>
+<div style={{minHeight:"100vh",background:C.bg}} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+{pulling&&<div style={{textAlign:"center",padding:"10px",color:C.grn3,fontSize:13,fontWeight:700}}>↻ Actualizando...</div>}
 {modalCajaInicial&&(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
 <div style={{background:C.bg2,borderRadius:16,padding:24,width:"100%",maxWidth:360,border:"1px solid "+C.grn2}}>
 <div style={{fontWeight:800,fontSize:18,color:C.grn3,marginBottom:16,textAlign:"center"}}>💵 Caja inicial</div>
