@@ -84,6 +84,7 @@ const{data:saldoData}=await sb.rpc("saldo_cliente",{p_clienteid:c.id});
 updateCliente.saldo=-(saldoData||0);
 await sb.from("clientes").update(updateCliente).eq("id",c.id);
 setMsg("Venta registrada!");setCant("");setDevBid("");setMontoPagado("");setCarrito([]);
+await sb.from("pedidos_catalogo").update({estado:"entregado"}).eq("clienteid",c.id).eq("estado","pendiente");
 onActualizar&&onActualizar();
 }catch(e){setMsg("Error: "+e.message);}
 setGuardando(false);}
