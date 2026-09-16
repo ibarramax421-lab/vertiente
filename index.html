@@ -488,7 +488,7 @@ if(r.data&&r.data.length>0)setConfirmadosDirect(r.data.map(function(x){return Nu
 else setConfirmadosDirect([]);
 });
 },[]);
-const confirmadosFinal=confirmadosDirect.length>0?confirmadosDirect:confirmadosHoyLocal;
+const confirmadosFinal=confirmadosDirect.length>0?confirmadosDirect:(confirmadosHoy||[]);
 const [cerrarModal,setCerrarModal]=useState(false);
 const [modalCajaInicial,setModalCajaInicial]=useState(false);
 const [cajaInicial,setCajaInicial]=useState("");
