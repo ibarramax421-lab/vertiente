@@ -1,5 +1,5 @@
 
-﻿﻿﻿﻿﻿<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><meta name="apple-mobile-web-app-title" content="Vertiente Natural"/><meta name="theme-color" content="#030d1a"/><link rel="apple-touch-icon" sizes="180x180" href="logo.png"/><link rel="icon" href="logo.png"/><link rel="manifest" href="manifest.json"/><title>Vertiente Natural</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://unpkg.com/react@18/umd/react.production.min.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script><style>*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}body{margin:0;padding:0;background:#030d1a;font-family:-apple-system,sans-serif;color:#e0f0ff;overscroll-behavior:none;touch-action:pan-y;}input,select,textarea{font-family:inherit;}select option{background:#031a0f;color:#e0f0ff;}.leaflet-container{font-family:-apple-system,sans-serif;}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}</style></head><body><div id="root"></div><script>Babel.registerPreset("custom-react",{presets:[[Babel.availablePresets["react"],{runtime:"classic"}]]});</script><script type="text/babel" data-presets="custom-react">
+﻿﻿﻿﻿<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><meta name="apple-mobile-web-app-title" content="Vertiente Natural"/><meta name="theme-color" content="#030d1a"/><link rel="apple-touch-icon" sizes="180x180" href="logo.png"/><link rel="icon" href="logo.png"/><link rel="manifest" href="manifest.json"/><title>Vertiente Natural</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://unpkg.com/react@18/umd/react.production.min.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script><style>*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}body{margin:0;padding:0;background:#030d1a;font-family:-apple-system,sans-serif;color:#e0f0ff;overscroll-behavior:none;touch-action:pan-y;}input,select,textarea{font-family:inherit;}select option{background:#031a0f;color:#e0f0ff;}.leaflet-container{font-family:-apple-system,sans-serif;}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}</style></head><body><div id="root"></div><script>Babel.registerPreset("custom-react",{presets:[[Babel.availablePresets["react"],{runtime:"classic"}]]});</script><script type="text/babel" data-presets="custom-react">
 const {useState,useMemo,useEffect,useRef,useCallback}=React;
 const SUPA_URL="https://hscbupttqtoemdrlewcv.supabase.co";
 const SUPA_KEY="sb_publishable_Bc-ry-rPe7ev6PoEx7xhyA_TXSgqvIN";
@@ -84,7 +84,6 @@ const{data:saldoData}=await sb.rpc("saldo_cliente",{p_clienteid:c.id});
 updateCliente.saldo=-(saldoData||0);
 await sb.from("clientes").update(updateCliente).eq("id",c.id);
 setMsg("Venta registrada!");setCant("");setDevBid("");setMontoPagado("");setCarrito([]);
-await sb.from("pedidos_catalogo").update({estado:"entregado"}).eq("clienteid",c.id).eq("estado","pendiente");
 onActualizar&&onActualizar();
 }catch(e){setMsg("Error: "+e.message);}
 setGuardando(false);}
@@ -109,7 +108,7 @@ async function guardarPrecioEsp(){const m=Number(editPrecioVal);if(!m||m<=0)retu
 async function borrarPedido(p){if(!window.confirm("Borrar este pedido del "+p.fecha+"? Esto ajusta el saldo y bidones del cliente."))return;try{await sb.from("pedidos").delete().eq("id",p.id);const nuevoSaldo=p.pagado?(c.saldo||0):(c.saldo||0)+p.total;const nuevosBidones=Math.max(0,(c.bidones||0)-p.cantidad+(p.bidones_dev||0));await sb.from("clientes").update({saldo:nuevoSaldo,bidones:nuevosBidones}).eq("id",c.id);onActualizar&&onActualizar();}catch(e){}}
 async function toggleActivo(){await sb.from("clientes").update({activo:inactivo?true:false}).eq("id",c.id);onActualizar&&onActualizar();onCerrar();}
 async function borrarHistorial(){if(!window.confirm("Esto borra TODOS los pedidos y cobros de "+c.nombre+" y resetea su saldo y bidones a 0. No se puede deshacer. Continuar?"))return;await sb.from("pedidos").delete().eq("clienteId",c.id);await sb.from("cobros").delete().eq("clienteid",c.id);await sb.from("clientes").update({saldo:0,bidones:0}).eq("id",c.id);onActualizar&&onActualizar();}
-function compartirWhatsApp(){const totalDebe=historial.filter(p=>!p.pagado).reduce((a,p)=>a+p.total,0);let msg="*Vertiente Natural*\nCliente: "+c.nombre+"\nSaldo: "+(d?"-":f?"+":"$0")+fmt(c.saldo)+"\nBidones: "+(c.bidones||0);if(totalDebe>0)msg+="\nDeuda pendiente: "+fmt(totalDebe);window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");}
+function compartirWhatsApp(){const estadoSaldo=d?"DEBE":f?"A FAVOR":"AL DÍA";let msg="*Vertiente Natural*\nCliente: "+c.nombre+"\nSaldo: "+fmt(Math.abs(c.saldo))+" ("+estadoSaldo+")\nBidones: "+(c.bidones||0);window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");}
 const TABS=[{id:"venta",label:"Venta"},{id:"cobro",label:"Cobrar"},{id:"historial",label:"Historial"},{id:"contactos",label:"Contactos"},{id:"datos",label:"Datos"}];
 return(<div style={{minHeight:"100vh",background:C.bg}}>
 <div style={{background:"linear-gradient(90deg,"+C.bg2+","+C.bg3+")",borderBottom:"1px solid "+C.border,padding:"12px 18px",display:"flex",alignItems:"center",gap:10,position:"sticky",top:0,zIndex:50,paddingTop:"max(14px,env(safe-area-inset-top))"}}>
@@ -155,10 +154,6 @@ setMsg("Registrado: Sin bidones");
 </div>
 {preciosesp.length>0&&(<div style={{background:C.bg2,borderRadius:10,padding:"10px 14px",marginBottom:14,border:"1px solid "+C.border2}}><div style={{fontSize:11,color:C.acc3,fontWeight:700,marginBottom:6}}>PRECIOS ESPECIALES</div>{preciosesp.map((pe,i)=>{const prr=productos.find(x=>x.id===Number(pe.productoId||pe.productoid||0));const editando=editPrecio&&editPrecio.id===pe.id;return(<div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}><span style={{color:C.text3,fontSize:13}}>{prr?.name}</span><div style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:C.grn3,fontWeight:700}}>{fmt(pe.precio)}</span>{puedeEditar&&<button onClick={()=>{setEditPrecio(pe);setEditPrecioVal(String(pe.precio));}} style={{background:C.bg3,border:"1px solid "+C.border,color:C.acc3,borderRadius:6,padding:"3px 8px",cursor:"pointer",fontSize:11}}>Editar</button>}</div></div>);})}{editPrecio&&<div style={{marginTop:8,display:"flex",gap:8}}><input type="number" style={{...S.inp,flex:1,padding:"8px 10px"}} value={editPrecioVal} onChange={e=>setEditPrecioVal(e.target.value)}/><button onClick={guardarPrecioEsp} style={{background:"#052e16",color:C.grn3,border:"1px solid "+C.grn2,borderRadius:6,padding:"8px 12px",cursor:"pointer",fontWeight:700,fontSize:12}}>OK</button></div>}</div>)}
 <Fld label="Producto"><select style={S.inp} value={prodId} onChange={e=>setProdId(e.target.value)}>{productos.map(p=>{const pe=getPrecioEsp(preciosEspeciales,c.id,p.id);return(<option key={p.id} value={p.id}>{p.name} - {fmt(pe!==null?pe:p.price)}{pe!==null?" (esp)":""}</option>);})}</select></Fld>
-{precioEsp!==null&&puedeEditar&&<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,background:"#1c1003",border:"1px solid #854d0e",borderRadius:8,padding:"6px 10px"}}>
-<span style={{color:C.warn,fontSize:12,flex:1}}>⚡ Precio especial: {fmt(precioEsp)}</span>
-<button onClick={async()=>{if(!window.confirm("Eliminar precio especial para este producto?"))return;const reg=preciosEspeciales.find(x=>(Number(x.clienteId||x.clienteid||0)===c.id)&&(Number(x.productoId||x.productoid||0)===Number(prodId)));if(reg){await sb.from("precios_especiales").delete().eq("id",reg.id);onActualizar&&onActualizar();setMsg("Precio especial eliminado");}}} style={{background:"none",border:"none",color:C.err,cursor:"pointer",fontSize:11,textDecoration:"underline",padding:0}}>Eliminar</button>
-</div>}
 <Fld label="Cantidad"><input type="number" min={1} style={S.inp} value={cant} onChange={e=>setCant(e.target.value)}/></Fld>
 <div style={{background:C.bg2,borderRadius:10,padding:"10px 14px",marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
 <span style={{color:C.text2,fontSize:13}}>Total</span>
@@ -345,7 +340,7 @@ Tocá el botón de WhatsApp en cada cliente para enviarle el mensaje con el link
 <div style={{color:C.text2,fontSize:12,marginBottom:12}}>{cf.length} clientes</div>
 {cf.map(c=>{const d=c.saldo<0,f=c.saldo>0;const tienePreEsp=preciosEspeciales.some(x=>Number(x.clienteId||x.clienteid||0)===c.id);const inactivo=c.activo===false;const pedHoy=pedidos.filter(p=>p.clienteId===c.id&&p.fecha===today());const visitadoHoy=pedHoy.length>0;return(<div key={c.id} onClick={()=>setClienteVer(c)} style={{background:C.card,borderRadius:13,padding:"14px 15px",marginBottom:9,border:"1px solid "+(visitadoHoy?C.grn2:inactivo?"#991b1b":C.border),opacity:inactivo?0.6:1,cursor:"pointer"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>{c.foto_url&&<img src={c.foto_url} style={{width:48,height:48,borderRadius:8,objectFit:"cover",marginRight:10,flexShrink:0,border:"1px solid "+C.border}}/>}<div style={{flex:1,minWidth:0}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}><div style={{fontWeight:700,color:C.text,fontSize:15}}>{c.nombre}</div><span style={{background:C.bg3,color:C.acc3,border:"1px solid "+C.border2,borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:800}}>{c.zona}</span>{tienePreEsp&&<span style={{background:"#1c1003",color:C.warn,border:"1px solid #854d0e",borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:800}}>$ esp</span>}{visitadoHoy&&<span style={{background:"#052e16",color:C.grn3,border:"1px solid "+C.grn2,borderRadius:20,padding:"1px 8px",fontSize:10,fontWeight:800}}>✓ Visitado</span>}</div><div style={{color:C.text2,fontSize:12}}>{c.direccion}</div>
 {c.telefono&&<div style={{color:C.text2,fontSize:11,marginTop:1}}>📞 {c.telefono}</div>}
-{c.lat&&<div style={{color:C.acc3,fontSize:10,marginTop:2}}>GPS ok</div>}{(c.bidones20||c.bidones12||c.bidones12up||c.sifones)>0&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>{[c.bidones20?"B20:"+c.bidones20:"",c.bidones12?"B12:"+c.bidones12:"",c.bidones12up?"B12UP:"+c.bidones12up:"",c.sifones?"Sif:"+c.sifones:""].filter(Boolean).join(" · ")}</div>}</div><div style={{textAlign:"right",flexShrink:0,marginLeft:12}}><div style={{fontWeight:900,fontSize:22,lineHeight:1,color:d?C.err:f?C.grn3:C.text2}}>{fmt(Math.abs(c.saldo))}</div><div style={{fontSize:10,color:C.text2}}>{d?"DEBE":f?"A FAVOR":"AL DIA"}</div>{modoDifusion&&c.telefono&&<a href={"https://wa.me/549"+c.telefono.replace(/\D/g,"").replace(/^0/,"")+"?text="+encodeURIComponent("Hola "+c.nombre+"! Si necesitás agua, por favor confirmá producto y cantidad ingresando al catálogo en el siguiente link: https://ibarramax421-lab.github.io/vertiente/catalogo.html?cid="+c.id+"\n\nGracias, Vertiente Natural")} target="_blank" onClick={e=>e.stopPropagation()} style={{display:"inline-block",marginTop:6,background:"#25D366",color:"#fff",borderRadius:8,padding:"5px 10px",fontSize:11,fontWeight:700,textDecoration:"none"}}>WhatsApp</a>}
+{c.lat&&<div style={{color:C.acc3,fontSize:10,marginTop:2}}>GPS ok</div>}{(c.bidones20||c.bidones12||c.bidones12up||c.sifones)>0&&<div style={{color:C.warn,fontSize:11,fontWeight:700}}>{[c.bidones20?"B20:"+c.bidones20:"",c.bidones12?"B12:"+c.bidones12:"",c.bidones12up?"B12UP:"+c.bidones12up:"",c.sifones?"Sif:"+c.sifones:""].filter(Boolean).join(" · ")}</div>}</div><div style={{textAlign:"right",flexShrink:0,marginLeft:12}}><div style={{fontWeight:900,fontSize:22,lineHeight:1,color:d?C.err:f?C.grn3:C.text2}}>{fmt(Math.abs(c.saldo))}</div><div style={{fontSize:10,color:C.text2}}>{d?"DEBE":f?"A FAVOR":"AL DIA"}</div>{modoDifusion&&c.telefono&&<a href={"https://wa.me/549"+c.telefono.replace(/\D/g,"").replace(/^0/,"")+"?text="+encodeURIComponent("Hola "+c.nombre+"! Si necesitás agua, por favor confirmá producto y cantidad ingresando al catálogo en el siguiente link: https://ibarramax421-lab.github.io/vertiente/catalogo.html\n\nGracias, Vertiente Natural")} target="_blank" onClick={e=>e.stopPropagation()} style={{display:"inline-block",marginTop:6,background:"#25D366",color:"#fff",borderRadius:8,padding:"5px 10px",fontSize:11,fontWeight:700,textDecoration:"none"}}>WhatsApp</a>}
 {modoDifusion&&<button onClick={async e=>{e.stopPropagation();const fechaHoy=new Date().toISOString().slice(0,10);if(confirmados.includes(c.id)){await sb.from("confirmaciones").delete().eq("clienteid",c.id).eq("fecha",fechaHoy);setConfirmados(prev=>prev.filter(id=>id!==c.id));}else{await sb.from("confirmaciones").insert({clienteid:c.id,fecha:fechaHoy});setConfirmados(prev=>[...prev,c.id]);}}} style={{display:"inline-block",marginTop:6,marginLeft:4,background:confirmados.includes(c.id)?"#052e16":"#1a1a1a",border:"1px solid "+(confirmados.includes(c.id)?C.grn2:C.border),color:confirmados.includes(c.id)?C.grn3:C.text2,borderRadius:8,padding:"5px 10px",fontSize:11,fontWeight:700,cursor:"pointer"}}>{confirmados.includes(c.id)?"✅ Confirmó":"Confirmó?"}</button>}</div></div></div>);})}
 </div>);}
 
@@ -470,25 +465,12 @@ return(
 </div>
 );}
 
-function PanelRepartidor({repartidores,productos,pedidos,clientes,cobros,preciosEspeciales,gastos,confirmadosHoy,pedidosCatalogo,onCambiarRol,onActualizar}){
+function PanelRepartidor({repartidores,productos,pedidos,clientes,cobros,preciosEspeciales,gastos,confirmadosHoy,onCambiarRol,onActualizar}){
 var defaultRepId=localStorage.getItem("vn_repId")||(repartidores[0]?String(repartidores[0].id):"1");
 const [repId,setRepId]=useState(defaultRepId);
 const [enRuta,setEnRuta]=useState(function(){return localStorage.getItem("vn_gps")==="1";});
-const [pulling,setPulling]=useState(false);
-const [startY,setStartY]=useState(0);
-function handleTouchStart(e){setStartY(e.touches[0].clientY);}
-function handleTouchEnd(e){
-const dy=e.changedTouches[0].clientY-startY;
-if(dy>80&&window.scrollY===0){setPulling(true);onActualizar&&onActualizar();setTimeout(()=>setPulling(false),1500);}
-}
-const [confirmadosDirect,setConfirmadosDirect]=useState(confirmadosHoy||[]);
-useEffect(function(){
-sb.from("confirmaciones").select("clienteid").then(function(r){
-if(r.data&&r.data.length>0)setConfirmadosDirect(r.data.map(function(x){return Number(x.clienteid);}));
-else setConfirmadosDirect([]);
-});
-},[]);
-const confirmadosFinal=confirmadosDirect.length>0?confirmadosDirect:(confirmadosHoy||[]);
+const confirmadosHoyLocal=confirmadosHoy||[];
+
 const [cerrarModal,setCerrarModal]=useState(false);
 const [modalCajaInicial,setModalCajaInicial]=useState(false);
 const [cajaInicial,setCajaInicial]=useState("");
@@ -534,10 +516,9 @@ sb.from("actividad_rep").insert({repid:repId||1,fecha:today(),hora,accion:"Inici
 sb.from("cierres_dia").upsert({fecha:today(),repartidorid:repId||1,caja_inicial:cajaVal},{onConflict:"fecha,repartidorid"}).then(()=>{});
 }
 function onCierreFinalizado(){
-setCerrarModal(false);setEnRuta(false);localStorage.removeItem("vn_gps");localStorage.removeItem("vn_caja_inicial");
+setCerrarModal(false);setEnRuta(false);localStorage.removeItem("vn_gps");
 const hora=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
 sb.from("actividad_rep").insert({repid:repId||1,fecha:today(),hora,accion:"Terminó la ruta"}).then(()=>{});
-sb.from("confirmaciones").delete().neq("id",0).then(()=>{});
 onActualizar&&onActualizar();
 }
 useEffect(()=>{
@@ -575,8 +556,7 @@ if(editarClienteRep){
 return <EditClienteRep cliente={editarClienteRep} onGuardado={function(){onActualizar&&onActualizar();setEditarClienteRep(null);}} onCerrar={function(){setEditarClienteRep(null);setClienteAbierto(editarClienteRep);}}/>;
 }
 return(
-<div style={{minHeight:"100vh",background:C.bg}} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-{pulling&&<div style={{textAlign:"center",padding:"10px",color:C.grn3,fontSize:13,fontWeight:700}}>↻ Actualizando...</div>}
+<div style={{minHeight:"100vh",background:C.bg}}>
 {modalCajaInicial&&(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
 <div style={{background:C.bg2,borderRadius:16,padding:24,width:"100%",maxWidth:360,border:"1px solid "+C.grn2}}>
 <div style={{fontWeight:800,fontSize:18,color:C.grn3,marginBottom:16,textAlign:"center"}}>💵 Caja inicial</div>
@@ -676,21 +656,16 @@ return(
 </div>
 );
 })}
-<div style={{background:C.bg2,borderRadius:13,padding:"14px 15px",marginBottom:12,border:"1px solid "+C.grn2}}>
-<div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:13}}>✅ Confirmaron pedido ({confirmadosFinal.length})</div>
-{confirmadosFinal.length===0&&(!pedidosCatalogo||pedidosCatalogo.length===0)?<div style={{color:C.text2,fontSize:12}}>Sin confirmaciones pendientes</div>:null}
-{(pedidosCatalogo||[]).map(function(pc){const cl=clientes.find(function(c){return c.id===pc.clienteid;});const pr=productos.find(function(p){return p.id===pc.productoid;});const entregado=pedidos.some(function(p){return p.clienteId===pc.clienteid&&p.fecha===today();});return(<div key={pc.id} style={{padding:"8px 0",borderBottom:"1px solid "+C.border,opacity:entregado?.5:1}}>
-<div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-<div><div style={{color:entregado?C.text2:C.text,fontWeight:700,fontSize:13,textDecoration:entregado?"line-through":"none"}}>{cl?.nombre||pc.nombre_cliente}</div><div style={{color:C.acc3,fontSize:12,fontWeight:700}}>{pc.cantidad}x {pr?.name} - {fmt(pc.total)}</div><div style={{color:C.text2,fontSize:10}}>{cl?.direccion}</div></div>
-{entregado?<span style={{color:C.grn3,fontSize:11,fontWeight:700}}>✓ Entregado</span>:<span style={{color:C.warn,fontSize:11,fontWeight:700,background:"#1c1003",padding:"2px 6px",borderRadius:4}}>Por catálogo</span>}
-</div></div>);})}
-{confirmadosFinal.map(Number).filter(function(id){return !(pedidosCatalogo||[]).some(function(pc){return pc.clienteid===id;});}).map(function(id){const c=clientes.find(function(x){return x.id===id;});if(!c)return null;const pedHoy=pedidos.filter(function(p){return p.clienteId===c.id&&p.fecha===today();});const entregado=pedHoy.length>0;return(<div key={id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid "+C.border,opacity:entregado?.5:1}}>
+{entregadosHoy.length>0&&(
+<div style={{marginTop:16,background:C.card,borderRadius:13,padding:14,border:"1px solid "+C.grn2}}>
+<div style={{color:C.text2,fontSize:10,marginBottom:8}}>Debug: {confirmadosHoyLocal.length} confirmados</div>
+{confirmadosHoyLocal.length>0&&(<div style={{background:C.bg2,borderRadius:13,padding:"14px 15px",marginBottom:12,border:"1px solid "+C.grn2}}>
+<div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:13}}>✅ Confirmaron pedido ({confirmadosHoyLocal.length})</div>
+{clientes.filter(function(c){return confirmadosHoyLocal.includes(c.id);}).map(function(c){const pedHoy=pedidos.filter(function(p){return p.clienteId===c.id&&p.fecha===today();});const entregado=pedHoy.length>0;return(<div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid "+C.border,opacity:entregado?.5:1}}>
 <div><div style={{color:entregado?C.text2:C.text,fontWeight:600,fontSize:13,textDecoration:entregado?"line-through":"none"}}>{c.nombre}</div><div style={{color:C.text2,fontSize:11}}>{c.zona} · {c.direccion}</div></div>
 {entregado?<span style={{color:C.grn3,fontSize:11,fontWeight:700}}>✓ Entregado</span>:<span style={{color:C.warn,fontSize:11,fontWeight:700}}>Pendiente</span>}
 </div>);})}
-</div>
-{entregadosHoy.length>0&&(
-<div style={{marginTop:16,background:C.card,borderRadius:13,padding:14,border:"1px solid "+C.grn2}}>
+</div>)}
 <div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:13}}>Entregas de hoy ({entregadosHoy.length}) - {fmt(totalCobradoHoy)}</div>
 {entregadosHoy.map(function(p){
 var cl=clientes.find(function(c){return c.id===p.clienteId;});
@@ -793,11 +768,9 @@ const [ubicaciones,setUbicaciones]=useState([]);
 const [recorrido,setRecorrido]=useState([]);
 const [gastos,setGastos]=useState([]);const [cierres,setCierres]=useState([]);const [bonificaciones,setBonificaciones]=useState([]);const [actividadRep,setActividadRep]=useState([]);
 const [confirmadosHoyApp,setConfirmadosHoyApp]=useState([]);
-const [pedidosCatalogo,setPedidosCatalogo]=useState([]);
 useEffect(()=>{
 const hoy=new Date().toISOString().slice(0,10);
 sb.from("confirmaciones").select("*").then(r=>{if(r.data)setConfirmadosHoyApp(r.data.map(x=>x.clienteid));});
-sb.from("pedidos_catalogo").select("*").eq("estado","pendiente").then(r=>{if(r.data)setPedidosCatalogo(r.data);});
 },[]);
 const [config,setConfig]=useState({color_fondo:"#030d1a",color_card:"#063d22",color_acento:"#00d4ff",color_boton:"#16a34a",tamanio_letra:"15",estilo_tarjeta:"redondeado"});
 const [showConfig,setShowConfig]=useState(false);
@@ -870,7 +843,7 @@ setLoading(false);setRefreshing(false);}
 useEffect(()=>{
 cargarDatos();
 sb.from("cierres_dia").select("*").order("fecha",{ascending:false}).limit(30).then(r=>{if(r.data)setCierres(r.data);});
-const ch=sb.channel("c").on("postgres_changes",{event:"*",schema:"public",table:"pedidos"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"ubicaciones"},()=>cargarUbicaciones()).on("postgres_changes",{event:"*",schema:"public",table:"confirmaciones"},()=>{sb.from("confirmaciones").select("*").then(r=>{if(r.data)setConfirmadosHoyApp(r.data.map(x=>x.clienteid));});}).subscribe();
+const ch=sb.channel("c").on("postgres_changes",{event:"*",schema:"public",table:"pedidos"},()=>cargarDatos()).on("postgres_changes",{event:"*",schema:"public",table:"ubicaciones"},()=>cargarUbicaciones()).subscribe();
 const intervalo=setInterval(cargarUbicaciones,30000);
 return()=>{sb.removeChannel(ch);clearInterval(intervalo);};},[]);
 useEffect(()=>{if(!navigator.geolocation)return;const id=navigator.geolocation.watchPosition(function(p){setUserPos({lat:p.coords.latitude,lng:p.coords.longitude});},function(){},{enableHighAccuracy:true,timeout:15000,maximumAge:5000});return()=>navigator.geolocation.clearWatch(id);},[]);
@@ -890,7 +863,7 @@ const NAV=[{id:"dashboard",label:"Inicio",icon:IC.db},{id:"mapa",label:"Mapa",ic
 if(editProd)return <EditProductoModal producto={editProd} onCerrar={()=>setEditProd(null)} onGuardado={()=>cargarDatos(true)}/>;
 if(!rol)return <RolSelector onSelect={seleccionarRol}/>;
 if(loading)return(<div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16}}><img src={LOGO} style={{width:90,height:90,objectFit:"contain",borderRadius:14}}/><div style={{color:C.acc3,fontWeight:700,fontSize:18}}>Vertiente Natural</div><div style={{color:C.text2,fontSize:14}}>Conectando...</div></div>);
-if(rol==="repartidor")return <PanelRepartidor repartidores={repartidores} productos={productos} pedidos={pedidos} clientes={clientes} cobros={cobros} preciosEspeciales={preciosEspeciales} gastos={gastos} confirmadosHoy={confirmadosHoyApp} pedidosCatalogo={pedidosCatalogo} onCambiarRol={cambiarRol} onActualizar={()=>cargarDatos(true)}/>;
+if(rol==="repartidor")return <PanelRepartidor repartidores={repartidores} productos={productos} pedidos={pedidos} clientes={clientes} cobros={cobros} preciosEspeciales={preciosEspeciales} gastos={gastos} confirmadosHoy={confirmadosHoyApp} onCambiarRol={cambiarRol} onActualizar={()=>cargarDatos(true)}/>;
 
 function renderMapa(){
 const clientesConGPS=clientes.filter(c=>c.lat&&c.lng);
