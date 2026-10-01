@@ -74,6 +74,7 @@ const{data:ped}=await sb.from("pedidos").insert({clienteId:c.id,productoId:item.
 const bidField=getBidField(item.prodId);
 if(bidField){const actual=c[bidField]||0;updateCliente[bidField]=(updateCliente[bidField]||actual)+item.cantidad-item.devBid;}
 }
+await sb.from("pedidos_catalogo").update({estado:"entregado"}).eq("clienteid",c.id).eq("estado","pendiente");
 if(deudaNueva>0){
 await sb.from("movimientos").insert({clienteid:c.id,fecha:today(),hora,tipo:"venta",descripcion:carrito.map(i=>i.cantidad+"x "+i.nombre).join(", "),monto:deudaNueva,repid:Number(repIdFinal)});
 }
@@ -770,7 +771,7 @@ const [gastos,setGastos]=useState([]);const [cierres,setCierres]=useState([]);co
 const [confirmadosHoyApp,setConfirmadosHoyApp]=useState([]);
 useEffect(()=>{
 const hoy=new Date().toISOString().slice(0,10);
-sb.from("confirmaciones").select("*").then(r=>{if(r.data)setConfirmadosHoyApp(r.data.map(x=>x.clienteid));});
+sb.from("confirmaciones").select("*").eq("fecha",today()).then(r=>{if(r.data)setConfirmadosHoyApp(r.data.map(x=>x.clienteid));});
 },[]);
 const [config,setConfig]=useState({color_fondo:"#030d1a",color_card:"#063d22",color_acento:"#00d4ff",color_boton:"#16a34a",tamanio_letra:"15",estilo_tarjeta:"redondeado"});
 const [showConfig,setShowConfig]=useState(false);
