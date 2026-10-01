@@ -1146,7 +1146,7 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 {clave:"color_texto",label:"Color de texto principal",tipo:"color"},
 {clave:"color_texto2",label:"Color de texto secundario",tipo:"color"},
 {clave:"color_texto3",label:"Color de texto etiquetas",tipo:"color"},
-{clave:"tamanio_letra",label:"Tamaño de letra",tipo:"range",min:12,max:20},
+{clave:"tamanio_letra",label:"Tamaño de letra",tipo:"range",min:12,max:26},
 {clave:"estilo_tarjeta",label:"Estilo de tarjetas",tipo:"select",opciones:["redondeado","cuadrado","muy redondeado"]},
 ].map(item=>(
 <div key={item.clave} style={{marginBottom:18}}>
@@ -1159,7 +1159,7 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 )}
 {item.tipo==="range"&&(
 <div style={{display:"flex",alignItems:"center",gap:10}}>
-<input type="range" min={item.min} max={item.max} value={config[item.clave]||15} onChange={async e=>{const v=e.target.value;setConfig(c=>({...c,[item.clave]:v}));await sb.from("configuracion").upsert({clave:item.clave,valor:v},{onConflict:"clave"});}} style={{flex:1}}/>
+<input type="range" min={item.min} max={item.max} value={config[item.clave]||15} onChange={async e=>{const v=e.target.value;setConfig(c=>({...c,[item.clave]:v}));await sb.from("configuracion").upsert({clave:item.clave,valor:v},{onConflict:"clave"});}} style={{flex:1}}/><div style={{display:"flex",gap:6,marginTop:6}}>{[{l:"Pequeño",v:"13"},{l:"Normal",v:"15"},{l:"Grande",v:"18"},{l:"Muy grande",v:"22"}].map(op=>(<button key={op.v} onClick={async()=>{setConfig(c=>({...c,[item.clave]:op.v}));await sb.from("configuracion").upsert({clave:item.clave,valor:op.v},{onConflict:"clave"});}} style={{flex:1,padding:"6px 4px",borderRadius:8,border:"2px solid "+(config[item.clave]===op.v?C.acc3:C.border),background:config[item.clave]===op.v?C.bg3:C.bg,color:config[item.clave]===op.v?C.acc3:C.text2,cursor:"pointer",fontSize:11,fontWeight:700}}>{op.l}</button>))}</div>
 <span style={{color:C.text,fontSize:14,fontWeight:700,minWidth:30}}>{config[item.clave]}px</span>
 </div>
 )}
