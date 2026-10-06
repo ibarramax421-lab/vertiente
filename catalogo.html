@@ -125,6 +125,7 @@ try{
 for(const item of items){
 await fetch(SUPA_URL+"/rest/v1/pedidos_catalogo",{method:"POST",headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify({clienteid:CLIENT_ID,productoid:item.id,cantidad:cantidades[item.id],total:item.price*cantidades[item.id],fecha:hoy,nombre_cliente:nombre,estado:"pendiente"})});
 }
+await fetch(SUPA_URL+"/rest/v1/confirmaciones",{method:"POST",headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify({clienteid:CLIENT_ID,fecha:hoy})});
 }catch(e){console.log("Error guardando pedido",e);}
 }
 let msg="Hola! Soy "+nombre+" y quiero hacer un pedido:\n\n";
