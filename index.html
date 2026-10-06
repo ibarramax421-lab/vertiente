@@ -466,7 +466,7 @@ return(
 </div>
 );}
 
-function PanelRepartidor({repartidores,productos,pedidos,clientes,cobros,preciosEspeciales,gastos,confirmadosHoy,onCambiarRol,onActualizar}){
+function PanelRepartidor({repartidores,productos,pedidos,clientes,cobros,preciosEspeciales,gastos,confirmadosHoy,pedidosCatHoy,onCambiarRol,onActualizar}){
 var defaultRepId=localStorage.getItem("vn_repId")||(repartidores[0]?String(repartidores[0].id):"1");
 const [repId,setRepId]=useState(defaultRepId);
 const [enRuta,setEnRuta]=useState(function(){return localStorage.getItem("vn_gps")==="1";});
@@ -662,9 +662,13 @@ return(
 <div style={{color:C.text2,fontSize:10,marginBottom:8}}>Debug: {confirmadosHoyLocal.length} confirmados</div>
 {confirmadosHoyLocal.length>0&&(<div style={{background:C.bg2,borderRadius:13,padding:"14px 15px",marginBottom:12,border:"1px solid "+C.grn2}}>
 <div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:13}}>✅ Confirmaron pedido ({confirmadosHoyLocal.length})</div>
-{clientes.filter(function(c){return confirmadosHoyLocal.includes(c.id);}).map(function(c){const pedHoy=pedidos.filter(function(p){return p.clienteId===c.id&&p.fecha===today();});const entregado=pedHoy.length>0;return(<div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid "+C.border,opacity:entregado?.5:1}}>
-<div><div style={{color:entregado?C.text2:C.text,fontWeight:600,fontSize:13,textDecoration:entregado?"line-through":"none"}}>{c.nombre}</div><div style={{color:C.text2,fontSize:11}}>{c.zona} · {c.direccion}</div></div>
-{entregado?<span style={{color:C.grn3,fontSize:11,fontWeight:700}}>✓ Entregado</span>:<span style={{color:C.warn,fontSize:11,fontWeight:700}}>Pendiente</span>}
+{clientes.filter(function(c){return confirmadosHoyLocal.includes(c.id);}).map(function(c){const pedHoy=pedidos.filter(function(p){return p.clienteId===c.id&&p.fecha===today();});const entregado=pedHoy.length>0;const pedsCat=(pedidosCatHoy||[]).filter(function(p){return p.clienteid===c.id;});return(<div key={c.id} style={{padding:"8px 0",borderBottom:"1px solid "+C.border,opacity:entregado?.5:1}}>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+<div><div style={{color:entregado?C.text2:C.text,fontWeight:600,fontSize:13,textDecoration:entregado?"line-through":"none"}}>{c.nombre}</div><div style={{color:C.text2,fontSize:11}}>{c.zona} · {c.direccion}</div>
+{pedsCat.length>0&&(<div style={{marginTop:4}}>{pedsCat.map(function(p,i){var pr=productos.find(function(x){return x.id===p.productoid;});return(<span key={i} style={{display:"inline-block",background:C.bg3,border:"1px solid "+C.border,borderRadius:6,padding:"2px 7px",fontSize:11,color:C.acc3,marginRight:4,marginTop:2}}>{p.cantidad}x {pr?pr.name:p.productoid}</span>);})}</div>)}
+</div>
+{entregado?<span style={{color:C.grn3,fontSize:11,fontWeight:700,flexShrink:0}}>✓ Entregado</span>:<span style={{color:C.warn,fontSize:11,fontWeight:700,flexShrink:0}}>Pendiente</span>}
+</div>
 </div>);})}
 </div>)}
 <div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:13}}>Entregas de hoy ({entregadosHoy.length}) - {fmt(totalCobradoHoy)}</div>
@@ -769,6 +773,7 @@ const [ubicaciones,setUbicaciones]=useState([]);
 const [recorrido,setRecorrido]=useState([]);
 const [gastos,setGastos]=useState([]);const [cierres,setCierres]=useState([]);const [bonificaciones,setBonificaciones]=useState([]);const [actividadRep,setActividadRep]=useState([]);
 const [confirmadosHoyApp,setConfirmadosHoyApp]=useState([]);
+const [pedidosCatHoy,setPedidosCatHoy]=useState([]);
 useEffect(()=>{
 const hoy=new Date().toISOString().slice(0,10);
 sb.from("confirmaciones").select("*").eq("fecha",today()).then(r=>{if(r.data)setConfirmadosHoyApp(r.data.map(x=>x.clienteid));});
@@ -834,8 +839,10 @@ if(rci&&rci.data)setCierres(rci.data);
 if(rbon&&rbon.data)setBonificaciones(rbon.data);
 const ract=await sb.from("actividad_rep").select("*").eq("fecha",today()).order("id",{ascending:false});
 if(ract&&ract.data)setActividadRep(ract.data);
-const rconf2=await sb.from("confirmaciones").select("*");
+const rconf2=await sb.from("confirmaciones").select("*").eq("fecha",today());
 if(rconf2&&rconf2.data)setConfirmadosHoyApp(rconf2.data.map(x=>x.clienteid));
+const rcat=await sb.from("pedidos_catalogo").select("*").eq("fecha",today()).eq("estado","pendiente");
+if(rcat&&rcat.data)setPedidosCatHoy(rcat.data);
 const rconf=await sb.from("configuracion").select("*");
 if(rconf.data){const cfg={};rconf.data.forEach(r=>{cfg[r.clave]=r.valor;});setConfig(c=>({...c,...cfg}));}
 await cargarUbicaciones();
@@ -864,7 +871,7 @@ const NAV=[{id:"dashboard",label:"Inicio",icon:IC.db},{id:"mapa",label:"Mapa",ic
 if(editProd)return <EditProductoModal producto={editProd} onCerrar={()=>setEditProd(null)} onGuardado={()=>cargarDatos(true)}/>;
 if(!rol)return <RolSelector onSelect={seleccionarRol}/>;
 if(loading)return(<div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16}}><img src={LOGO} style={{width:90,height:90,objectFit:"contain",borderRadius:14}}/><div style={{color:C.acc3,fontWeight:700,fontSize:18}}>Vertiente Natural</div><div style={{color:C.text2,fontSize:14}}>Conectando...</div></div>);
-if(rol==="repartidor")return <PanelRepartidor repartidores={repartidores} productos={productos} pedidos={pedidos} clientes={clientes} cobros={cobros} preciosEspeciales={preciosEspeciales} gastos={gastos} confirmadosHoy={confirmadosHoyApp} onCambiarRol={cambiarRol} onActualizar={()=>cargarDatos(true)}/>;
+if(rol==="repartidor")return <PanelRepartidor repartidores={repartidores} productos={productos} pedidos={pedidos} clientes={clientes} cobros={cobros} preciosEspeciales={preciosEspeciales} gastos={gastos} confirmadosHoy={confirmadosHoyApp} pedidosCatHoy={pedidosCatHoy} onCambiarRol={cambiarRol} onActualizar={()=>cargarDatos(true)}/>;
 
 function renderMapa(){
 const clientesConGPS=clientes.filter(c=>c.lat&&c.lng);
