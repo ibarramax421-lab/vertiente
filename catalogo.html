@@ -113,6 +113,30 @@ document.getElementById("resumen-items").innerHTML=items.map(p=>`<div class="res
 document.getElementById("resumen-total").textContent=fmt(total);
 }
 
+async function buscarClientePorNombre(nombre){
+try{
+// Busca coincidencia exacta primero (case-insensitive usando ilike)
+const nombreEnc=encodeURIComponent(nombre);
+const r=await fetch(SUPA_URL+"/rest/v1/clientes?select=id,nombre&nombre=ilike."+nombreEnc,{headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
+const data=await r.json();
+if(data&&data.length>0)return data[0].id;
+// Si no encuentra exacto, busca con % para coincidencia parcial
+const r2=await fetch(SUPA_URL+"/rest/v1/clientes?select=id,nombre&nombre=ilike.%25"+nombreEnc+"%25",{headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
+const data2=await r2.json();
+if(data2&&data2.length>0)return data2[0].id;
+}catch(e){console.log("Error buscando cliente",e);}
+return null;
+}
+
+async function guardarEnDB(clienteId,nombre,items,hoy){
+try{
+for(const item of items){
+await fetch(SUPA_URL+"/rest/v1/pedidos_catalogo",{method:"POST",headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify({clienteid:clienteId,productoid:item.id,cantidad:cantidades[item.id],total:item.price*cantidades[item.id],fecha:hoy,nombre_cliente:nombre,estado:"pendiente"})});
+}
+await fetch(SUPA_URL+"/rest/v1/confirmaciones",{method:"POST",headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify({clienteid:clienteId,fecha:hoy})});
+}catch(e){console.log("Error guardando pedido",e);}
+}
+
 async function enviarPedido(){
 const nombre=document.getElementById("nombre").value.trim();
 if(!nombre){alert("Por favor escribí tu nombre");document.getElementById("nombre").focus();return;}
@@ -120,14 +144,17 @@ const items=window._productos.filter(p=>cantidades[p.id]>0);
 if(items.length===0){alert("Seleccioná al menos un producto");return;}
 const total=items.reduce((a,p)=>a+p.price*cantidades[p.id],0);
 const hoy=new Date().toISOString().slice(0,10);
-if(CLIENT_ID){
-try{
-for(const item of items){
-await fetch(SUPA_URL+"/rest/v1/pedidos_catalogo",{method:"POST",headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify({clienteid:CLIENT_ID,productoid:item.id,cantidad:cantidades[item.id],total:item.price*cantidades[item.id],fecha:hoy,nombre_cliente:nombre,estado:"pendiente"})});
+
+// Determinar clienteId: del URL o buscando por nombre
+let clienteId=CLIENT_ID;
+if(!clienteId){
+clienteId=await buscarClientePorNombre(nombre);
 }
-await fetch(SUPA_URL+"/rest/v1/confirmaciones",{method:"POST",headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify({clienteid:CLIENT_ID,fecha:hoy})});
-}catch(e){console.log("Error guardando pedido",e);}
+
+if(clienteId){
+await guardarEnDB(clienteId,nombre,items,hoy);
 }
+
 let msg="Hola! Soy "+nombre+" y quiero hacer un pedido:\n\n";
 items.forEach(p=>{msg+=cantidades[p.id]+"x "+p.name+" - "+fmt(p.price*cantidades[p.id])+"\n";});
 msg+="\nTotal: "+fmt(total)+"\n\nGracias!";
