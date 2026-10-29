@@ -43,6 +43,7 @@ const [metodo,setMetodo]=useState("Efectivo");
 const [montoPagado,setMontoPagado]=useState("");
 const [pagado,setPagado]=useState(true);
 const [devBid,setDevBid]=useState("");
+const [ventaNotas,setVentaNotas]=useState("");
 const [carrito,setCarrito]=useState([]);
 const [cobMonto,setCobMonto]=useState("");
 const [cobMetodo,setCobMetodo]=useState("Efectivo");
@@ -76,15 +77,15 @@ if(bidField){const actual=c[bidField]||0;updateCliente[bidField]=(updateCliente[
 }
 await sb.from("pedidos_catalogo").update({estado:"entregado"}).eq("clienteid",c.id).eq("estado","pendiente");
 if(deudaNueva>0){
-await sb.from("movimientos").insert({clienteid:c.id,fecha:today(),hora,tipo:"venta",descripcion:carrito.map(i=>i.cantidad+"x "+i.nombre).join(", "),monto:deudaNueva,repid:Number(repIdFinal)});
+await sb.from("movimientos").insert({clienteid:c.id,fecha:today(),hora,tipo:"venta",descripcion:carrito.map(i=>i.cantidad+"x "+i.nombre).join(", ")+(ventaNotas?(" | "+ventaNotas):""),monto:deudaNueva,repid:Number(repIdFinal)});
 }
 if(montoEfectivo>0){
-await sb.from("cobros").insert({clienteid:c.id,monto:montoEfectivo,metodopago:metodo,fecha:today(),notas:"",tipo:"venta"});
+await sb.from("cobros").insert({clienteid:c.id,monto:montoEfectivo,metodopago:metodo,fecha:today(),notas:ventaNotas||"",tipo:"venta"});
 }
 const{data:saldoData}=await sb.rpc("saldo_cliente",{p_clienteid:c.id});
 updateCliente.saldo=-(saldoData||0);
 await sb.from("clientes").update(updateCliente).eq("id",c.id);
-setMsg("Venta registrada!");setCant("");setDevBid("");setMontoPagado("");setCarrito([]);
+setMsg("Venta registrada!");setCant("");setDevBid("");setMontoPagado("");setCarrito([]);setVentaNotas("");
 onActualizar&&onActualizar();
 }catch(e){setMsg("Error: "+e.message);}
 setGuardando(false);}
@@ -182,6 +183,7 @@ setMsg("Registrado: Sin bidones");
 <span style={{color:C.grn3,fontWeight:900,fontSize:16}}>{fmt(carrito.reduce((a,item)=>a+item.total,0))}</span>
 </div>
 </div>)}
+<Fld label="Nota (opcional)"><input style={S.inp} value={ventaNotas} onChange={e=>setVentaNotas(e.target.value)} placeholder="Ej: venta del lunes, entrega con descuento..."/></Fld>
 <button onClick={registrarVenta} disabled={guardando||carrito.length===0} style={{...S.btnG,marginTop:8,opacity:carrito.length===0?0.5:1}}>{guardando?"Guardando...":"Confirmar venta"}</button>
 </div>)}
 {tabActual==="cobro"&&(<div>
