@@ -53,6 +53,7 @@ const [guardando,setGuardando]=useState(false);
 const [editPrecio,setEditPrecio]=useState(null);const [ajusteMontoLocal,setAjusteMontoLocal]=useState("");const [ajusteTipoLocal,setAjusteTipoLocal]=useState("debe");
 const [editPrecioVal,setEditPrecioVal]=useState("");
 const [saldoInicialEdit,setSaldoInicialEdit]=useState(String(c.saldo_inicial||0));
+const [fechasAbiertas,setFechasAbiertas]=useState({});
 const [fotoFile,setFotoFile]=useState(null);
 const pr=productos.find(p=>p.id===Number(prodId));
 const precioEsp=pr?getPrecioEsp(preciosEspeciales,c.id,pr.id):null;
@@ -236,7 +237,7 @@ const movimientos=[];
 const pedOrden=[...historial].sort((a,b)=>a.fecha.localeCompare(b.fecha)||(a.id-b.id));
 const cobOrden=[...cobrosCliente].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.id-b.id));
 pedOrden.forEach(p=>{const prr=productos.find(x=>x.id===p.productoId);movimientos.push({tipo:"pedido",fecha:p.fecha,id:p.id,desc:(p.cantidad||1)+"x "+(prr?.name||""),cobrado:p.pagado,total:p.total,obj:p});});
-cobOrden.forEach(co=>{movimientos.push({tipo:"cobro",fecha:co.fecha||"",id:"c"+co.id,desc:(co.metodopago||co.metodoPago||"Cobro"),monto:co.monto});});
+cobOrden.forEach(co=>{movimientos.push({tipo:"cobro",fecha:co.fecha||"",id:"c"+co.id,desc:(co.metodopago||co.metodoPago||"Cobro"),monto:co.monto,notas:co.notas||""});});
 movimientos.sort((a,b)=>a.fecha.localeCompare(b.fecha)||(a.id<b.id?-1:1));
 let deuda=saldoInicial;
 const filas=movimientos.map(m=>{
@@ -244,22 +245,52 @@ if(m.tipo==="cobro"){deuda=Math.max(0,deuda-m.monto);}
 else if(!m.cobrado){deuda+=m.total;}
 return{...m,deudaTras:deuda};
 });
-return filas.map((m,i)=>(<div key={m.id} style={{padding:"9px 14px",borderBottom:"1px solid "+C.border,display:"flex",justifyContent:"space-between",alignItems:"flex-start",background:i%2===0?C.bg2:C.bg}}>
+// Agrupar por fecha
+const porFecha={};
+filas.forEach(m=>{if(!porFecha[m.fecha])porFecha[m.fecha]=[];porFecha[m.fecha].push(m);});
+const fechasOrden=Object.keys(porFecha).sort((a,b)=>b.localeCompare(a));
+return fechasOrden.map(fecha=>{
+const items=porFecha[fecha];
+const totalVentas=items.filter(m=>m.tipo==="pedido").reduce((a,m)=>a+m.total,0);
+const totalCobros=items.filter(m=>m.tipo==="cobro").reduce((a,m)=>a+m.monto,0);
+const abierta=!!fechasAbiertas[fecha];
+const [dd,mm,yyyy]=[fecha.slice(8,10),fecha.slice(5,7),fecha.slice(0,4)];
+const fechaLabel=dd+"/"+mm+"/"+yyyy;
+return(<div key={fecha} style={{borderBottom:"1px solid "+C.border}}>
+<button onClick={()=>setFechasAbiertas(prev=>({...prev,[fecha]:!prev[fecha]}))} style={{width:"100%",background:abierta?C.bg3:C.bg2,border:"none",cursor:"pointer",padding:"11px 14px",display:"flex",justifyContent:"space-between",alignItems:"center",textAlign:"left"}}>
+<div>
+<div style={{color:C.text,fontWeight:700,fontSize:13}}>{fechaLabel}</div>
+<div style={{color:C.text2,fontSize:11,marginTop:2}}>{items.filter(m=>m.tipo==="pedido").length>0&&<span>{items.filter(m=>m.tipo==="pedido").map(m=>m.desc).join(", ")}</span>}</div>
+</div>
+<div style={{textAlign:"right",flexShrink:0,marginLeft:10}}>
+{totalVentas>0&&<div style={{color:C.err,fontWeight:700,fontSize:13}}>{fmt(totalVentas)}</div>}
+{totalCobros>0&&<div style={{color:C.grn3,fontWeight:700,fontSize:13}}>+{fmt(totalCobros)}</div>}
+<div style={{color:C.text2,fontSize:11,marginTop:2}}>{abierta?"▲ cerrar":"▼ ver detalle"}</div>
+</div>
+</button>
+{abierta&&(<div style={{background:C.bg,padding:"10px 14px",borderTop:"1px solid "+C.border2}}>
+{items.map((m,i)=>(<div key={m.id} style={{padding:"8px 0",borderBottom:i<items.length-1?"1px solid "+C.border2:"none"}}>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
 <div style={{flex:1,minWidth:0}}>
-<div style={{display:"flex",gap:6,alignItems:"center",marginBottom:2}}>
+<div style={{display:"flex",gap:6,alignItems:"center",marginBottom:3}}>
 {m.tipo==="cobro"
 ?<span style={{color:C.grn3,fontSize:10,fontWeight:700,background:"#052e16",borderRadius:4,padding:"1px 5px"}}>COBRO</span>
 :<span style={{color:m.cobrado?C.grn3:C.err,fontSize:10,fontWeight:700,background:m.cobrado?"#052e16":"#1c0505",borderRadius:4,padding:"1px 5px"}}>{m.cobrado?"PAGADO":"PENDIENTE"}</span>}
-<span style={{color:C.text,fontSize:12,fontWeight:600}}>{m.desc}</span>
+<span style={{color:C.text,fontSize:13,fontWeight:600}}>{m.desc}</span>
 </div>
-<div style={{color:C.text2,fontSize:10}}>{m.fecha}{m.obj?.hora?" · "+m.obj.hora:""}</div>
-{m.tipo==="pedido"&&m.obj&&(m.obj.bidones_dev||0)>0&&<div style={{color:C.warn,fontSize:10}}>↩ Dev {m.obj.bidones_dev}</div>}
+{m.obj?.hora&&<div style={{color:C.text2,fontSize:11,marginBottom:2}}>🕐 {m.obj.hora}</div>}
+{m.tipo==="pedido"&&m.obj&&(m.obj.bidones_dev||0)>0&&<div style={{color:C.warn,fontSize:11}}>↩ Devolvió {m.obj.bidones_dev} envases</div>}
+{m.tipo==="cobro"&&m.notas&&<div style={{color:C.acc3,fontSize:11,fontStyle:"italic",marginTop:2}}>📝 {m.notas}</div>}
 </div>
 <div style={{textAlign:"right",flexShrink:0,marginLeft:10}}>
-<div style={{color:m.tipo==="cobro"?C.grn3:C.err,fontWeight:700,fontSize:13}}>{fmt(m.tipo==="cobro"?m.monto:m.total)}</div>
+<div style={{color:m.tipo==="cobro"?C.grn3:C.err,fontWeight:700,fontSize:14}}>{fmt(m.tipo==="cobro"?m.monto:m.total)}</div>
+{m.tipo==="pedido"&&puedeEditar&&<button onClick={()=>borrarPedido(m.obj)} style={{background:"none",border:"none",color:C.text2,cursor:"pointer",fontSize:10,textDecoration:"underline",display:"block",marginTop:4}}>borrar</button>}
 </div>
-{m.tipo==="pedido"&&puedeEditar&&<button onClick={()=>borrarPedido(m.obj)} style={{marginLeft:8,background:"none",color:C.text2,border:"none",padding:0,cursor:"pointer",fontSize:10,textDecoration:"underline",flexShrink:0,marginTop:2}}>borrar</button>}
-</div>));
+</div>
+</div>))}
+</div>)}
+</div>);
+});
 })()}
 
 </div>
