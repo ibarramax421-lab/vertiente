@@ -35,6 +35,8 @@ const [saldoLocal,setSaldoLocal]=useState(c.saldo||0);
 const [contactosCliente,setContactosCliente]=useState([]);
 const [loadingContactos,setLoadingContactos]=useState(false);
 useEffect(()=>{sb.from("contactos").select("*").eq("clienteid",c.id).order("id",{ascending:false}).then(r=>{if(r.data)setContactosCliente(r.data);});},[c.id]);
+const [movsCliente,setMovsCliente]=useState([]);
+useEffect(()=>{sb.from("movimientos").select("*").eq("clienteid",c.id).order("id",{ascending:true}).then(r=>{if(r.data)setMovsCliente(r.data);});},[c.id]);
 const preciosesp=preciosEspeciales.filter(x=>Number(x.clienteId||x.clienteid||0)===c.id);
 const [tabActual,setTabActual]=useState("venta");
 const [prodId,setProdId]=useState(productos[0]?.id||"");
@@ -236,8 +238,8 @@ const saldoInicial=Math.abs(Number(c.saldo_inicial)||0);
 const movimientos=[];
 const pedOrden=[...historial].sort((a,b)=>a.fecha.localeCompare(b.fecha)||(a.id-b.id));
 const cobOrden=[...cobrosCliente].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.id-b.id));
-pedOrden.forEach(p=>{const prr=productos.find(x=>x.id===p.productoId);movimientos.push({tipo:"pedido",fecha:p.fecha,id:p.id,desc:(p.cantidad||1)+"x "+(prr?.name||""),cobrado:p.pagado,total:p.total,obj:p});});
-cobOrden.forEach(co=>{movimientos.push({tipo:"cobro",fecha:co.fecha||"",id:"c"+co.id,desc:(co.metodopago||co.metodoPago||"Cobro"),monto:co.monto,notas:co.notas||""});});
+pedOrden.forEach(p=>{const prr=productos.find(x=>x.id===p.productoId);const mov=movsCliente.find(m=>m.tipo==="venta"&&m.fecha===p.fecha&&m.clienteid===c.id);const desc=mov?.descripcion||"";const partes=desc.split(" | ");const nota=partes.length>1?partes.slice(1).join(" | "):"";movimientos.push({tipo:"pedido",fecha:p.fecha,id:p.id,desc:(p.cantidad||1)+"x "+(prr?.name||""),cobrado:p.pagado,total:p.total,obj:p,nota});});
+cobOrden.forEach(co=>{const mov=movsCliente.find(m=>m.tipo==="cobro"&&m.fecha===co.fecha&&Math.abs(m.monto)===co.monto);const nota=mov?.descripcion||co.notas||"";movimientos.push({tipo:"cobro",fecha:co.fecha||"",id:"c"+co.id,desc:(co.metodopago||co.metodoPago||"Cobro"),monto:co.monto,notas:nota});});
 movimientos.sort((a,b)=>a.fecha.localeCompare(b.fecha)||(a.id<b.id?-1:1));
 let deuda=saldoInicial;
 const filas=movimientos.map(m=>{
@@ -280,7 +282,8 @@ return(<div key={fecha} style={{borderBottom:"1px solid "+C.border}}>
 </div>
 {m.obj?.hora&&<div style={{color:C.text2,fontSize:11,marginBottom:2}}>🕐 {m.obj.hora}</div>}
 {m.tipo==="pedido"&&m.obj&&(m.obj.bidones_dev||0)>0&&<div style={{color:C.warn,fontSize:11}}>↩ Devolvió {m.obj.bidones_dev} envases</div>}
-{m.tipo==="cobro"&&m.notas&&<div style={{color:C.acc3,fontSize:11,fontStyle:"italic",marginTop:2}}>📝 {m.notas}</div>}
+{(m.tipo==="cobro"&&m.notas)&&<div style={{color:C.acc3,fontSize:11,fontStyle:"italic",marginTop:2}}>📝 {m.notas}</div>}
+{(m.tipo==="pedido"&&m.nota)&&<div style={{color:C.acc3,fontSize:11,fontStyle:"italic",marginTop:2}}>📝 {m.nota}</div>}
 </div>
 <div style={{textAlign:"right",flexShrink:0,marginLeft:10}}>
 <div style={{color:m.tipo==="cobro"?C.grn3:C.err,fontWeight:700,fontSize:14}}>{fmt(m.tipo==="cobro"?m.monto:m.total)}</div>
@@ -288,6 +291,7 @@ return(<div key={fecha} style={{borderBottom:"1px solid "+C.border}}>
 </div>
 </div>
 </div>))}
+{(()=>{const saldoFecha=items[items.length-1]?.deudaTras;return saldoFecha!==undefined&&(<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",marginTop:8,borderTop:"2px solid "+C.border2}}><span style={{color:C.text2,fontWeight:700,fontSize:13}}>Saldo al cierre del día</span><span style={{color:saldoFecha>0?C.err:C.grn3,fontWeight:900,fontSize:18}}>{saldoFecha>0?"Debe "+fmt(saldoFecha):"Al día ✓"}</span></div>);})()}
 </div>)}
 </div>);
 });
