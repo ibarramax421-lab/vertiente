@@ -699,7 +699,7 @@ return(
 <div style={{color:C.text2,fontSize:10,marginBottom:8}}>Debug: {confirmadosHoyLocal.length} confirmados</div>
 {confirmadosHoyLocal.length>0&&(<div style={{background:C.bg2,borderRadius:13,padding:"14px 15px",marginBottom:12,border:"1px solid "+C.grn2}}>
 <div style={{fontWeight:700,color:C.grn3,marginBottom:10,fontSize:13}}>✅ Confirmaron pedido ({confirmadosHoyLocal.length})</div>
-{clientes.filter(function(c){return confirmadosHoyLocal.includes(c.id);}).map(function(c){const pedHoy=pedidos.filter(function(p){return p.clienteId===c.id&&p.fecha===today();});const entregado=pedHoy.length>0;const pedsCat=(pedidosCatHoy||[]).filter(function(p){return p.clienteid===c.id;});return(<div key={c.id} style={{padding:"8px 0",borderBottom:"1px solid "+C.border,opacity:entregado?.5:1}}>
+{clientes.filter(function(c){return confirmadosHoyLocal.includes(c.id);}).map(function(c){const pedHoy=pedidos.filter(function(p){return p.clienteId===c.id&&p.fecha===today();});const entregado=pedHoy.length>0;const pedsCat=(pedidosCatHoy||[]).filter(function(p){return p.clienteid===c.id;});return(<div key={c.id} onClick={function(){setClienteAbierto(c);}} style={{padding:"8px 0",borderBottom:"1px solid "+C.border,opacity:entregado?.5:1,cursor:"pointer"}}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
 <div><div style={{color:entregado?C.text2:C.text,fontWeight:600,fontSize:13,textDecoration:entregado?"line-through":"none"}}>{c.nombre}</div><div style={{color:C.text2,fontSize:11}}>{c.zona} · {c.direccion}</div>
 {pedsCat.length>0&&(<div style={{marginTop:4}}>{pedsCat.map(function(p,i){var pr=productos.find(function(x){return x.id===p.productoid;});return(<span key={i} style={{display:"inline-block",background:C.bg3,border:"1px solid "+C.border,borderRadius:6,padding:"2px 7px",fontSize:11,color:C.acc3,marginRight:4,marginTop:2}}>{p.cantidad}x {pr?pr.name:p.productoid}</span>);})}</div>)}
@@ -713,12 +713,12 @@ return(
 var cl=clientes.find(function(c){return c.id===p.clienteId;});
 var pr=productos.find(function(x){return x.id===p.productoId;});
 return(
-<div key={p.id} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid "+C.border}}>
+<div key={p.id} onClick={function(){if(cl)setClienteAbierto(cl);}} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid "+C.border,cursor:"pointer"}}>
 <div>
 <div style={{color:C.text,fontWeight:600,fontSize:13}}>{cl?cl.nombre:""}</div>
 <div style={{color:C.text2,fontSize:11}}>{p.cantidad}x {pr?pr.name:""}</div>
 </div>
-<div style={{color:p.pagado?C.grn3:C.err,fontWeight:700}}>{fmt(p.total)}</div>
+<div style={{color:p.pagado?C.grn3:C.err,fontWeight:700}}>{fmt(p.total)} ›</div>
 </div>
 );
 })}
