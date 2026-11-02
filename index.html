@@ -115,11 +115,11 @@ async function toggleActivo(){await sb.from("clientes").update({activo:inactivo?
 async function borrarHistorial(){if(!window.confirm("Esto borra TODOS los pedidos y cobros de "+c.nombre+" y resetea su saldo y bidones a 0. No se puede deshacer. Continuar?"))return;await sb.from("pedidos").delete().eq("clienteId",c.id);await sb.from("cobros").delete().eq("clienteid",c.id);await sb.from("clientes").update({saldo:0,bidones:0}).eq("id",c.id);onActualizar&&onActualizar();}
 function compartirWhatsApp(){const estadoSaldo=d?"DEBE":f?"A FAVOR":"AL DÍA";let msg="*Vertiente Natural*\nCliente: "+c.nombre+"\nSaldo: "+fmt(Math.abs(c.saldo))+" ("+estadoSaldo+")\nBidones: "+(c.bidones||0);window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");}
 const TABS=[{id:"venta",label:"Venta"},{id:"cobro",label:"Cobrar"},{id:"historial",label:"Historial"},{id:"contactos",label:"Contactos"},{id:"datos",label:"Datos"}];
-return(<div style={{minHeight:"100vh",background:C.bg}}>
-<div style={{background:"linear-gradient(90deg,"+C.bg2+","+C.bg3+")",borderBottom:"1px solid "+C.border,padding:"12px 18px",display:"flex",alignItems:"center",gap:10,position:"sticky",top:0,zIndex:50,paddingTop:"max(14px,env(safe-area-inset-top))"}}>
-<button onClick={()=>{onActualizar&&onActualizar();onCerrar();}} style={{background:C.bg2,border:"1px solid "+C.border,color:C.acc3,borderRadius:10,padding:"10px 16px",cursor:"pointer",fontSize:15,fontWeight:700}}>← Volver</button>
-<div style={{flex:1,minWidth:0}}><div style={{fontWeight:700,fontSize:17,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.nombre}</div><div style={{fontSize:10,color:C.text2}}>{c.zona}</div></div>
-{c.telefono&&<a href={"tel:"+c.telefono} style={{background:C.bg3,border:"1px solid "+C.grn2,borderRadius:8,padding:"7px 10px",color:C.grn3,textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:12,fontWeight:700}}><I d={IC.ph} z={14}/>Llamar</a>}
+return(<div style={{minHeight:"100vh",background:C.bg,maxWidth:"100vw",overflowX:"hidden"}}>
+<div style={{background:"linear-gradient(90deg,"+C.bg2+","+C.bg3+")",borderBottom:"1px solid "+C.border,padding:"12px 14px",display:"flex",alignItems:"center",gap:8,position:"sticky",top:0,zIndex:50,paddingTop:"max(14px,env(safe-area-inset-top))",boxSizing:"border-box",width:"100%",overflow:"hidden"}}>
+<button onClick={()=>{onActualizar&&onActualizar();onCerrar();}} style={{background:C.bg2,border:"1px solid "+C.border,color:C.acc3,borderRadius:10,padding:"10px 12px",cursor:"pointer",fontSize:14,fontWeight:700,flexShrink:0,whiteSpace:"nowrap"}}>← Volver</button>
+<div style={{flex:1,minWidth:0,overflow:"hidden"}}><div style={{fontWeight:700,fontSize:16,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.nombre}</div><div style={{fontSize:10,color:C.text2}}>{c.zona}</div></div>
+{c.telefono&&<a href={"tel:"+c.telefono} style={{background:C.bg3,border:"1px solid "+C.grn2,borderRadius:8,padding:"7px 9px",color:C.grn3,textDecoration:"none",display:"flex",alignItems:"center",gap:4,fontSize:12,fontWeight:700,flexShrink:0,whiteSpace:"nowrap"}}><I d={IC.ph} z={14}/>Llamar</a>}
 </div>
 <div style={{padding:"14px 14px 100px",maxWidth:560,margin:"0 auto"}}>
 {c.foto_url&&<img src={c.foto_url} style={{width:"100%",maxHeight:160,objectFit:"cover",borderRadius:12,marginBottom:12,border:"1px solid "+C.border}}/>}
@@ -133,8 +133,8 @@ return(<div style={{minHeight:"100vh",background:C.bg}}>
 </div>
 </div>
 {inactivo&&<div style={{background:"#1c0505",border:"1px solid #991b1b",borderRadius:10,padding:"10px 14px",marginBottom:14,color:C.err,fontWeight:700,fontSize:13,textAlign:"center"}}>CLIENTE INACTIVO</div>}
-<div style={{display:"flex",gap:6,marginBottom:16,overflowX:"auto",paddingBottom:4}}>
-{TABS.map(t=>(<button key={t.id} onClick={()=>setTabActual(t.id)} style={{flexShrink:0,padding:"12px 18px",borderRadius:10,border:"1px solid "+(tabActual===t.id?C.border2:C.border),background:tabActual===t.id?C.bg3:C.bg2,color:tabActual===t.id?C.acc3:C.text2,cursor:"pointer",fontWeight:700,fontSize:15}}>{t.label}</button>))}
+<div style={{display:"flex",gap:5,marginBottom:16,overflowX:"auto",paddingBottom:4,WebkitOverflowScrolling:"touch"}}>
+{TABS.map(t=>(<button key={t.id} onClick={()=>setTabActual(t.id)} style={{flexShrink:0,padding:"11px 14px",borderRadius:10,border:"1px solid "+(tabActual===t.id?C.border2:C.border),background:tabActual===t.id?C.bg3:C.bg2,color:tabActual===t.id?C.acc3:C.text2,cursor:"pointer",fontWeight:700,fontSize:14}}>{t.label}</button>))}
 </div>
 {msg&&<div style={{background:msg.startsWith("Error")?"#1c0505":"#052e16",border:"1px solid "+(msg.startsWith("Error")?"#991b1b":C.grn2),borderRadius:10,padding:"10px 14px",marginBottom:14,color:msg.startsWith("Error")?C.err:C.grn3,fontWeight:700,fontSize:13,textAlign:"center"}}>{msg}</div>}
 {tabActual==="venta"&&(<div>
@@ -718,7 +718,7 @@ return(
 <div style={{color:C.text,fontWeight:600,fontSize:13}}>{cl?cl.nombre:""}</div>
 <div style={{color:C.text2,fontSize:11}}>{p.cantidad}x {pr?pr.name:""}</div>
 </div>
-<div style={{color:p.pagado?C.grn3:C.err,fontWeight:700}}>{fmt(p.total)} ›</div>
+<div style={{color:p.pagado?C.grn3:C.err,fontWeight:700,flexShrink:0,marginLeft:8}}>{fmt(p.total)} ›</div>
 </div>
 );
 })}
